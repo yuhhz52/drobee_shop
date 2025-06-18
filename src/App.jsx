@@ -1,8 +1,8 @@
 import './App.css'
+import { Footer } from './components/Footer/Footer'
 import HeroSection from './components/HeroSection/HeroSection'
 import Navigation from './components/Navigation/Navigation'
 import NewArrivals from './components/Sections/NewArrivals'
-import SeactionHeading from './components/Sections/SeactionHeading'
 
 function App() {
 
@@ -12,6 +12,7 @@ function App() {
       <Navigation/>
       <HeroSection/>
       <NewArrivals/>
+      <Footer/>
       </div>
     </>
   )
