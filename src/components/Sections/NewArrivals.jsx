@@ -2,19 +2,19 @@ import React from 'react'
 import SeactionHeading from './SeactionHeading'
 import Card from '../Cards/Card'
 import Jeans from '../../assets/images/jeans.jpg'
-import TShirt from '../../assets/images/tshirts.jpeg'
 import Shirt from '../../assets/images/shirts.jpg'
 import Dress from '../../assets/images/dresses.jpg'
 import Joggers from '../../assets/images/joggers.jpg'   
 import Kurtis from '../../assets/images/kurtis.jpg'   
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
+import './NewArrivals.css'
 
 const responsive = {
     desktop: {
       breakpoint: { max: 3000, min: 1024 },
-      items: 4,
-      slidesToSlide: 4 // optional, default to 1.
+      items: 5,
+      slidesToSlide: 5 // optional, default to 1.
     },
     tablet: {
       breakpoint: { max: 1024, min: 768 },
@@ -31,10 +31,7 @@ const responsive = {
 const items = [{
     imagePath: Jeans,
     title: 'Stylish Jeans'
-    }, {
-    imagePath: TShirt,
-    title: 'Casual T-Shirt'
-    }, {
+    },{
     imagePath: Dress,
     title: 'Elegant Dress'
     }, {
@@ -49,7 +46,13 @@ const items = [{
      }, {
     imagePath: Kurtis,
     title: 'Casual Kurtis'
-
+    }, {
+    imagePath: Kurtis,
+    title: 'Casual Kurtis'
+    }, {
+    imagePath: Kurtis,
+    title: 'Casual Kurtis'
+    
 }]
 const NewArrivals = () => {
   return (
@@ -64,7 +67,7 @@ const NewArrivals = () => {
         infinite={false}
         partialVisible={false}
         itemClass={'react-slider-custom-item'}
-        className='px-8'
+        className='px-6'
       >
         {items && items?.map((item,index)=> <Card key={item?.title +index} title={item.title} imagePath={item.imagePath}/>)}
 
