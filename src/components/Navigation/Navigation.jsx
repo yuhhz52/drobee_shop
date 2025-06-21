@@ -2,8 +2,13 @@ import React from 'react'
 import { Wishlist } from '../commom/Wishlist'
 import { AccountIcon } from '../commom/AccountIcon'
 import { CartIcon } from '../commom/CartIcon'
+import { Link, NavLink} from 'react-router-dom'
+
 
 const Navigation = () => {
+const navLinkClass = ({ isActive }) =>
+    isActive ? 'text-black font-semibold border-b-2 border-black' : 'text-gray-600 hover:text-black';
+
   return (
     <nav className='flex items-center py-6 px-16 justify-between'>
       {/*Logo */}
@@ -12,14 +17,14 @@ const Navigation = () => {
       </div>
 
       {/* Navigation Items */}
-      <div className='flex-1 flex justify-center'>
-        <ul className='flex gap-10 text-gray-600 items-center'>
-          <li className='hover:text-black'><a href='/'>Home</a></li>
-          <li className='hover:text-black'><a href='/product'>Product</a></li>
-          <li className='hover:text-black'><a href='/contact'>Contact</a></li>
-          <li className='hover:text-black'><a href='/about'>About</a></li>
-        </ul>
-      </div>
+      <div className='flex flex-wrap items-center'>
+      <ul className='flex gap-14'>
+        <li><NavLink to='/' className={navLinkClass}>Home</NavLink></li>
+        <li><NavLink to='/products' className={navLinkClass}>Product</NavLink></li>
+        <li><NavLink to='/contact' className={navLinkClass}>Contact</NavLink></li>
+        <li><NavLink to='/about' className={navLinkClass}>About</NavLink></li>
+      </ul>
+    </div>
 
       {/* Search and Action Items */}
       <div className='flex items-center gap-6'>
