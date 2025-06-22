@@ -21,8 +21,8 @@ const navLinkClass = ({ isActive }) =>
       <ul className='flex gap-14'>
         <li><NavLink to='/' className={navLinkClass}>Home</NavLink></li>
         <li><NavLink to='/products' className={navLinkClass}>Product</NavLink></li>
+        <li><NavLink to='/products1' className={navLinkClass}>Product1</NavLink></li>
         <li><NavLink to='/contact' className={navLinkClass}>Contact</NavLink></li>
-        <li><NavLink to='/about' className={navLinkClass}>About</NavLink></li>
       </ul>
     </div>
 
