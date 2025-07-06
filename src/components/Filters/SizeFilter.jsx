@@ -22,25 +22,19 @@ const SizeFilter = ({sizes,hidleTitle,multi=true,onChange}) => {
   },[appliedSize, onChange])
 
   return (
-    <div className={`flex flex-col ${hidleTitle?'':'mb-4'}`}>
-        {!hidleTitle && <p className='text-base font-medium text-gray-800 mb-4'>Size</p>}
-        <div className='grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 gap-2 px-2'>
+    <div className={`flex flex-col ${hidleTitle?'':'mb-2'}`}>
+        {!hidleTitle && <p className='text-[16px] text-black mt-2 mb-2'>Size</p>}
+        <div className='flex flex-wrap px-2'>
             {sizes?.map((item,index)=> {
               return (
-                <div key={index} className='flex justify-center'>
-                  <div 
-                    className='w-12 h-10 sm:w-14 sm:h-12 border text-center rounded-lg cursor-pointer
-                     hover:scale-105 transition-all bg-white border-gray-300 text-gray-600 text-sm sm:text-base font-medium' 
-                    style={appliedSize?.includes(item)?{
-                      background:'black',
-                      color:'white',
-                      borderColor: 'black'
-                    }:{}}
-                    onClick={()=> onClickDiv(item)}
-                  >
-                    {item}
+                <div key={index} className='flex flex-col mr-2'>
+                  <div className='w-[50px] border text-center mb-4 rounded-lg mr-4 cursor-pointer
+                   hover:scale-110 bg-white border-gray-500 text-gray-500' style={appliedSize?.includes(item)?{
+                    background:'black',
+                    color:'white'
+                   }:{}} onClick={()=> onClickDiv(item)}>{item}</div>
+                  
                   </div>
-                </div>
               )
             })}
         </div>

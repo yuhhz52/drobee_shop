@@ -277,8 +277,8 @@
         "size": ["S", "M", "L"],
         "color": ["Black","Blue"],
         "discount": 20,
-        "thumbnail": "https://codedev.b-cdn.net/products/sweatshirt-black.jpg",
-        "images": ["https://codedev.b-cdn.net/products/sweatshirt-black.jpg", "https://codedev.b-cdn.net/products/woman-black-shirt-giving-neutral-flirtatious-poses.jpg","https://codedev.b-cdn.net/products/woman-holding-coffee-cup-smiling.jpg"],
+        "thumbnail": "https://res.cloudinary.com/dh37udlff/image/upload/v1751013867/category-women-hoodies_dqt5xi.jpg,https://res.cloudinary.com/dh37udlff/image/upload/v1751013867/category-women-hoodies_dqt5xi.jpg",
+        "images": ["https://res.cloudinary.com/dh37udlff/image/upload/v1751013867/category-women-hoodies_dqt5xi.jpg"],
         "rating": 4.5
       },
       {
@@ -292,8 +292,8 @@
         "size": ["S", "M", "L"],
         "color": ["White"],
         "discount": 15,
-        "images": ["https://codedev.b-cdn.net/products/tshirt-white.jpg", "https://codedev.b-cdn.net/products/tshirt-white.jpg"],
-        "thumbnail": "https://codedev.b-cdn.net/products/tshirt-white.jpg",
+        "images": ["/images/category-men-hoodies.png", "/images/category-men-hoodies.png"],
+        "thumbnail": "/images/category-men-hoodies.png",
         "rating": 4.5
       },
       {
@@ -307,8 +307,8 @@
         "size": ["S", "M", "L"],
         "color": ["Purple"],
         "discount": 10,
-        "images": ["hoodie-purple1.jpg", "hoodie-purple2.jpg"],
-        "thumbnail": "https://codedev.b-cdn.net/products/hoodie-purple.jpg",
+        "images": ["https://res.cloudinary.com/dh37udlff/image/upload/v1751013867/category-women-hoodies_dqt5xi.jpg", "https://res.cloudinary.com/dh37udlff/image/upload/v1751013867/category-women-hoodies_dqt5xi.jpg"],
+        "thumbnail": "https://res.cloudinary.com/dh37udlff/image/upload/v1751013867/category-women-hoodies_dqt5xi.jpg",
         "rating": 4.6
       },
       {
@@ -322,8 +322,8 @@
         "size": ["S", "M", "L"],
         "color": ["White"],
         "discount": 5,
-        "images": ["dress-white-leaves1.jpg", "dress-white-leaves2.jpg"],
-        "thumbnail": "https://codedev.b-cdn.net/products/dress-white-leaves.jpg",
+        "images": ["https://res.cloudinary.com/dh37udlff/image/upload/v1751013866/category-men-tshirts_fwxihh.png", "https://res.cloudinary.com/dh37udlff/image/upload/v1751013866/category-men-tshirts_fwxihh.png"],
+        "thumbnail": "https://res.cloudinary.com/dh37udlff/image/upload/v1751013866/category-men-tshirts_fwxihh.png",
         "rating": 4.7
       },
       {
