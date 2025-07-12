@@ -111,7 +111,7 @@ const Cart = () => {
                     </td>
 
                     <td>
-                        <p className='text-center text-sm text-gray-600'>${item?.subTotal}</p>
+                        <p className='text-center text-sm text-gray-600'>${item?.subTotal?.toFixed(2)}</p>
                     </td>
 
                     <td>

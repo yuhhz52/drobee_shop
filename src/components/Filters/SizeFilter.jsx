@@ -14,8 +14,9 @@ const SizeFilter = ({sizes,hidleTitle,multi=true,onChange}) => {
       else{
         setAppliedSize([item]);
       }
+      onChange && onChange(appliedSize);
     }
-  },[appliedSize, multi]);
+  },[appliedSize, multi, onChange]);
 
   useEffect(()=>{
     onChange && onChange(appliedSize);

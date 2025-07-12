@@ -2,13 +2,16 @@ import React from 'react'
 import { Wishlist } from '../commom/Wishlist'
 import { AccountIcon } from '../commom/AccountIcon'
 import { CartIcon } from '../commom/CartIcon'
-import { Link, NavLink} from 'react-router-dom'
+import { Link, NavLink, useNavigate} from 'react-router-dom'
+import { useSelector } from 'react-redux'
+
 
 
 const Navigation = ({variant = "default"}) => {
-const navLinkClass = ({ isActive }) =>
-    isActive ? 'text-black font-semibold border-b-2 border-black' : 'text-gray-600 hover:text-black';
-
+  const navLinkClass = ({ isActive }) =>
+      isActive ? 'text-black font-semibold border-b-2 border-black' : 'text-gray-600 hover:text-black';
+  const cartLength = useSelector(state => state.cartState.cart.reduce((sum, item) => sum + (item.quantity || 1), 0));
+  const navigate = useNavigate();
   return (
     <nav className='flex items-center py-6 px-16 justify-between'>
       {/*Logo */}
@@ -47,9 +50,11 @@ const navLinkClass = ({ isActive }) =>
         {/* Action Icons */}
          {variant ==="default" && 
         <ul className='flex gap-4 items-center text-gray-600'>
-          <li className='hover:text-black'><a href='/cart'><Wishlist /></a></li>
-          <li className='hover:text-black'><a href='/login'><AccountIcon /></a></li>
-          <li className='hover:text-black'><a href='/register'><CartIcon /></a></li>
+          <li><button><Wishlist/></button></li>
+         <li><button onClick={()=> navigate('/account-details')}><AccountIcon/></button></li>
+          <li><Link to='/cart-items' className='flex flex-wrap'><CartIcon />
+          {cartLength > 0 && <div className='absolute ml-6 inline-flex items-center justify-center h-6 w-6 bg-black text-white rounded-full border-2 text-xs border-white'>{cartLength}</div>} 
+          </Link></li>
         </ul>}
 
         {

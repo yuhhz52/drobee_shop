@@ -1,3 +1,4 @@
+import { getToken } from "../utils/jwt-helper";
 export const API_URL = {
     GET_CATEGORIES: '/api/category',
     GET_CATEGORIE: (id) => `/api/category/${id}`,
@@ -7,3 +8,9 @@ export const API_URL = {
 };
 
 export const API_BASE_URL = "http://localhost:8080";
+
+export const getHeaders = ()=>{
+    return {
+         'Authorization':`Bearer ${getToken()}`
+    }
+}
