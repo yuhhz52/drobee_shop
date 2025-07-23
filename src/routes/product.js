@@ -1,7 +1,7 @@
 import React from 'react'
 import content from '../data/content.json';
 import store from '../store/store';
-import { getProductBySlug } from '../api/fetchProducts';
+import { getProductBySlug } from '../api/fetchProducts.js';
 
 export const loaderProductBySlug =  async({params}) => {
    try{

@@ -1,15 +1,17 @@
 
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import productReducter from './features/product'
-import createReducer from './features/cart'
-import categoryReducer from './features/category'
-import comomReducer from './features/common'
+import productReducer from "./features/product.jsx";
+import cartReducer from './features/cart.jsx';
+import categoryReducer from './features/category.jsx';
+import commonReducer from './features/common.jsx';
+import userReducer from './features/user.jsx';
 
 const rootReducer = combineReducers({
-    productState: productReducter,
-    cartState: createReducer,
+    productState: productReducer,
+    cartState: cartReducer,
     categoryState: categoryReducer,
-    commonState: comomReducer
+    commonState: commonReducer,
+    userState: userReducer,
 })
 
 const store = configureStore({

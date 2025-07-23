@@ -16,7 +16,7 @@ export const userSlice = createSlice({
             }
         },
         saveAddress : (state,action)=>{
-            const addresses = [...state?.userInfo?.addressList] ?? [];
+           const addresses = [...(state?.userInfo?.addressList ?? [])];
             addresses.push(action?.payload);
             return {
                 ...state,

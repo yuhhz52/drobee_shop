@@ -5,14 +5,18 @@ import HeroSection from './components/HeroSection/HeroSection'
 import Category from './components/Sections/Category'
 import NewArrivals from './components/Sections/NewArrivals'
 import content from './data/content.json';
-import { fetchCategories } from './api/fetchCategories'
-import { useDispatch } from 'react-redux'
+import { fetchCategories } from './api/fetchCategories.js'
+import { useDispatch, useSelector } from 'react-redux'
 import { setLoading } from './store/features/common'
 import { loadCategories } from './store/features/category'
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
 
 function App() {
 
   const dispatch = useDispatch();
+  const categories = useSelector(state => state.categoryState.categories);
 
 
   useEffect(() => {
@@ -33,11 +37,12 @@ function App() {
       <div className='App'>
         <HeroSection/>
         <NewArrivals/>
-        {content?.pages?.shop?.sections?.map((category) => (
+        {/* Render category từ backend thay vì content.json */}
+        {categories?.map((category) => (
           <Category
-            key={category.id || category.title}
-            title={category.title}
-            data={category.data}
+            key={category.id}
+            title={category.name}
+            data={category.categoryTypes} // Đúng với dữ liệu API
           />
         ))}
         <Footer content={content?.footer} />

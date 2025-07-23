@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useDispatch } from 'react-redux';
 import { setLoading } from '../../store/features/common';
-import { confirmPaymentAPI } from '../../api/order';
+import { confirmPaymentAPI } from '../../api/order.js';
 
 const CheckoutForm = ({ clientSecret, orderId }) => {
   const stripe = useStripe();
@@ -32,9 +32,9 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
 
       if (error) {
         setError(error.message);
-        console.error("❌ Stripe confirm error:", error);
+        console.error("Stripe confirm error:", error);
       } else {
-        console.log("✅ Payment success:", paymentIntent);
+        console.log("Payment success:", paymentIntent);
         await confirmPaymentAPI({
           orderId,
           paymentIntentId: paymentIntent.id,

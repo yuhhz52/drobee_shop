@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCartItems } from '../../store/features/cart';
-import { fetchUserDetails } from '../../api/userInfo';
+import { fetchUserDetails } from '../../api/userInfo.js';
 import {setLoading} from '../../store/features/common';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Payment from '../Payment/Payment';
+import { placeOrderAPI } from '../../api/order.js';
+import { createOrderRequest } from '../../utils/order-util';
 const Checkout = () => {
     const cartItems = useSelector(selectCartItems);
     const dispatch = useDispatch();
@@ -30,6 +32,21 @@ const Checkout = () => {
         dispatch(setLoading(false))
     })
       },[dispatch])
+
+  const handleCODPayment = async () => {
+    try {
+      dispatch(setLoading(true));
+      const orderRequest = createOrderRequest(cartItems, userInfo?.id, userInfo?.addressList?.[0]?.id);
+      orderRequest.paymentMethod = 'COD'; // Đảm bảo đúng phương thức
+      const res = await placeOrderAPI(orderRequest);
+      const orderId = res?.orderId;
+      navigate(`/orderConfirmed?orderId=${orderId}`);
+    } catch (err) {
+      alert('Đặt hàng thất bại!');
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
 
   return (
     <div className='p-8 flex'>
@@ -67,21 +84,24 @@ const Checkout = () => {
           <div className='mt-4 flex flex-col gap-4'>
             <div className='flex gap-2'>
             <input type='radio' name='payment_mathod' value={'CARD'} onChange={()=> setPaymentMethod('CARD')}/>
-            <p> Credit/Debit Card</p>
+            <p> Thẻ tín dụng Stripe</p>
             </div>
             <div className='flex gap-2'>
             <input type='radio' name='payment_mathod' value={'COD'} onChange={()=> setPaymentMethod('COD')}/>
-            <p> Cash on delivery</p>
-            </div>
-            <div className='flex gap-2'>
-            <input type='radio' name='payment_mathod' value={'UPI'} onChange={()=> setPaymentMethod('UPI')}/>
-            <p> UPI/Wallet</p>
+            <p> Tiền mặt khi giao hàng</p>
             </div>
 
           </div>
         </div>
         {paymentMethod === 'CARD' && <Payment userId={userInfo?.id} addressId={userInfo?.addressList?.[0]?.id}/>}
-        {paymentMethod !== 'CARD' && <button className='w-[150px] items-center h-[48px] bg-black border rounded-lg mt-4 text-white hover:bg-gray-800' onClick={()=> navigate('/payment')}>Pay Now</button>} 
+        {paymentMethod === 'COD' && (
+          <button
+            className='w-[150px] items-center h-[48px] bg-black border rounded-lg mt-4 text-white hover:bg-gray-800'
+            onClick={handleCODPayment}
+          >
+            Pay Now
+          </button>
+        )} 
        
       
         </div>

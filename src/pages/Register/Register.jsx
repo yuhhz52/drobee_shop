@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { setLoading } from '../../store/features/common';
-import { registerAPI } from '../../api/authencation';
-import GoogleSignIn from '../../components/Button/GoogleSignIn';
-import VerifyCode from './VerifyCode';
+import { registerAPI } from '../../api/authencation.js';
+import GoogleSignIn from '../../components/Button/GoogleSignIn.jsx';
+import VerifyCode from './VerifyCode.jsx';
 
 const Register = () => {
   const [values, setValues] = useState({
@@ -30,7 +30,7 @@ const Register = () => {
         if(res?.code === 200 || res?.status === 200) {
           setEnableVerify(true);
         }
-     }).catch((err) => {
+     }).catch(() => {
         setErrors("Invalid or Email already exist!");
      }).finally(() => {
         dispatch(setLoading(false));
@@ -67,7 +67,7 @@ const Register = () => {
         </form>
       </div>
       {error && <p className='text-lg text-red-700'>{error}</p>}
-      <Link to={"/v1/login"} className='underline text-gray-500 hover:text-black'>Already have an  account? Log in</Link>
+      <NavLink to={"/v1/login"} className={({isActive})=> isActive ? 'active-link':''}>Đăng nhập</NavLink>
       </>
       }
       {enableVerify && <VerifyCode email={values?.email}/>}

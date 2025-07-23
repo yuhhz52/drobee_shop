@@ -22,9 +22,16 @@ export const createOrderRequest = (cartItems, userId, addressId) => {
   const deliveryDate = new Date();
   deliveryDate.setDate(deliveryDate.getDate() + 3);
 
-  request.orderItemRequests = orderItems;
-  request.totalAmount = Math.round(total * 100); // chuyển sang cent
+  request.orderItemRequest = orderItems;
+  request.totalAmount = Math.round(total * 100) / 100;
   request.expectedDeliveryDate = deliveryDate.toISOString();
 
   return request;
 };
+
+export const getStepCount = {
+    'PENDING':1,
+    'IN_PROGRESS':2,
+    'SHIPPED':3,
+    'DELIVERED':4
+}

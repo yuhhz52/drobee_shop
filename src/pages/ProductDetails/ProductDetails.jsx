@@ -2,19 +2,18 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { Link, useLoaderData} from 'react-router-dom';
 import {useState} from 'react';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
-import content from '../../data/content.json';
 import Rating from '../../components/Rating/Rating';
 import SizeFilter from '../../components/Filters/SizeFilter';
-import ProductColor from './ProductColor';
+import ProductColor from './ProductColor.jsx';
 import SvgCreditCard from '../../components/commom/SvgCreditCard';
 import SvgCloth from '../../components/commom/SvgCloth';
 import SvgShipping from '../../components/commom/SvgShipping';
 import SvgReturn from '../../components/commom/SvgReturn';
 import SeactionHeading from '../../components/Sections/SeactionHeading';
-import ProductCard from '../../pages/ProductListPage/ProductCard';
+import ProductCard from '../../pages/ProductListPage/ProductCard.jsx';
 import { useSelector, useDispatch } from 'react-redux';
-import { getAllProducts } from '../../api/fetchProducts.jsx';
-import _, { values } from 'lodash';
+import { getAllProducts } from '../../api/fetchProducts.js';
+import _ from 'lodash';
 import { addItemToCartAction } from '../../store/actions/cartAction.js';
 
 const extraSections = [
@@ -41,67 +40,84 @@ const ProductDetails = () => {
   const [image, setImage] = useState();
   const [breadcrumbLinks, setBreadCrumbLink] = useState(); 
   const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cartState?.cart);
   const [similarProduct,setSimilarProducts] = useState([]);
   const categories = useSelector((state)=> state?.categoryState?.categories);
-  const [selecteSize,setSelectedSize] = useState('');
-  const [error,setError] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [error, setError] = useState('');
 
-  // Add error handling for when product is undefined
-  if (!product) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-xl">Product not found!</p>
-      </div>
-    );
-  }
+  // --- Đưa các hook lên trên ---
 
-  useEffect(()=>{
-    getAllProducts(product?.categoryId,product?.categoryTypeId).then(res=>{
-      const excludedProduct = res?.filter((item)=> item?.id !== product?.id);
-      setSimilarProducts(excludedProduct);
-    }).catch((error) => {
-      console.error('Error fetching similar products:', error);
-      setSimilarProducts([]);
-    });
-  },[product?.categoryId, product?.categoryTypeId, product?.id]);
+  useEffect(() => {
+    if (selectedSize) setError('');
+  }, [selectedSize]);
+
+  useEffect(() => {
+    if (selectedColor) setError('');
+  }, [selectedColor]);
 
   const productCategory = useMemo(() => {
-    // For API data, use categoryId and categoryName
     if (product?.categoryId && product?.categoryName) {
       return { id: product.categoryId, name: product.categoryName };
     }
-    // For local data, find category from categories array
     return categories?.find((category) => category?.id === product?.categoryId);
   }, [product, categories]);
 
+  useEffect(()=>{
+    if (!product) return;
+    getAllProducts(product?.categoryId, product?.categoryTypeId ? [product?.categoryTypeId] : [])
+      .then(res=>{
+        const excludedProduct = res?.filter((item)=> item?.id !== product?.id);
+        setSimilarProducts(excludedProduct);
+      }).catch((error) => {
+        console.error('Error fetching similar products:', error);
+        setSimilarProducts([]);
+      });
+  },[product?.categoryId, product?.categoryTypeId, product?.id, product]);
+
   useEffect(() => {
+    if (!product) return;
     // Set initial image from productResources or thumbnail
     if (product?.productResources && product.productResources.length > 0) {
       setImage(product.productResources[0]?.url);
     } else {
       setImage(product?.thumbnail);
     }
-    
-    // Breadcrumb: Home > Category > Product Name
-    setBreadCrumbLink([
-      { title: 'Home', path: '/' },
-      productCategory ? { title: productCategory.name, path: `/products` } : null,
-      { title: product?.name || product?.title }
-    ].filter(Boolean));
-  }, [productCategory, product]);
+
+  // Breadcrumb: Trang chủ > Nam/Nữ > Tên sản phẩm
+  const categoryName = productCategory?.name || '';
+  const lowerName = categoryName.toLowerCase();
+
+  const genderPath = lowerName.includes('nam')
+    ? '/men'
+    : lowerName.includes('nữ')
+    ? '/women'
+    : '/';
+
+  const genderTitle = lowerName.includes('nam')
+    ? 'Nam'
+    : lowerName.includes('nữ')
+    ? 'Nữ'
+    : categoryName;
+
+  setBreadCrumbLink([
+    { title: 'Trang chủ', path: '/' },
+    productCategory ? { title: genderTitle, path: genderPath } : null,
+    { title: product?.name || product?.title },
+  ].filter(Boolean));
+}, [productCategory, product]);
 
   const addItemToCart = useCallback(() => {
-
-    if(!selecteSize){
+    if(!selectedSize){
       setError('Please select size')
     }
+    else if (!selectedColor) {
+      setError('Please select color');
+    }
     else{
-      const selectedVariant = product?.variants.filter((variant) => variant?.size === selecteSize)?.[0];
-      console.log('ProductDetails - product:', product);
-      console.log('ProductDetails - product.price:', product?.price);
-      console.log('ProductDetails - selectedVariant:', selectedVariant);
-      
+      const selectedVariant = product?.variants.find(
+        (variant) => variant?.size === selectedSize && variant?.color === selectedColor
+      );
       if(selectedVariant?.stockQuantity>0){
         const cartItem = {
           productId:product?.id,
@@ -110,24 +126,15 @@ const ProductDetails = () => {
           variant:selectedVariant,
           quantity:1,
           price:product?.price,
-          // subTotal sẽ được tính tự động trong reducer
         };
-        console.log('ProductDetails - cartItem to dispatch:', cartItem);
         dispatch(addItemToCartAction(cartItem))
       }else{
         setError('Out of Stock');
       }
     }
+  },[dispatch, product, selectedSize, selectedColor]);
 
-  },[dispatch, product, selecteSize]);
-
-  useEffect(()=>{
-    if(selecteSize){
-      setError('');
-    }
-  },[selecteSize]);
-
-  const colors = useMemo(()=>{
+    const colors = useMemo(()=>{
     const colorSet = _.uniq(_.map(product?.variants,'color'));
     return colorSet
 
@@ -138,6 +145,18 @@ const ProductDetails = () => {
     return sizeSet
 
   },[product]);
+
+ 
+  // --- Sau khi đã gọi hết hooks, mới return ---
+  if (!product) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-xl">Product not found!</p>
+      </div>
+    );
+  }
+
+
 
   return (
     <>
@@ -184,17 +203,25 @@ const ProductDetails = () => {
           {/* Price Tag */}
           <p className='text-xl bold py-2'>${product?.price}</p>
           <div className='flex flex-col'>
-            <div className='flex gap-2'>
+            <div className='flex gap-2 pb-2'>
               <p className='text-sm bold'>Select Size</p>
-              <Link className='text-sm text-gray-500 hover:text-gray-900' to={'https://en.wikipedia.org/wiki/Clothing_sizes'} target='_blank'>{'Size Guide ->'}</Link>
+              <Link className='text-sm  text-gray-500 hover:text-gray-900' to={'https://en.wikipedia.org/wiki/Clothing_sizes'} target='_blank'>{'Size Guide ->'}</Link>
             </div>
           </div>
           <div >
-            <SizeFilter onChange={(values)=>setSelectedSize(values?.[0])} sizes={sizes} hidleTitle multi={false} />
+            <SizeFilter
+              onChange={(size) => setSelectedSize(selectedSize === size ? '' : size)}
+              sizes={sizes}
+            />
           </div>
+
           <div>
             <p className='text-sm bold mb-2'>Select Color</p>
-            <ProductColor colors={product?.variants?.map(v => v.color) || product?.color || []} />
+            <ProductColor
+              onChange={(color) => setSelectedColor(selectedColor === color ? '' : color)}
+              colors={colors}
+              selectedColor={selectedColor}
+            />
           </div>
            <div className='flex py-4'>
          <button onClick={addItemToCart} className='bg-black rounded-lg hover:bg-gray-700'><div className='flex h-[42px] rounded-lg w-[150px] px-2 items-center justify-center bg-black text-white hover:bg-gray-700'><svg width="17" height="16" className='' viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -213,12 +240,7 @@ const ProductDetails = () => {
             ))
           }  
           </div>  
-
-
-
         </div>
-
-    
       </div>
        {/* Product Description */}
           <SeactionHeading title={'Product Description'} />

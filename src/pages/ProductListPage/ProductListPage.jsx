@@ -3,11 +3,9 @@ import FilterIcon from '../../components/commom/FilterIcon.jsx'
 import content from '../../data/content.json'
 import Categories from '../../components/Filters/Categories.jsx';
 import PriceFilter from '../../components/Filters/PriceFilter.jsx';
-import ColorFilter from '../../components/Filters/ColorFilter.jsx';
-import SizeFilter from '../../components/Filters/SizeFilter.jsx';
 import ProductCard from './ProductCard.jsx';
-import { getAllProducts } from '../../api/fetchProducts.jsx';
-import { fetchCategories } from '../../api/fetchCategories.jsx';
+import { getAllProducts } from '../../api/fetchProducts.js';
+import { fetchCategories } from '../../api/fetchCategories.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from '../../store/features/common.jsx';
 import { loadCategories } from '../../store/features/category.jsx';
@@ -19,20 +17,25 @@ const ProductListPage = ({ categoryType }) => {
   const dispatch = useDispatch();
   const categoryData = useSelector((state) => state.categoryState.categories);
   const [products, setProducts] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 500 });
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const categoryContent = useMemo(() => {
-    return CATEGORIES?.find(category => category.code === categoryType);
-  },[categoryType]);
-
-  const productListItems = useMemo(() => {
-    return content?.products?.filter((product) => product?.category_id === categoryContent?.id);
-  },[categoryContent]);
 
   const category = useMemo(() => {
     return categoryData?.find(category => category.code === categoryType);
   }, [categoryData, categoryType]);
+
+  const handleTypeChange = (typeId) => {
+    setSelectedTypes(prev =>
+      prev.includes(typeId)
+        ? prev.filter(id => id !== typeId)
+        : [...prev, typeId]
+    );
+  };
 
   const handleFilterToggle = useCallback(() => {
     setIsFilterOpen(prev => !prev);
@@ -78,8 +81,22 @@ const ProductListPage = ({ categoryType }) => {
       return;
     }
 
-    fetchProducts(category.id);
-  }, [category?.id, categoryType, fetchProducts, fetchCategoriesData]);
+    dispatch(setLoading(true));
+    getAllProducts(category.id, selectedTypes)
+      .then(setProducts)
+      .finally(() => dispatch(setLoading(false)));
+  }, [category?.id, categoryType, selectedTypes, fetchCategoriesData, dispatch]);
+
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(
+      (p) =>
+        p.price >= priceRange.min &&
+        p.price <= priceRange.max &&
+        (selectedColors.length === 0 || p.colors?.some(color => selectedColors.includes(color))) &&
+        (selectedSizes.length === 0 || p.sizes?.some(size => selectedSizes.includes(size)))
+    );
+  }, [products, priceRange, selectedColors, selectedSizes]);
 
   const renderFilterSection = () => (
     <div className={`
@@ -108,36 +125,35 @@ const ProductListPage = ({ categoryType }) => {
       <div className='space-y-6'>
         <div>
           <p className='text-base font-medium text-gray-800 mb-3'>Categories</p>
-          <Categories types={categoryContent?.types} />
+          <Categories 
+            types={category?.categoryTypes || category?.types} 
+            selectedTypes={selectedTypes}
+            onTypeChange={handleTypeChange}
+          />
         </div>
 
         <div>
-          <PriceFilter />
+          <PriceFilter onChange={setPriceRange} />
         </div>
         
-        <div>
-          <ColorFilter colors={categoryContent?.meta_data?.colors}/>
-        </div>
-        
-        <div>
-          <SizeFilter sizes={categoryContent?.meta_data?.sizes}/>
-        </div>
       </div>
     </div>
   );
 
-  const renderProductGrid = () => (
-    <div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-5'>
-      {products?.map((item, index) => (
-        <ProductCard key={item.id || index} {...item} title={item?.name} />
-      ))}
-    </div>
-  );
+  const renderProductGrid = () => {
+    return (
+      <div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-5'>
+        {filteredProducts?.map((item, index) => (
+          <ProductCard key={item.id || index} {...item} title={item?.name} />
+        ))}
+      </div>
+    );
+  };
 
   const renderEmptyState = () => (
-    productListItems?.length === 0 && (
+    products?.length === 0 && (
       <div className='text-center py-12'>
-        <p className='text-gray-500 text-lg'>No products found in this category.</p>
+        <p className='text-gray-500 text-lg'>Không tìm thấy sản phẩm nào trong danh mục này.</p>
       </div>
     )
   );

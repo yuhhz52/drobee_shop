@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { customStyles } from '../../styles/modal';
 import Modal from 'react-modal';
 import { isTokenValid } from '../../utils/jwt-helper';
+import EmptyCart from '../../assets/images/empty-cart.png'
 
 const headers = [
     "Product Details","Price","Quantity","Shipping","SubTotal","Action"
@@ -21,7 +22,6 @@ const Cart = () => {
 
    const onChangeQuantity = useCallback((value,productId,variantId)=>{
 
-    console.log("Received ",value);
 
     dispatch(updateItemCartAction({
         productId:productId,
@@ -62,7 +62,7 @@ const Cart = () => {
   const isLoggedIn = useMemo(()=>{
     return isTokenValid();
   },[])
-  console.log("isLoggedIn ",isLoggedIn, isTokenValid());
+  // console.log("isLoggedIn ",isLoggedIn, isTokenValid());
 
 
   return (
@@ -70,24 +70,21 @@ const Cart = () => {
     <div className='p-4'>
        {cartItems?.length >0 && 
         <>
-        <p className='text-xl text-black p-4'>Shop Bag</p>
+        <p className='text-xl text-black p-4'>Giỏ hàng</p>
         <table className='w-full text-lg'>
           <thead className='text-sm bg-black text-white uppercase'>
             <tr>
-              {headers?.map(header=>{
-                return (
-                <th scope='col' className='px-6 py-3'>
+              {headers?.map((header, idx) => (
+                <th key={header + idx} scope='col' className='px-6 py-3'>
                   {header}
                 </th>
-                )
-              })}
+              ))}
             </tr>
           </thead>
           <tbody>
             {
-              cartItems?.map((item, index)=>{
-                return(
-                  <tr className='p-4 bg-white border-b '>
+              cartItems?.map((item, index) => (
+                <tr key={item.productId + '-' + (item.variant?.id || index)} className='p-4 bg-white border-b '>
                     <td>
                       <div className='flex'>
                         <img src={item?.thumbnail} alt={'product'+index} className='w-[120px] h-[120px] object-cover'/>
@@ -118,8 +115,7 @@ const Cart = () => {
                         <button className='flex justify-center items-center w-full' onClick={()=> onDeleteProduct(item?.productId, item?.variant?.id)}>x</button>
                     </td>
                   </tr>
-                )
-              })
+                ))
             }
           </tbody>
         </table>
@@ -145,9 +141,9 @@ const Cart = () => {
           {
             !cartItems?.length && 
             <div className='w-full items-center text-center'>
-                {/* <div className='flex justify-center'><img src={EmptyCart} className='w-[240px] h-[240px ' alt='empty-cart'/></div> */}
-                <p className='text-3xl font-bold'>Your cart is empty</p>
-                <div className='p-4'><Link to={"/"} className='w-full p-2 items-center h-[48px] bg-black border rounded-lg mt-2 text-white hover:bg-gray-800'>Continue Shopping</Link></div>
+                <div className='flex justify-center'><img src={EmptyCart} className='w-[280px] h-[280px ' alt='empty-cart'/></div>
+                <p className='text-3xl font-bold p-4'>Giỏ hàng trống!</p>
+                <div className='p-4'><Link to={"/men"} className='w-full p-2 items-center h-[48px] bg-black border rounded-lg mt-2 text-white hover:bg-gray-800'>Mua hàng</Link></div>
             </div>
         }
     </div>

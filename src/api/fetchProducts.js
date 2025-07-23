@@ -2,10 +2,13 @@ import axios from "axios";
 import { API_BASE_URL, API_URL } from "./constant"
 
 
-export const getAllProducts = async (id,typeId)=>{
-    let url = API_BASE_URL + API_URL.GET_PRODUCTS + `?categoryId=${id}`;
-    if(typeId){
-        url = url + `&typeId=${typeId}`;
+export const getAllProducts = async (categoryId, typeIds = []) => {
+    typeIds = Array.isArray(typeIds) ? typeIds : (typeIds ? [typeIds] : []);
+    let url = API_BASE_URL + API_URL.GET_PRODUCTS + `?categoryId=${categoryId}`;
+    if (typeIds && typeIds.length > 0) {
+        typeIds.forEach(id => {
+            url += `&typeIds=${id}`;
+        });
     }
 
     try{

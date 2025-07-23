@@ -1,9 +1,8 @@
 import React, { use, useEffect, useState, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import Spinner from '../../components/Spinner/Spinner'
+import Spinner from '../../components/Spinner/Spinner.jsx';
 import { useDispatch, useSelector } from 'react-redux';
-import { confirmPaymentAPI } from '../../api/order';
-import { setLoading } from '../../store/features/common';
+import { confirmPaymentAPI } from '../../api/order.js';
 import { selectCartItems } from '../../store/features/cart';
 import { clearCart } from '../../store/actions/cartAction';
 

@@ -5,7 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutPayment';
 import { useSelector } from 'react-redux';
 import { selectCartItems } from '../../store/features/cart';
-import { placeOrderAPI } from '../../api/order';
+import { placeOrderAPI } from '../../api/order.js';
 import { createOrderRequest } from '../../utils/order-util';
 
 const stripePromise = loadStripe("pk_test_51RitF8QTOMW9o79JqpIR8NPiGFw8tzoXaQKiCy9MISFfXPz0WmBA7vf3TrcZpFktqRVR5Mv9o5VGaHFzKbe47kIh0081EiTXiq");
