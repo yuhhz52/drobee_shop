@@ -5,7 +5,7 @@ export const createOrderRequest = (cartItems, userId, addressId) => {
     orderDate: new Date().toISOString(),
     paymentMethod: 'CARD',
     discount: 0,
-    currency: 'usd',
+    currency: 'vnd',
   };
 
   let total = 0;

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import FilterIcon from '../../components/commom/FilterIcon.jsx'
-import content from '../../data/content.json'
 import Categories from '../../components/Filters/Categories.jsx';
 import PriceFilter from '../../components/Filters/PriceFilter.jsx';
 import ProductCard from './ProductCard.jsx';
@@ -9,20 +8,20 @@ import { fetchCategories } from '../../api/fetchCategories.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from '../../store/features/common.jsx';
 import { loadCategories } from '../../store/features/category.jsx';
+import bannernew from '../../assets/images/bannernew.jpg'; 
 
-const CATEGORIES = content?.categories;
 
-const ProductListPage = ({ categoryType }) => {
+
+const ProductListPage = ({ categoryType, showNewArrivals }) => {
 
   const dispatch = useDispatch();
   const categoryData = useSelector((state) => state.categoryState.categories);
   const [products, setProducts] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 500 });
-  const [selectedColors, setSelectedColors] = useState([]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
-
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  
 
 
   const category = useMemo(() => {
@@ -34,8 +33,12 @@ const ProductListPage = ({ categoryType }) => {
       prev.includes(typeId)
         ? prev.filter(id => id !== typeId)
         : [...prev, typeId]
+        
     );
   };
+
+
+
 
   const handleFilterToggle = useCallback(() => {
     setIsFilterOpen(prev => !prev);
@@ -45,58 +48,81 @@ const ProductListPage = ({ categoryType }) => {
     setIsFilterOpen(false);
   }, []);
 
-  const fetchProducts = useCallback(async (categoryId) => {
-    try {
-      dispatch(setLoading(true));
-      const response = await getAllProducts(categoryId);
-      setProducts(response);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }, [dispatch]);
+  const handleResetFilters = useCallback(() => {
+    setPriceRange({ min: 0, max: 1000000 });
+    setSelectedTypes([]);
+  }, []);
+
 
   const fetchCategoriesData = useCallback(async () => {
     try {
       dispatch(setLoading(true));
       const response = await fetchCategories();
       dispatch(loadCategories(response));
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+    } catch {
+      // console.error('Error fetching categories:', error);
     } finally {
       dispatch(setLoading(false));
     }
   }, [dispatch]);
 
   useEffect(() => {
-    setProducts([]);
-    
-    if (!category?.id && categoryType) {
-      fetchCategoriesData();
-      return;
-    }
+  setProducts([]);
+  
 
-    if (!category?.id) {
-      return;
-    }
-
-    dispatch(setLoading(true));
-    getAllProducts(category.id, selectedTypes)
-      .then(setProducts)
-      .finally(() => dispatch(setLoading(false)));
-  }, [category?.id, categoryType, selectedTypes, fetchCategoriesData, dispatch]);
+  getAllProducts(category.id)
+  .then((res) => {
+    setProducts(res);
+  })
+  .finally(() => dispatch(setLoading(false)));
 
 
-  const filteredProducts = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.price >= priceRange.min &&
-        p.price <= priceRange.max &&
-        (selectedColors.length === 0 || p.colors?.some(color => selectedColors.includes(color))) &&
-        (selectedSizes.length === 0 || p.sizes?.some(size => selectedSizes.includes(size)))
-    );
-  }, [products, priceRange, selectedColors, selectedSizes]);
+
+  if (showNewArrivals) {
+    const fetchAllNewArrivals = async () => {
+      try {
+        let allProducts = [];
+        for (const category of categoryData) {
+          const res = await getAllProducts(category.id);
+          if (res && Array.isArray(res)) {
+            allProducts.push(...res);
+          }
+        }
+        const newArrivalProducts = allProducts.filter(product => product.newArrival === true);
+        setProducts(newArrivalProducts);
+      } catch {
+        setProducts([]);
+      }
+    };
+      fetchAllNewArrivals();
+        return;
+      }
+
+      if (!category?.id && categoryType) {
+        fetchCategoriesData();
+        return;
+      }
+
+      if (!category?.id) return;
+
+      dispatch(setLoading(true));
+      getAllProducts(category.id)
+        .then(setProducts)
+        .finally(() => dispatch(setLoading(false)));
+    }, [category?.id, categoryType, fetchCategoriesData, dispatch, showNewArrivals, categoryData]);
+
+
+  
+    const filteredProducts = useMemo(() => {
+      return products.filter(
+        (p) => {
+          const priceMatch = p.price >= priceRange.min && p.price <= priceRange.max;
+          const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(String(p.categoryTypeId)); 
+          return priceMatch && typeMatch;
+        }
+      );
+    }, [products, priceRange, selectedTypes]);
+    console.log(selectedTypes, products)
 
   const renderFilterSection = () => (
     <div className={`
@@ -111,17 +137,26 @@ const ProductListPage = ({ categoryType }) => {
     `}>
       <div className='flex justify-between items-center mb-4'>
         <p className='text-lg font-medium text-gray-700'>Filter</p>
-        <div className='lg:hidden'>
+        <div className='flex gap-2'>
           <button 
-            onClick={handleCloseFilter}
-            className='text-gray-500 hover:text-gray-700'
-            aria-label="Close filter"
+            onClick={handleResetFilters}
+            className='text-sm text-blue-600 hover:text-blue-800 underline'
+            aria-label="Reset filters"
           >
-            ✕
+            Reset
           </button>
+          <div className='lg:hidden'>
+            <button 
+              onClick={handleCloseFilter}
+              className='text-gray-500 hover:text-gray-700'
+              aria-label="Close filter"
+            >
+              ✕
+            </button>
+          </div> 
         </div>
       </div>
-
+      
       <div className='space-y-6'>
         <div>
           <p className='text-base font-medium text-gray-800 mb-3'>Categories</p>
@@ -141,8 +176,12 @@ const ProductListPage = ({ categoryType }) => {
   );
 
   const renderProductGrid = () => {
+    const gridClass = showNewArrivals
+      ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5'
+      : 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-5';
+
     return (
-      <div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-5'>
+      <div className={gridClass}>
         {filteredProducts?.map((item, index) => (
           <ProductCard key={item.id || index} {...item} title={item?.name} />
         ))}
@@ -150,16 +189,37 @@ const ProductListPage = ({ categoryType }) => {
     );
   };
 
-  const renderEmptyState = () => (
-    products?.length === 0 && (
-      <div className='text-center py-12'>
-        <p className='text-gray-500 text-lg'>Không tìm thấy sản phẩm nào trong danh mục này.</p>
-      </div>
-    )
-  );
+  const renderEmptyState = () => {
+    if (products?.length === 0) {
+      return (
+        <div className='text-center py-12'>
+          <p className='text-gray-500 text-lg'>Không tìm thấy sản phẩm nào trong danh mục này.</p>
+        </div>
+      );
+    }
+    
+    if (filteredProducts?.length === 0 && products?.length > 0) {
+      return (
+        <div className='text-center py-12'>
+          <p className='text-gray-500 text-lg'>Không tìm thấy sản phẩm nào phù hợp với bộ lọc đã chọn.</p>
+        </div>
+      );
+    }
+    
+    return null;
+  };
 
   return (
    <>
+   {/* Banner trang New Arrivals */}
+    {showNewArrivals && (
+      <img
+        src={bannernew}
+        alt='New Arrivals'
+        className='w-full h-auto object-cover mb-4'
+      />
+    )}
+
     <div className='flex flex-col lg:flex-row'>
       {/* Mobile Filter Toggle Button */}
       <div className='lg:hidden p-4 border-b border-gray-200'>
@@ -174,15 +234,13 @@ const ProductListPage = ({ categoryType }) => {
       </div>
 
       {/* Filter Section */}
-      {renderFilterSection()}
-
-      {/* Product List Section */}
+      {!showNewArrivals && renderFilterSection()}
+      {/* Tên Mục Sản Phẩm và Mô Tả */}
       <div className='flex-1 p-4 lg:p-6'>
         <div className='mb-6'>
           <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2'>{category?.name}</h1>
           <p className='text-sm sm:text-base text-gray-600'>{category?.description}</p>
         </div>
-        
         {renderProductGrid()}
         {renderEmptyState()}
       </div>

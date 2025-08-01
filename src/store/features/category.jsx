@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid'; // Dùng để tạo id duy nhất
 
 // Lấy dữ liệu từ localStorage nếu có
 const storedCategories = JSON.parse(localStorage.getItem('categories')) || [];

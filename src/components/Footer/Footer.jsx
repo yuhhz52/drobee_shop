@@ -1,36 +1,25 @@
 import React from 'react'
+import logo from '../../assets/images/logo.png';
 import vnpayLogo from '../../assets/images/vnpay.png';
 import momoLogo from '../../assets/images/momo.png';
+import stripeLogo from '../../assets/images/stripe.png';
 
 const Footer = ({content}) => {
   if (!content || !content.items) return null;
   return (
     <div className="relative mt-16 bg-white">
       <hr className="border-t border-gray-300" />
-      <div className="px-4 pt-12 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8">
+      <div className="pt-12 mx-auto pb-10 sm:pb-10 lg:pb-1 sm:max-w-xl md:max-w-full px-5 md:px-12 lg:px-15">
         <div className="grid gap-16 row-gap-10 mb-8 lg:grid-cols-6">
-          <div className="md:max-w-md lg:col-span-2">
-            <a href="/" aria-label="Go home" title="Fashionista" className="inline-flex items-center">
-              <svg
-                className="w-8 text-black"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="4" y="4" width="16" height="16" />
-              </svg>
-              <span className="ml-2 text-xl font-bold tracking-wide text-black uppercase">
-                Fashionista
-              </span>
+          <div className="w-full md:max-w-xl lg:col-span-2 mx-auto text-center lg:text-left lg:mx-0">
+            <a href="/" aria-label="Go home" title="Drobee" className="inline-flex items-center justify-center lg:justify-start">
+              <img src={logo} alt='logo' className='h-10 lg:h-12 xl:h-14 object-contain' />
             </a>
-            <div className="mt-4 lg:max-w-sm">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 md:max-w-xl lg:max-w-sm mx-auto lg:mx-0">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 Cửa hàng thời trang trực tuyến mang đến xu hướng mới nhất và phong cách hiện đại cho mọi giới tính.
               </p>
-              <p className="mt-4 text-sm text-gray-600">
+              <p className="mt-4 text-sm text-gray-600 leading-relaxed">
                 Cam kết chất lượng, mẫu mã đa dạng, giao hàng nhanh chóng toàn quốc.
               </p>
             </div>
@@ -60,6 +49,7 @@ const Footer = ({content}) => {
           <div className="flex items-center mt-4 space-x-4 sm:mt-0">
             <img src={vnpayLogo} alt="VNPay" className="h-8" />
             <img src={momoLogo} alt="MoMo" className="h-8" />
+            <img src={stripeLogo} alt="Stripe" className="h-8" />
           </div>
         </div>
       </div>

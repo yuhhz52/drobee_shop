@@ -9,12 +9,13 @@ import SvgCreditCard from '../../components/commom/SvgCreditCard';
 import SvgCloth from '../../components/commom/SvgCloth';
 import SvgShipping from '../../components/commom/SvgShipping';
 import SvgReturn from '../../components/commom/SvgReturn';
-import SeactionHeading from '../../components/Sections/SeactionHeading';
+import SectionHeading from '../../components/Sections/SectionHeading';
 import ProductCard from '../../pages/ProductListPage/ProductCard.jsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { getAllProducts } from '../../api/fetchProducts.js';
 import _ from 'lodash';
 import { addItemToCartAction } from '../../store/actions/cartAction.js';
+import { formatDisplayPrice } from '../../utils/price-format';
 
 const extraSections = [
   {
@@ -201,7 +202,7 @@ const ProductDetails = () => {
           <p className='text-3xl pt-4'>{product?.name || product?.title}</p>
           <Rating rating={product?.rating} />
           {/* Price Tag */}
-          <p className='text-xl bold py-2'>${product?.price}</p>
+          <p className='text-xl bold py-2'>{formatDisplayPrice(product?.price)}</p>
           <div className='flex flex-col'>
             <div className='flex gap-2 pb-2'>
               <p className='text-sm bold'>Select Size</p>
@@ -243,19 +244,19 @@ const ProductDetails = () => {
         </div>
       </div>
        {/* Product Description */}
-          <SeactionHeading title={'Product Description'} />
+          <SectionHeading title={'Mô tả Sản phẩm'} />
            <div className='md:w-[50%] w-full p-2'>
               <p className='px-8'>{product?.description}</p>
             </div>
 
-             <SeactionHeading title={'Similar Products'}/>
+             <SectionHeading title={'Sản phẩm tương tự'}/>
             <div className='flex px-10'></div>
 
              <div className='pt-4 grid grid-cols-1 lg:grid-cols-5 md:grid-cols-3 gap-8 px-2 pb-10'>
                 {similarProduct?.map((item,index)=>(
                   <ProductCard key={item.id || index} {...item}/>
                 ))}
-                {!similarProduct?.length && <p>No Products Found!</p>}
+                {!similarProduct?.length && <p>Sản phẩm không tồn tại!</p>}
 
     </div>
     </>

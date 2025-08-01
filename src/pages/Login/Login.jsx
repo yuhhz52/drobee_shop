@@ -1,4 +1,4 @@
-import React, {  useCallback, useState } from 'react'
+import React, {  useCallback } from 'react'
 import GoogleSignIn from '../../components/Button/GoogleSignIn.jsx' 
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
@@ -33,7 +33,7 @@ const Login = () => {
         } else {
           throw new Error('Something went wrong');
         }
-      } catch (error) {
+      } catch {
         alert('Invalid credentials');
       } finally {
         dispatch(setLoading(false));
@@ -49,18 +49,18 @@ const Login = () => {
 
   return (
     <>
-    <div className='bg-widget flex items-center justify-center w-full py-10 px-4 lg:p-[60px]'>
+    <div className='bg-widget flex items-center justify-center w-full py-10 px-4 lg:p-[110px]'>
        <div className="max-w-[460px] w-full">
          <div className="flex flex-col gap-2.5 text-center">
-            <h1 className="text-3xl font-bold">Chào mừng trở lại!</h1>
+            <h1 className="text-4xl font-bold">Chào mừng trở lại!</h1>
             <p className="lg:max-w-[300px] m-auto 4xl:max-w-[unset]">
                 Cửa hàng trực tuyến của chúng tôi đã sẵn sàng để phục vụ bạn.
             </p>
         </div>
           <form className="mt-5" onSubmit={handleSubmit(onSubmit)}>
              <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-[8px]">
-                  <label htmlFor="email" className="font-bold text-[14px] text-gray-500 w-fit">Email</label>                 
+                <div className="flex flex-col ">
+                  <label htmlFor="email" className="font-bold text-[14px] pb-2 text-gray-500 w-fit">Email</label>                 
                  <input
                   type="text"
                   placeholder="Địa chỉ email"
@@ -95,7 +95,7 @@ const Login = () => {
                                         errors={errors.password?.message}/>
                     )}/>
                     {errors.password && (
-                  <p className="text-red-500 text-sm ">
+                  <p className="text-red-500 text-sm mt-1">
                     {errors.password.message}
                   </p>)}</div>
               </div>

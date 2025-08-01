@@ -1,29 +1,68 @@
-import React from 'react'
-import HeroImg from '../../assets/images/hero.png'
+import React from 'react';
+import Slider from 'react-slick';
+import banner1 from '../../assets/images/banner1.png';
+import banner2 from '../../assets/images/banner2.png';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+const NextArrow = (props) => {
+  const { onClick } = props;
+  return (
+    <div
+      className="absolute top-1/2 right-2 md:right-4 transform -translate-y-1/2 z-20 cursor-pointer text-white text-xl md:text-3xl"
+      onClick={onClick}
+      aria-label="Next Slide"
+    >
+      ❯
+    </div>
+  );
+};
+
+const PrevArrow = (props) => {
+  const { onClick } = props;
+  return (
+    <div
+      className="absolute top-1/2 left-2 md:left-4 transform -translate-y-1/2 z-20 cursor-pointer text-white text-xl md:text-3xl"
+      onClick={onClick}
+      aria-label="Previous Slide"
+    >
+      ❮
+    </div>
+  );
+};
 
 const HeroSection = () => {
-  return (
-    <div className='relative flex items-center bg-cover flext-start bg-center text-left h-svh w-full' style={{backgroundImage
-    : `url(${HeroImg})`}}>
-        <div className='absolute top-0 right-0 bottom-0 left-0'></div>
-            <main className='px-10 lg:px-24 z-10'>
-                <div className='text-left'>
-                    <h2 className='text-2xl text-white'>T-shirt / Tops</h2>
-                </div>
-                <p className='mt-3 text-white sm:mt-5 sm:max-w-xl text-6xl'>
-                Summer 
-                Value Pack
-                </p>
-                <p className='mt-3 text-white sm:mt-5 sm:max-w-xl text-2xl'>
-                cool / colorful / comfy
-                </p>
-                <button className='border rounded mt-6 border-black hover:bg-white hover:text-black hover:border-black text-white bg-black w-44 h-12'>
-                    Shop Now
-                </button>
-            </main>
-        
-    </div>
-  )
-}
+  const banners = [banner1, banner2];
 
-export default HeroSection
+  const settings = {
+    dots: false,
+    infinite: true,
+    speed: 1000,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    arrows: true,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden">
+  <Slider {...settings}>
+    {banners.map((img, idx) => (
+      <div key={idx} className="!w-full">
+        <div
+          className="w-full h-[30vh] md:h-[40vh] lg:h-[70vh] bg-center bg-cover bg-no-repeat"
+          style={{ backgroundImage: `url(${img})` }}
+          tabIndex={-1}
+        ></div>
+      </div>
+    ))}
+  </Slider>
+</div>
+
+  );
+};
+
+export default HeroSection;

@@ -1,6 +1,5 @@
 import React from 'react'
 import { Datagrid, ImageField, List, TextField } from 'react-admin'
-import { fileUploadAPI } from '../../api/fileUploadAPI.js';
 
 const ProductList = () => {
   return (

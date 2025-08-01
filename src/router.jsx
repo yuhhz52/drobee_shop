@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom"; 
 import App from "./App";
-import ShopApplication from "./pages/ShopApplication";
+import LayoutShop from "./pages/Layout.jsx";
 import ProductListPage from "./pages/ProductListPage/ProductListPage.jsx";
 import ProductDetails from "./pages/ProductDetails/ProductDetails.jsx";
 import { loaderProductBySlug } from "./routes/product.js";
@@ -18,11 +18,13 @@ import Profile from "./pages/Account/Profile.jsx";
 import Settings from "./pages/Account/Settings.jsx";
 import Orders from "./pages/Account/Orders.jsx";
 import AdminPanel from "./pages/AdminPanel/AdminPanel.jsx";
+import ShopPages from "./pages/ShopPages/ShopPages.jsx";
+
 
 export const router = createBrowserRouter([
     { 
         path: "/",
-        element: <ShopApplication />,
+        element: <LayoutShop />,
         children: [
             {
                 path: "",
@@ -36,10 +38,22 @@ export const router = createBrowserRouter([
                 path: "women",
                 element: <ProductListPage categoryType={'nu'} />,
             },
+             {
+                path: "accessories",
+                element: <ProductListPage categoryType={'phukien'} />,
+            },
+            {
+                path: "new-arrivals",
+                element: <ProductListPage categoryType={null} showNewArrivals={true} />,
+            },
             {
                 path: "product/:productSlug",
                 loader: loaderProductBySlug,
                 element: <ProductDetails />,
+            },
+            {
+                path: "shops",
+                element: <ShopPages/>
             },
             {
                 path: "cart-items",

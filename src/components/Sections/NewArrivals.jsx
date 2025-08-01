@@ -1,79 +1,75 @@
-import React from 'react'
-import SeactionHeading from './SeactionHeading'
-import Card from '../Cards/Card'
-import Jeans from '../../assets/images/jeans.jpg'
-import Shirt from '../../assets/images/shirts.jpg'
-import Dress from '../../assets/images/dresses.jpg'
-import Joggers from '../../assets/images/joggers.jpg'   
-import Kurtis from '../../assets/images/kurtis.jpg'   
-import Carousel from 'react-multi-carousel';
-import 'react-multi-carousel/lib/styles.css';
-import './NewArrivals.css'
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { getAllProducts } from '../../api/fetchProducts';
+import ProductCard from '../../pages/ProductListPage/ProductCard';
+import bannernew from '../../assets/images/bannernew.jpg';
+import Carousel from '../Carousel';
+import { useNavigate } from 'react-router-dom';
 
-const responsive = {
-    desktop: {
-      breakpoint: { max: 3000, min: 1024 },
-      items: 5,
-      slidesToSlide: 5 // optional, default to 1.
-    },
-    tablet: {
-      breakpoint: { max: 1024, min: 768 },
-      items: 4,
-      slidesToSlide: 4 // optional, default to 1.
-    },
-    mobile: {
-      breakpoint: { max: 767, min: 464 },
-      items: 2,
-      slidesToSlide: 1 // optional, default to 1.
-    }
-  };
-
-const items = [{
-    imagePath: Jeans,
-    title: 'Stylish Jeans'
-    },{
-    imagePath: Dress,
-    title: 'Elegant Dress'
-    }, {
-    imagePath: Shirt,
-    title: 'Casual Shirt'
-    }, {
-    imagePath: Joggers,
-    title: 'Joggers'
-    }, {
-    imagePath: Kurtis,
-    title: 'Casual Kurtis'
-     }, {
-    imagePath: Kurtis,
-    title: 'Casual Kurtis'
-    }, {
-    imagePath: Kurtis,
-    title: 'Casual Kurtis'
-    }, {
-    imagePath: Kurtis,
-    title: 'Casual Kurtis'
-    
-}]
 const NewArrivals = () => {
+  const categories = useSelector(state => state.categoryState.categories);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAllNewArrivals = async () => {
+      if (!categories || categories.length === 0) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const allProducts = [];
+        for (const category of categories) {
+          try {
+            const res = await getAllProducts(category.id);
+            if (res && Array.isArray(res)) {
+              allProducts.push(...res);
+            }
+          } catch (err) {
+            console.error(`Error fetching products for category ${category.id}:`, err);
+          }
+        }
+        // Filter only products with newArrival = true
+        const newArrivalProducts = allProducts.filter(product => product.newArrival === true);
+        setProducts(newArrivalProducts);
+      } catch {
+        setError('Lỗi khi tải sản phẩm mới');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllNewArrivals();
+  }, [categories]);
+
   return (
-    <>
-      <SeactionHeading title={'New Arrives'} />
-       <Carousel
-        responsive={responsive}
-        autoPlay={false}
-        swipeable={true}
-        draggable={false}
-        showDots={false}
-        infinite={false}
-        partialVisible={false}
-        itemClass={'react-slider-custom-item'}
-        className='px-6'
+    <div className='flex flex-col px-5 md:px-12 lg:px-15 my-5 items-center gap-4'>
+      <img
+        src={bannernew}
+        alt="New Arrivals"
+        className="w-full h-[120px] md:h-[180px] lg:h-[220px] object-cover mb-4"
+      />
+      {loading && <div>Đang tải sản phẩm...</div>}
+      {error && <div className='text-red-500'>{error}</div>}
+      {products && products.length > 0 ? (
+        <Carousel>
+          {products.slice(0, 8).map((item) => (
+            <div key={item.id}>
+              <ProductCard {...item} />
+            </div>
+          ))}
+        </Carousel>
+      ) : (
+        !loading && <div className='col-span-full text-center text-2xl text-gray-500'>Sản phẩm sẽ cập nhật vào thời gian sớm nhất</div>
+      )}
+      <button
+        className='mb-2 px-8 py-2 bg-gray-200 text-black rounded hover:bg-gray-500 transition block mx-auto'
+        onClick={() => navigate('/new-arrivals')}
       >
-        {items && items?.map((item,index)=> <Card key={item?.title +index} title={item.title} imagePath={item.imagePath}/>)}
+        Xem tất cả
+      </button>
+    </div>
+  );
+};
 
-      </Carousel>
-  </>
-  )
-}
-
-export default NewArrivals
+export default NewArrivals;

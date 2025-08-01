@@ -1,23 +1,20 @@
-import { use, useEffect } from 'react'
-import './App.css'
-import Footer from './components/Footer/Footer'
+import { useEffect } from 'react'
 import HeroSection from './components/HeroSection/HeroSection'
-import Category from './components/Sections/Category'
-import NewArrivals from './components/Sections/NewArrivals'
-import content from './data/content.json';
+import Category from './components/Sections/Bycategory.jsx'
 import { fetchCategories } from './api/fetchCategories.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading } from './store/features/common'
 import { loadCategories } from './store/features/category'
 import Modal from 'react-modal';
+import NewArrivals from './components/Sections/NewArrivals.jsx';
+import Bycategory from './components/Sections/Bycategory.jsx'
+import NewsletterSignup from './components/NewsletterSignup.jsx'
 
 Modal.setAppElement('#root');
 
 function App() {
 
   const dispatch = useDispatch();
-  const categories = useSelector(state => state.categoryState.categories);
-
 
   useEffect(() => {
     dispatch(setLoading(true));
@@ -37,15 +34,8 @@ function App() {
       <div className='App'>
         <HeroSection/>
         <NewArrivals/>
-        {/* Render category từ backend thay vì content.json */}
-        {categories?.map((category) => (
-          <Category
-            key={category.id}
-            title={category.name}
-            data={category.categoryTypes} // Đúng với dữ liệu API
-          />
-        ))}
-        <Footer content={content?.footer} />
+        <Bycategory/>
+        <NewsletterSignup/>
       </div>
     </>
   )

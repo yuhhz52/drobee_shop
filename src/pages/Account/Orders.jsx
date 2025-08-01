@@ -6,6 +6,7 @@ import { loadOrders, selectAllOrders } from '../../store/features/user';
 import moment from 'moment';
 import { getStepCount } from '../../utils/order-util';
 import Timeline from '../../components/Timeline/Timeline';
+import { formatDisplayPrice } from '../../utils/price-format';
 
 const Orders = () => {
 
@@ -121,7 +122,7 @@ const Orders = () => {
                           )
                         })}
                         <div className='flex justify-between'>
-                          <p>Total : ${order?.totalAmount}</p>
+                          <p>Total : {formatDisplayPrice(order?.totalAmount)}</p>
                           <button onClick={()=> setSelectedOrder('')} className='text-blue-900 text-right rounded underline cursor-pointer'>Hide Details</button>
                         </div>
                          {
