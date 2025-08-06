@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+
+:root {
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(16, 16, 16, 0.87);
+  background-color: #fffcfc;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ẩn icon "eye" trong trình duyệt (Chrome, Edge, Safari) */
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none;
+}
+
+input[type='password']::-webkit-credentials-auto-fill-button,
+input[type='password']::-webkit-password-reveal-button {
+  display: none !important;
+  appearance: none;
+}

@@ -1,0 +1,11 @@
+# Ignore secrets
+backend/src/main/resources/application.yaml
+
+# Ignore build & IDE files
+target/
+*.iml
+*.log
+*.class
+/.idea/
+/.mvn/
+.mvn/wrapper/maven-wrapper.jar

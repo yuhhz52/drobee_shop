@@ -1,0 +1,83 @@
+{
+    "footer":{
+        "items":[
+            {
+                "title":"Các danh mục hàng đầu",
+                "list":[
+                    {
+                        "label":"Quần áo nam",
+                        "path":"/men-clothing"
+                    },
+                    {
+                        "label":"Quần áo nữ",
+                        "path":"/girls-clothing"
+                    },
+                    {
+                        "label":"Giày & phụ kiện",
+                        "path":"/shoes-accessories"
+                    },
+                    {
+                        "label":"Đồ thể thao",
+                        "path":"/sports"
+                    }
+                ]
+            },
+            {
+                "title":"Chăm sóc khách hàng",
+                "list":[
+                    {
+                        "label":"Cập nhật chính sách bảo mật",
+                        "path":"/cs1"
+                    },
+                    {
+                        "label":"Điều khoản và điều kiện",
+                        "path":"/cs2"
+                    },
+                    {
+                        "label":"Chính sách trả hàng",
+                        "path":"/cs3"
+                    }
+                ]
+            },
+            {
+                "title":"Liên hệ",
+                "list":[
+                    {
+                        "label":"Liên hệ với chúng tôi",
+                        "path":"/contact-us"
+                    },
+                    {
+                        "label":"huymixi2k4@gmail.com",
+                        "path":"/email"
+                    },
+                    {
+                        "label":"Gọi cho chúng tôi: 0335233753",
+                        "path":"/contact-number"
+                    }
+                ]
+            },
+            {
+                "title":"Xã hội",
+                "list":[
+                    {
+                        "label":"Instagram",
+                        "path":"/"
+                    },
+                    {
+                        "label":"Facebook",
+                        "path":"/"
+                    },
+                    {
+                        "label":"Twitter",
+                        "path":"/"
+                    },
+                    {
+                        "label":"Youtube",
+                        "path":"/"
+                    }
+                ]
+            }
+        ],
+        "copyright":"Copyright © 2024 Thanh Huy"
+    }
+}
