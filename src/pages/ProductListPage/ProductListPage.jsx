@@ -8,7 +8,10 @@ import { fetchCategories } from '../../api/fetchCategories.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from '../../store/features/common.jsx';
 import { loadCategories } from '../../store/features/category.jsx';
-import bannernew from '../../assets/images/bannernew.jpg'; 
+import bannernew from '../../assets/images/bannernew.jpg';
+import { GrPowerReset } from "react-icons/gr";
+
+
 
 
 
@@ -21,7 +24,7 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  
+
 
 
   const category = useMemo(() => {
@@ -33,7 +36,7 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
       prev.includes(typeId)
         ? prev.filter(id => id !== typeId)
         : [...prev, typeId]
-        
+
     );
   };
 
@@ -66,63 +69,54 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
     }
   }, [dispatch]);
 
+
+  //Hiển thị trang sản phẩmhàng mới về
   useEffect(() => {
-  setProducts([]);
-  
-
-  getAllProducts(category.id)
-  .then((res) => {
-    setProducts(res);
-  })
-  .finally(() => dispatch(setLoading(false)));
-
-
-
-  if (showNewArrivals) {
-    const fetchAllNewArrivals = async () => {
-      try {
-        let allProducts = [];
-        for (const category of categoryData) {
-          const res = await getAllProducts(category.id);
-          if (res && Array.isArray(res)) {
-            allProducts.push(...res);
+    setProducts([]);
+    if (showNewArrivals) {
+      const fetchAllNewArrivals = async () => {
+        try {
+          let allProducts = [];
+          for (const category of categoryData) {
+            const res = await getAllProducts(category.id);
+            if (res && Array.isArray(res)) {
+              allProducts.push(...res);
+            }
           }
+          const newArrivalProducts = allProducts.filter(product => product.newArrival === true);
+          setProducts(newArrivalProducts);
+        } catch {
+          setProducts([]);
         }
-        const newArrivalProducts = allProducts.filter(product => product.newArrival === true);
-        setProducts(newArrivalProducts);
-      } catch {
-        setProducts([]);
-      }
-    };
+      };
       fetchAllNewArrivals();
-        return;
+      return;
+    }
+
+    if (!category?.id && categoryType) {
+      fetchCategoriesData();
+      return;
+    }
+
+    if (!category?.id) return;
+
+    dispatch(setLoading(true));
+    getAllProducts(category.id)
+      .then(setProducts)
+      .finally(() => dispatch(setLoading(false)));
+  }, [category?.id, categoryType, fetchCategoriesData, dispatch, showNewArrivals, categoryData]);
+
+
+  //Lọc sản phẩm theo priceRange và selectedTypes:
+  const filteredProducts = useMemo(() => {
+    return products.filter(
+      (p) => {
+        const priceMatch = p.price >= priceRange.min && p.price <= priceRange.max;
+        const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(String(p.categoryTypeId));
+        return priceMatch && typeMatch;
       }
-
-      if (!category?.id && categoryType) {
-        fetchCategoriesData();
-        return;
-      }
-
-      if (!category?.id) return;
-
-      dispatch(setLoading(true));
-      getAllProducts(category.id)
-        .then(setProducts)
-        .finally(() => dispatch(setLoading(false)));
-    }, [category?.id, categoryType, fetchCategoriesData, dispatch, showNewArrivals, categoryData]);
-
-
-  
-    const filteredProducts = useMemo(() => {
-      return products.filter(
-        (p) => {
-          const priceMatch = p.price >= priceRange.min && p.price <= priceRange.max;
-          const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(String(p.categoryTypeId)); 
-          return priceMatch && typeMatch;
-        }
-      );
-    }, [products, priceRange, selectedTypes]);
-    console.log(selectedTypes, products)
+    );
+  }, [products, priceRange, selectedTypes]);
 
   const renderFilterSection = () => (
     <div className={`
@@ -136,32 +130,32 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
       lg:max-h-[calc(100vh-40px)] lg:overflow-y-auto
     `}>
       <div className='flex justify-between items-center mb-4'>
-        <p className='text-lg font-medium text-gray-700'>Filter</p>
+        <p className='text-lg font-semibold text-gray-900'>Bộ lọc</p>
         <div className='flex gap-2'>
-          <button 
+          <button
             onClick={handleResetFilters}
-            className='text-sm text-blue-600 hover:text-blue-800 underline'
+            className='text-xl text-gray-600 hover:text-black underline'
             aria-label="Reset filters"
           >
-            Reset
+            <GrPowerReset className='' />
           </button>
           <div className='lg:hidden'>
-            <button 
+            <button
               onClick={handleCloseFilter}
               className='text-gray-500 hover:text-gray-700'
               aria-label="Close filter"
             >
               ✕
             </button>
-          </div> 
+          </div>
         </div>
       </div>
-      
+
       <div className='space-y-6'>
         <div>
-          <p className='text-base font-medium text-gray-800 mb-3'>Categories</p>
-          <Categories 
-            types={category?.categoryTypes || category?.types} 
+          <p className='text-base font-semibold text-gray-700 mb-3'>Danh mục sản phẩm</p>
+          <Categories
+            types={category?.categoryTypes || category?.types}
             selectedTypes={selectedTypes}
             onTypeChange={handleTypeChange}
           />
@@ -170,7 +164,7 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
         <div>
           <PriceFilter onChange={setPriceRange} />
         </div>
-        
+
       </div>
     </div>
   );
@@ -197,7 +191,7 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
         </div>
       );
     }
-    
+
     if (filteredProducts?.length === 0 && products?.length > 0) {
       return (
         <div className='text-center py-12'>
@@ -205,47 +199,46 @@ const ProductListPage = ({ categoryType, showNewArrivals }) => {
         </div>
       );
     }
-    
     return null;
   };
 
   return (
-   <>
-   {/* Banner trang New Arrivals */}
-    {showNewArrivals && (
-      <img
-        src={bannernew}
-        alt='New Arrivals'
-        className='w-full h-auto object-cover mb-4'
-      />
-    )}
+    <>
+      {/* Banner trang New Arrivals */}
+      {showNewArrivals && (
+        <img
+          src={bannernew}
+          alt='New Arrivals'
+          className='w-full h-auto object-cover mb-4'
+        />
+      )}
 
-    <div className='flex flex-col lg:flex-row'>
-      {/* Mobile Filter Toggle Button */}
-      <div className='lg:hidden p-4 border-b border-gray-200'>
-        <button 
-          onClick={handleFilterToggle}
-          className='flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors'
-          aria-label="Toggle filters"
-        >
-          <FilterIcon />
-          <span className='text-sm font-medium'>Filters</span>
-        </button>
-      </div>
-
-      {/* Filter Section */}
-      {!showNewArrivals && renderFilterSection()}
-      {/* Tên Mục Sản Phẩm và Mô Tả */}
-      <div className='flex-1 p-4 lg:p-6'>
-        <div className='mb-6'>
-          <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2'>{category?.name}</h1>
-          <p className='text-sm sm:text-base text-gray-600'>{category?.description}</p>
+      <div className='flex flex-col lg:flex-row'>
+        {/* Mobile Filter Toggle Button */}
+        <div className='lg:hidden p-4 border-b border-gray-200'>
+          <button
+            onClick={handleFilterToggle}
+            className='flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors'
+            aria-label="Toggle filters"
+          >
+            <FilterIcon />
+            <span className='text-sm font-medium'>Filters</span>
+          </button>
         </div>
-        {renderProductGrid()}
-        {renderEmptyState()}
+
+        {/* Filter Section */}
+        {!showNewArrivals && renderFilterSection()}
+        {/* Tên Mục Sản Phẩm và Mô Tả */}
+        <div className='flex-1 p-4 lg:p-6'>
+          <div className='mb-6'>
+            <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2'>{category?.name}</h1>
+            <p className='text-sm sm:text-base text-gray-600'>{category?.description}</p>
+          </div>
+          {renderProductGrid()}
+          {renderEmptyState()}
+        </div>
       </div>
-    </div>
-   </>
+    </>
   )
 }
 

@@ -4,11 +4,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import {setLoading} from '../../store/features/common'
 import {fetchUserDetails} from '../../api/userInfo.js'
 import {loadUserInfo, selectIsUserAdmin, selectUserInfo} from "../../store/features/user"
-import AddAddress from "./AddAddress.jsx";
-import Orders from "./Orders.jsx";
-import Profile from "./Profile.jsx";
-import Settings from "./Settings.jsx";
-
 const Account = () => {
 
     const dispatch = useDispatch();
@@ -29,11 +24,9 @@ const Account = () => {
   }, [dispatch]);
 
   return (
-    <div className='p-8'>
+    <div className='pt-12 lg:pb-1 sm:max-w-xl md:max-w-full px-5 md:px-12 lg:px-15'>
        {isUserAdmin &&<div className="text-right"><Link to={"/admin"} className="text-lg text-blue-900 underline">Manage Admin</Link></div>}
       {userInfo?.email && (<>
-      <p className='text-lg '>Hello  {userInfo?.firstName} {userInfo?.lastName}</p>
-      <p>Welcome to your account</p>
       <div className="md:flex mt-4">
             <ul className="lex-column space-y space-y-4 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 mb-4 md:mb-0">
               <li>
@@ -82,7 +75,7 @@ const Account = () => {
               </li>
               <li>
                 <NavLink
-                  to={"/account-details/settings"}
+                  to={"/account-details/logout"}
                   className={({isActive})=> [
                     isActive? "bg-black hover:bg-gray-400":"bg-gray-400 hover:bg-black",
                     "flex items-center px-4 py-3 text-white rounded-lg active w-full whitespace-nowrap"

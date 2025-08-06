@@ -19,7 +19,6 @@ function App() {
   useEffect(() => {
     dispatch(setLoading(true));
     fetchCategories().then(res=>{
-      console.log("Categories fetched successfully:", res);
       dispatch(loadCategories(res));
     }).catch(err=>{
       console.error("Error fetching categories:", err);

@@ -27,7 +27,7 @@ const Navigation = () => {
   const cartLength = useSelector(state => state.cartState.cart.reduce((sum, item) => sum + (item.quantity || 1), 0));
 
   const navLinkClass = ({ isActive }) =>
-  isActive? 'text-[#212121] font-semibold border-b-2 border-[#212121]': 'text-gray-600 hover:text-[#212121]';
+    isActive ? 'text-[#212121] font-semibold border-b-2 border-[#212121]' : 'text-gray-600 hover:text-[#212121]';
 
   // Xử lý tìm kiếm sản phẩm
   useEffect(() => {
@@ -60,7 +60,7 @@ const Navigation = () => {
 
   return (
     <>
-      {/* Open Search Bar */}
+      {/* Hiện thanh tìm kiếm */}
       {searchOpen && (
         <div
           className="fixed inset-0 z-[110] flex items-start justify-center bg-black/60 transition-opacity"
@@ -89,7 +89,7 @@ const Navigation = () => {
                     <div className="p-4 text-center text-gray-500">Đang tìm kiếm...</div>
                   ) : searchResults.length > 0 ? (
                     searchResults.slice(0, 5).map(product => {
-                      const imageSrc = product.thumbnail ;
+                      const imageSrc = product.thumbnail;
                       return (
                         <div
                           key={product._id}
@@ -101,7 +101,7 @@ const Navigation = () => {
                             navigate(`/product/${product.slug}`);
                           }}
                         >
-                          <img src={imageSrc} alt={product.name} className="w-10 h-10 object-cover rounded" onError={e => {e.target.onerror=null; e.target.src=logo}} />
+                          <img src={imageSrc} alt={product.name} className="w-10 h-10 object-cover rounded" onError={e => { e.target.onerror = null; e.target.src = logo }} />
                           <div className="flex-1">
                             <div className="font-medium text-gray-900 text-sm">{product.name}</div>
                             <div className="text-xs text-gray-500">{formatDisplayPrice(product.price)}</div>
@@ -178,7 +178,7 @@ const Navigation = () => {
           <img src={logo} alt='logo' className='h-10 object-contain' />
         </NavLink>
         <div className='flex items-center gap-3'>
-         
+
           <button onClick={() => setMenuOpen(!menuOpen)} className='focus:outline-none'>
             <svg className='w-7 h-7 text-gray-700' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d={menuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
@@ -212,13 +212,13 @@ const Navigation = () => {
               <ul className='flex flex-col gap-6 px-6 py-6'>
                 <li><NavLink to='/men' className={navLinkClass} onClick={() => setMenuOpen(false)}>Thời trang nam</NavLink></li>
                 <li><NavLink to='/women' className={navLinkClass} onClick={() => setMenuOpen(false)}>Thời trang nữ</NavLink></li>
-                 <li><NavLink to='/accessories' onClick={() => setMenuOpen(false)} className={navLinkClass}>Phụ kiện</NavLink></li>
+                <li><NavLink to='/accessories' onClick={() => setMenuOpen(false)} className={navLinkClass}>Phụ kiện</NavLink></li>
                 <li><NavLink to='/shops' className={navLinkClass} onClick={() => setMenuOpen(false)} >Cửa hàng</NavLink></li>
               </ul>
             </div>
           </>
         )}
-        
+
       </div>
 
       {/* Bottom Navigation (Mobile only) */}

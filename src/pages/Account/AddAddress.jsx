@@ -15,7 +15,6 @@ const AddAddress = ({onCancel}) => {
     });
 const [error,setError] = useState('');
 const dispatch = useDispatch();
-
 const onSubmit = useCallback((evt)=>{
     evt.preventDefault();
     dispatch(setLoading(true));

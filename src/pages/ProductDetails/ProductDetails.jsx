@@ -128,6 +128,7 @@ const ProductDetails = () => {
           quantity:1,
           price:product?.price,
         };
+        console.log("cartItem:", cartItem);
         dispatch(addItemToCartAction(cartItem))
       }else{
         setError('Out of Stock');

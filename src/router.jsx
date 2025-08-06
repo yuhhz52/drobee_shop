@@ -12,13 +12,14 @@ import Cart from "./pages/Cart/Cart";
 import Account from "./pages/Account/Account";
 import ProtectedRoute from "./components/ProtectdRouter/ProtectedRouter.jsx";
 import Checkout from "./pages/Checkout/Checkout.jsx";
-import ConfirmPayment from "./pages/ConfirmPayment/ConfirmPayment.jsx";
 import OrderConfirmed from "./pages/OrderComfirmed/OrderComfirmed.jsx";
 import Profile from "./pages/Account/Profile.jsx";
-import Settings from "./pages/Account/Settings.jsx";
 import Orders from "./pages/Account/Orders.jsx";
 import AdminPanel from "./pages/AdminPanel/AdminPanel.jsx";
 import ShopPages from "./pages/ShopPages/ShopPages.jsx";
+import Logouts from "./pages/Account/Logouts.jsx";
+import StripeReturnHandler from "./pages/StripeReturnHandler/StripeReturnHandler.jsx";
+
 
 
 export const router = createBrowserRouter([
@@ -72,8 +73,8 @@ export const router = createBrowserRouter([
                         element:<ProtectedRoute><Orders/></ProtectedRoute>
                     },
                     {
-                        path: 'settings',
-                        element:<ProtectedRoute><Settings/></ProtectedRoute>
+                        path: 'logout',
+                        element:<ProtectedRoute><Logouts/></ProtectedRoute>
                     }
                  ]
             },
@@ -108,8 +109,8 @@ export const router = createBrowserRouter([
         element : <OAuth2loginCallback />
     },
     {
-      path:'/confirmPayment',
-      element:<ConfirmPayment />
+      path:'/payment/stripe-success',
+      element:<StripeReturnHandler />
     },
     {
       path:'/admin/*',

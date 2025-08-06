@@ -1,5 +1,5 @@
-import React, {  useCallback } from 'react'
-import GoogleSignIn from '../../components/Button/GoogleSignIn.jsx' 
+import React, { useCallback, useEffect, useState } from 'react'
+import GoogleSignIn from '../../components/Button/GoogleSignIn.jsx'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
 import { setLoading } from '../../store/features/common';
@@ -7,10 +7,32 @@ import { loginAPI } from '../../api/authencation.js';
 import { saveToken } from '../../utils/jwt-helper';
 import { Controller, useForm } from 'react-hook-form';
 import PasswordInput from '../../components/PasswordInput.jsx';
+import { useLocation } from 'react-router-dom';
 
 const Login = () => {
 
-     const {register,handleSubmit,formState: {errors}, control} = useForm({
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const verifiedSuccess = searchParams.get('verified') === 'success';
+  const [showToast, setShowToast] = useState(verifiedSuccess);
+
+  useEffect(() => {
+    const hasVerified = sessionStorage.getItem('verifiedSuccess') === 'true';
+
+    if (hasVerified) {
+      setShowToast(true);
+      sessionStorage.removeItem('verifiedSuccess'); //xoá sau khi đã dùng
+
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+
+  const { register, handleSubmit, formState: { errors }, control } = useForm({
     defaultValues: {
       userName: '',
       password: '',
@@ -18,7 +40,7 @@ const Login = () => {
   });
 
 
- const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const onSubmit = useCallback(
@@ -43,30 +65,42 @@ const Login = () => {
   );
 
 
-    const handlePasswordReminder = e => {
-      e.preventDefault();
-    }
-
+  const handlePasswordReminder = e => {
+    e.preventDefault();
+  }
   return (
     <>
-    <div className='bg-widget flex items-center justify-center w-full py-10 px-4 lg:p-[110px]'>
-       <div className="max-w-[460px] w-full">
-         <div className="flex flex-col gap-2.5 text-center">
+      <div className='bg-widget flex items-center justify-center w-full py-10 px-4 lg:p-[110px]'>
+        {showToast &&(
+          <div className="fixed top-2 right-2 z-50 flex items-start gap-3 bg-green-50 border-l-4 border-green-600 text-green-800 px-4 py-3 rounded-md shadow-md w-[320px] animate-fade-in">
+            <svg className="w-6 h-6 mt-1 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <div className="flex-1 text-left">
+              <p className="font-semibold mb-1">Thành công</p>
+              <p className="text-sm">Tài khoản đã được xác thực! Hãy đăng nhập để tiếp tục.</p>
+            </div>
+          </div>
+        )}
+
+
+        <div className="max-w-[460px] w-full">
+          <div className="flex flex-col gap-2.5 text-center">
             <h1 className="text-4xl font-bold">Chào mừng trở lại!</h1>
             <p className="lg:max-w-[300px] m-auto 4xl:max-w-[unset]">
-                Cửa hàng trực tuyến của chúng tôi đã sẵn sàng để phục vụ bạn.
+              Hãy đăng nhập để tiếp tục mua sắm và quản lý đơn hàng của bạn.
             </p>
-        </div>
+          </div>
+
           <form className="mt-5" onSubmit={handleSubmit(onSubmit)}>
-             <div className="flex flex-col gap-5">
-                <div className="flex flex-col ">
-                  <label htmlFor="email" className="font-bold text-[14px] pb-2 text-gray-500 w-fit">Email</label>                 
-                 <input
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col ">
+                <label htmlFor="email" className="font-bold text-[14px] pb-2 text-gray-500 w-fit">Email</label>
+                <input
                   type="text"
                   placeholder="Địa chỉ email"
-                  className={`h-[48px] w-full border p-2 ${
-                    errors.userName ? 'border-red-500' : 'border-gray-400'
-                  }`}
+                  className={`h-[48px] w-full border p-2 ${errors.userName ? 'border-red-500' : 'border-gray-400'
+                    }`}
                   {...register('userName', {
                     required: 'Vui lòng nhập địa chỉ email',
                     pattern: {
@@ -75,33 +109,33 @@ const Login = () => {
                     },
                   })}
                 />
-                 {errors.userName && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.userName.message}
-                </p>)}</div>
-        
-                <div>
-                 <Controller name="password"
-                    control={control}
-                    rules={{ required: 'Vui lòng nhập mật khẩu' }}
-                    render={({field}) => (
-                        <PasswordInput id="password"
-                                        placeholder="Mât khẩu"
-                                        error={errors.password}
-                                        innerRef={field.ref}
-                                        isInvalid={errors.password}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        errors={errors.password?.message}/>
-                    )}/>
-                    {errors.password && (
+                {errors.userName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.userName.message}
+                  </p>)}</div>
+
+              <div>
+                <Controller name="password"
+                  control={control}
+                  rules={{ required: 'Vui lòng nhập mật khẩu' }}
+                  render={({ field }) => (
+                    <PasswordInput id="password"
+                      placeholder="Mât khẩu"
+                      error={errors.password}
+                      innerRef={field.ref}
+                      isInvalid={errors.password}
+                      value={field.value}
+                      onChange={field.onChange}
+                      errors={errors.password?.message} />
+                  )} />
+                {errors.password && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.password.message}
                   </p>)}</div>
-              </div>
-              <div className="flex flex-col items-center gap-6 mt-4 mb-10">
+            </div>
+            <div className="flex flex-col items-center gap-6 mt-4 mb-10">
               <button type="button" onClick={handlePasswordReminder}
-                className="text-blue-500 hover:underline font-medium">
+                className="hover:text-blue-500 font-medium">
                 Quên mật khẩu?
               </button>
               <button
@@ -111,7 +145,7 @@ const Login = () => {
               </button>
             </div>
           </form>
-         
+
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-gray-300" />
             <span className="text-sm text-gray-500 font-medium">hoặc</span>
@@ -119,13 +153,13 @@ const Login = () => {
           </div>
           <GoogleSignIn />
           <div className="flex justify-center gap-2.5 leading-none pt-4">
-                <p>Bạn chưa có tài khoản?</p>
-                <NavLink to="/v1/register" className={({isActive})=> isActive ? 'active-link':''}>Đăng ký</NavLink>
+            <p>Bạn chưa có tài khoản?</p>
+            <NavLink to="/v1/register" className={({ isActive }) => isActive ? 'active-link' : ''}><span  className="hover:text-blue-500">Tạo tài khoản ngay</span></NavLink>
           </div>
         </div>
-        
-    </div>
-    
+
+      </div>
+
 
     </>
   )

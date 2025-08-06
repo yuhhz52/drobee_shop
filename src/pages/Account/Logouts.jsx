@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { logOut } from '../../utils/jwt-helper';
 import { useNavigate } from 'react-router-dom';
 
-const Settings = () => {
+const Logouts = () => {
     const navigate = useNavigate();
 
     const onLogOut = useCallback(() => {
@@ -16,4 +16,4 @@ const Settings = () => {
   )
 }
 
-export default Settings
+export default Logouts

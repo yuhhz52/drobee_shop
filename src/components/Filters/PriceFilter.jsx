@@ -12,7 +12,7 @@ const PriceFilter = ({ onChange }) => {
   };
   return (
     <div className='flex flex-col mb-4'>
-        <p className='text-base font-medium text-gray-800 mb-4'>Price</p>
+        <p className='text-base font-semibold text-gray-700 mb-4'>Giá</p>
         <div className='px-2'>
           <RangeSlider 
             className={'custom-range-slider'} 

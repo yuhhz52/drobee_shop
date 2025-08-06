@@ -1,84 +1,91 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit";
+
+
+const getCartFromLocalStorage = () => {
+  try {
+    const data = JSON.parse(localStorage.getItem("cart"));
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error(" Lỗi đọc localStorage:", err);
+    return [];
+  }
+};
+
+const saveCartToLocalStorage = (cart) => {
+  try {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  } catch (err) {
+    console.error("Lỗi lưu localStorage:", err);
+  }
+};
 
 const initialState = {
-    cart:JSON.parse(localStorage.getItem('cart')) || []
-}
-
-console.log('Initial cart state from localStorage:', JSON.parse(localStorage.getItem('cart')) || []);
+  cart: getCartFromLocalStorage(),
+};
 
 const cartSlice = createSlice({
-    name:'cartState',
-    initialState:initialState,
-    reducers:{
-        addToCart:(state,action) =>{
-            const newItem = action?.payload;
-            console.log('addToCart - newItem:', newItem);
-            console.log('addToCart - newItem.price:', newItem?.price);
-            console.log('addToCart - newItem.quantity:', newItem?.quantity);
-            
-            // Tìm sản phẩm trùng (cùng productId và cùng variant.id)
-            const existingItem = state.cart.find(item => 
-                item.productId === newItem.productId && 
-                item.variant?.id === newItem.variant?.id
-            );
-            if (existingItem) {
-                existingItem.quantity += newItem.quantity;
-                existingItem.subTotal = existingItem.quantity * existingItem.price;
-                console.log('addToCart - updated existing item subTotal:', existingItem.subTotal);
-            } else {
-                // Đảm bảo có subTotal khi thêm mới
-                const subTotal = newItem.quantity * newItem.price;
-                console.log('addToCart - calculated subTotal for new item:', subTotal);
-                state.cart.push({
-                    ...newItem,
-                    subTotal: subTotal
-                });
-            }
-            // Cập nhật localStorage
-            localStorage.setItem('cart', JSON.stringify(state.cart));
-            console.log('addToCart - final cart state:', state.cart);
-            return state;
-        },
-        removeFromCart:(state,action)=>{
-            const newState = {
-                ...state,
-                cart :  state?.cart?.filter((item) => ((item.id !== action?.payload?.productId) && (item?.variant?.id !== action?.payload?.variantId)))
-            };
-            // Cập nhật localStorage
-            localStorage.setItem('cart', JSON.stringify(newState.cart));
-            return newState;
-        },
-        updateQuantity:(state,action) =>{
-            const newState = {
-                ...state,
-                cart: state?.cart?.map((item)=>{
-                    if(item?.variant?.id === action?.payload?.variant_id){
-                        return {
-                            ...item,
-                            quantity:action?.payload?.quantity,
-                            subTotal: action?.payload?.quantity * item.price
-                        }
-                    }
-                    return item;
-                })
-            };
-            // Cập nhật localStorage
-            localStorage.setItem('cart', JSON.stringify(newState.cart));
-            return newState;
-        },
-        deleteCart : (state,action)=>{
-            // Clear localStorage khi xóa cart
-            localStorage.removeItem('cart');
-            return {
-                ...state,
-                cart:[]
-            }
-        }
-    }
-})
+  name: "cartState",
+  initialState,
+  reducers: {
+    addToCart: (state, action) => {
+      const item = action.payload;
 
-export const { addToCart, removeFromCart, updateQuantity, deleteCart } = cartSlice?.actions;
+      const existingItem = state.cart.find(
+        (p) => p.productId === item.productId && p.variant?.id === item.variant?.id
+      );
 
-export const countCartItems = (state) => state?.cartState?.cart?.length;
-export const selectCartItems = (state) => state?.cartState?.cart ?? []
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+        existingItem.subTotal = existingItem.quantity * existingItem.price;
+      } else {
+        state.cart.push({
+          ...item,
+          subTotal: item.quantity * item.price,
+        });
+      }
+
+      saveCartToLocalStorage(state.cart);
+    },
+
+    removeFromCart: (state, action) => {
+      const { productId, variantId } = action.payload;
+
+      state.cart = state.cart.filter(
+        (item) => item.productId !== productId || item.variant?.id !== variantId
+      );
+      saveCartToLocalStorage(state.cart);
+    },
+
+    updateQuantity: (state, action) => {
+      const { variantId, quantity } = action.payload;
+
+      state.cart = state.cart.map((item) =>
+        item.variant?.id === variantId
+          ? {
+              ...item,
+              quantity,
+              subTotal: quantity * item.price,
+            }
+          : item
+      );
+      saveCartToLocalStorage(state.cart);
+    },
+
+    deleteCart: (state) => {
+      localStorage.removeItem("cart");
+      state.cart = [];
+    },
+  },
+});
+
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  deleteCart,
+} = cartSlice.actions;
+
+export const countCartItems = (state) => state.cartState.cart.length;
+export const selectCartItems = (state) => state.cartState.cart;
+
 export default cartSlice.reducer;
