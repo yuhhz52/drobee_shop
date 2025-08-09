@@ -44,21 +44,21 @@ Frontend (React.js)
 📦 Tính năng dự kiến
 Người dùng:
 
-Đăng ký & đăng nhập (JWT)
-
-Xem & tìm kiếm sản phẩm
-
-Thêm sản phẩm vào giỏ hàng
-
-Thanh toán trực tuyến
-
-Quản trị viên:
-
-Quản lý sản phẩm
-
-Quản lý đơn hàng
-
-Quản lý người dùng
+ - Đăng ký & đăng nhập (JWT)
+  
+ - Xem & tìm kiếm sản phẩm
+  
+ - Thêm sản phẩm vào giỏ hàng
+  
+ - Thanh toán trực tuyến
+  
+ - Quản trị viên:
+  
+ - Quản lý sản phẩm
+  
+ - Quản lý đơn hàng
+  
+ - Quản lý người dùng
 
 "Yuhhz52 >.<"
     
