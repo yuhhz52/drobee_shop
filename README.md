@@ -30,18 +30,18 @@ Drobee Fullstack E-Commerce Project
   - **PayPal REST API** (hoặc tích hợp VNPay, Stripe)
   - Giả lập thanh toán trong môi trường dev
 
-    ## ⚙️ Cài đặt và chạy dự án
-    - **Java 17+**
-    - **Node.js 18+**
-    - **MySQL**
-    - **Maven**(Thường được tích hợp sẵn trong trang tạo dự án https://start.spring.io/)
-   
-       Backend (Spring Boot)
-       API chạy tại: http://localhost:8080
-       Frontend (React.js)
-       Ứng dụng chạy tại: http://localhost:5175 (Vite)
+## ⚙️ Cài đặt và chạy dự án
+- **Java 17+**
+- **Node.js 18+**
+- **MySQL**
+- **Maven**(Thường được tích hợp sẵn trong trang tạo dự án https://start.spring.io/)
 
-    📦 Tính năng dự kiến
+Backend (Spring Boot)
+API chạy tại: http://localhost:8080
+Frontend (React.js)
+Ứng dụng chạy tại: http://localhost:5175 (Vite)
+
+📦 Tính năng dự kiến
 Người dùng:
 
 Đăng ký & đăng nhập (JWT)
