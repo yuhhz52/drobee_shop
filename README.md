@@ -27,7 +27,7 @@ Drobee Fullstack E-Commerce Project
   - **TailwindCSS / ReactBootstrap** để làm giao diện
   
   ### Thanh toán trực tuyến
-  - **PayPal REST API** (hoặc tích hợp VNPay, Stripe)
+  - **Tích hợp VNPay, Stripe
   - Giả lập thanh toán trong môi trường dev
 
 ## ⚙️ Cài đặt và chạy dự án
