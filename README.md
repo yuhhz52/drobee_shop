@@ -4,11 +4,7 @@ Drobee Fullstack E-Commerce Project
   Đây là một dự án đang trong quá trình phát triển, với mục tiêu xây dựng một ứng dụng thương mại điện tử hoàn chỉnh, sử dụng React.js cho giao diện người dùng (frontend) và Spring Boot cho phía máy chủ (backend).
   Khi hoàn thiện, ứng dụng sẽ mang đến trải nghiệm mua sắm trực tuyến đầy đủ, bao gồm các tính năng như:
 
-  Duyệt và tìm kiếm sản phẩm
-  Quản lý giỏ hàng
-  Xử lý và quản lý đơn hàng
-  Thanh toán trực tuyến 
-  Đăng nhập bằng Google
+  Duyệt và tìm kiếm sản phẩm,quản lý giỏ hàng, xử lý và quản lý đơn hàng, thanh toán trực tuyến , đăng nhập bằng Google.
   Mục tiêu của dự án là tạo ra một nền tảng thương mại điện tử dễ mở rộng, dễ bảo trì và thân thiện với người dùng.
   
   ## 🛠 Công nghệ sử dụng
