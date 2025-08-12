@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import { required, SelectInput, useGetList } from 'react-admin'
 import { useWatch } from 'react-hook-form'
-import { fileUploadAPI } from '../../../api/fileUploadAPI.js';
 
 const CategoryTypeInput = () => {
 

@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
             {
                 path: "product/:productSlug",
                 loader: loaderProductBySlug,
-                element: <ProductDetails />,
+                element: <ProductDetails/>,
             },
             {
                 path: "shops",
@@ -80,7 +80,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "checkout",
-                element: <ProtectedRoute><Checkout/></ProtectedRoute>
+                element: <Checkout/>
             },
             {
             path:'/orderConfirmed',

@@ -35,7 +35,7 @@ const Account = () => {
                   className={({ isActive }) =>
                     [
                       isActive ? "bg-black hover:bg-gray-400" : "bg-gray-400 hover:bg-black",
-                      "inline-flex items-center px-4 py-3 text-white rounded-lg active w-full",
+                      "flex items-center px-4 py-3 text-white rounded-lg active w-full whitespace-nowrap",
                     ].join(" ")
                   }
                 >
