@@ -149,14 +149,14 @@ const Cart = () => {
                 <span>Tổng cộng:</span>
                 <span>{formatDisplayPrice(subTotal)}</span>
               </div>
-              {isLoggedIn && (
+              
                 <button
                   className="w-full mt-4 bg-black text-white py-3 rounded-lg text-lg hover:bg-gray-800 transition"
                   onClick={() => navigate('/checkout')}
                 >
                   Thanh toán ngay
                 </button>
-              )}
+              
             </div>
           </div>
 

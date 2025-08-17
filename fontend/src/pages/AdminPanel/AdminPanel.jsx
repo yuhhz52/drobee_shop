@@ -7,6 +7,8 @@ import CategoryList from './Category/CategoryList';
 import CategoryEdit from './Category/CategoryEdit';
 import { UserList } from './User/UserList.jsx';
 import { fileUploadAPI } from '../../api/fileUploadAPI.js';
+import { GrOrderedList } from "react-icons/gr";
+import OrderList from "./Order/OrderList.jsx";
 
 const httpClient = (url, options = {}) => {
   const token = localStorage.getItem('authToken');
@@ -107,6 +109,7 @@ const AdminPanel = () => (
     <Resource name="products" list={ProductList} edit={EditProduct} create={CreateProduct} />
     <Resource name="category" list={CategoryList} edit={CategoryEdit} />
     <Resource name="user" list={UserList} />
+     <Resource name="order" list={OrderList}  />
   </Admin>
 );
 

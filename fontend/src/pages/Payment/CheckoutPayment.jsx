@@ -42,7 +42,7 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
 
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 w-[350px]">
+    <form onSubmit={handleSubmit} className="p-4 w-[550px]">
       <PaymentElement />
       <button
         type="submit"
