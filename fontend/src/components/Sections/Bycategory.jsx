@@ -30,7 +30,7 @@ const Bycategory = () => {
       return aosomi;
     } else if (name.includes('áo thun') ) {
       return aothun;
-    } else if (name.includes('đồ ở nhà')) {
+    } else if (name.includes('đồ mặc ở nhà')) {
       return domaconha;
     } else if (name.includes('váy')) {
       return vay;

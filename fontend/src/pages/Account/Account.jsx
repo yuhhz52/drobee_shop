@@ -10,6 +10,10 @@ const Account = () => {
     const userInfo = useSelector(selectUserInfo);
     const isUserAdmin = useSelector(selectIsUserAdmin);
 
+
+  console.log("userInfo từ Redux:", userInfo);
+  console.log("isUserAdmin:", isUserAdmin);
+
     useEffect(() => {
     dispatch(setLoading(true));
     fetchUserDetails()
