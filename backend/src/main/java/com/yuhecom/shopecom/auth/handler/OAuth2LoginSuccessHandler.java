@@ -1,12 +1,12 @@
 package com.yuhecom.shopecom.auth.handler;
 
-
 import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.service.OAuth2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -23,6 +23,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     private JWTTokenHelper jwtTokenHelper;
 
+    @Value("${app.oauth2.redirect-uri}")
+    private String redirectUri;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -31,14 +34,19 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
+        if (email == null || email.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email not provided by OAuth2 provider");
+            return;
+        }
+
         User user = oAuth2Service.getUser(email);
         if (user == null) {
             user = oAuth2Service.createUser(oAuth2User, "google");
         }
 
-        String token = jwtTokenHelper.generateToken(user.getUsername());
+        String token = jwtTokenHelper.generateToken(user);
 
-        // Chuyển về FE kèm token
-        response.sendRedirect("http://localhost:5175/oauth2/callback?token=" + token);
+        // Redirect về FE kèm token
+        response.sendRedirect(redirectUri + "?token=" + token);
     }
 }

@@ -2,7 +2,8 @@ package com.yuhecom.shopecom.service;
 
 import com.yuhecom.shopecom.dto.ProductDto;
 import com.yuhecom.shopecom.entity.Product;
-
+import com.yuhecom.shopecom.entity.ProductVariant;
+import org.springframework.data.domain.Page;
 
 
 import java.util.List;
@@ -16,13 +17,15 @@ public interface ProductService {
 
     ProductDto getProductBySlug(String slug);
 
-    List<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name);
+    public Page<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name, Boolean newArrival, int page, int size);
 
     ProductDto getProductById(UUID id);
 
     Product updateProduct(ProductDto productDto, UUID id);
 
     Product fetchProductById(UUID uuid) throws Exception;
+
+    public ProductVariant fetchProductVariantById(UUID id);
 
 
 }

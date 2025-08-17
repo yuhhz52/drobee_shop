@@ -1,5 +1,6 @@
 package com.yuhecom.shopecom.auth.config;
 
+import com.yuhecom.shopecom.auth.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JWTTokenHelper {
@@ -22,14 +24,22 @@ public class JWTTokenHelper {
     @Value("${jwt.auth.expires_in}")
     private int expiresIn;
 
-    public String generateToken(String userName) {
+    public String generateToken(User user) {
+        String role = user.getAuthorities().stream()
+                .findFirst()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .orElse("USER");
+
         return Jwts.builder()
-                .subject(userName)
-                .issuedAt(new Date())
-                .expiration(generateExpirationDate())
+                .setSubject(user.getUsername()) // hoặc user.getEmail()
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(generateExpirationDate())
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+
 
     private Key getSigningKey() {
         byte[] keyBytes = hexStringToByteArray(secretKey);
@@ -45,6 +55,12 @@ public class JWTTokenHelper {
         }
         return data;
     }
+
+    public String getRoleFromToken(String token) {
+        final Claims claims = this.getAllClaimsFromToken(token);
+        return claims != null ? (String) claims.get("role") : null;
+    }
+
 
     private Date generateExpirationDate() {
         return new Date(System.currentTimeMillis() + expiresIn * 1000L);
@@ -91,10 +107,14 @@ public class JWTTokenHelper {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

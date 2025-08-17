@@ -2,6 +2,7 @@ package com.yuhecom.shopecom.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuhecom.shopecom.entity.Address;
+import jakarta.annotation.Resource;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,7 +49,7 @@ public class User implements UserDetails {
 
     private boolean enabled=false;
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name= "ath_user_role",
             joinColumns = @JoinColumn(referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(referencedColumnName = "id"))
@@ -73,6 +74,7 @@ public class User implements UserDetails {
     public String getUsername() {
         return this.email;
     }
+
 
 
 }

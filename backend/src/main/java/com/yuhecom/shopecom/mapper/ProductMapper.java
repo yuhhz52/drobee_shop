@@ -4,9 +4,7 @@ import com.yuhecom.shopecom.dto.ProductDto;
 import com.yuhecom.shopecom.dto.ProductResourceDto;
 import com.yuhecom.shopecom.dto.ProductVariantDto;
 import com.yuhecom.shopecom.entity.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,18 +52,6 @@ public interface ProductMapper {
         return categoryType;
     }
 
-    // Sub mappings
-    List<ProductResource> toProductResources(List<ProductResourceDto> dtos);
-    List<ProductResourceDto> toProductResourceDtos(List<ProductResource> entities);
-
-    List<ProductVariant> toProductVariants(List<ProductVariantDto> dtos);
-    List<ProductVariantDto> toProductVariantDtos(List<ProductVariant> entities);
-
-    ProductVariantDto toProductVariantDto(ProductVariant variant);
-    ProductVariant toProductVariant(ProductVariantDto dto);
-
-    ProductResourceDto toProductResourceDto(ProductResource resource);
-    ProductResource toProductResource(ProductResourceDto dto);
     // Lay anh product
     default String getProductThumbnail(List<ProductResource> resources) {
         if (resources == null || resources.isEmpty()) return null;
@@ -75,7 +61,36 @@ public interface ProductMapper {
                 .findFirst()
                 .orElse(null);
     }
+
+
+
+    // Sau khi map xong DTO -> Entity, set quan hệ ngược cho resources và variants
+    @AfterMapping
+    default void linkProductRelations(@MappingTarget Product product) {
+        if (product.getProductResources() != null) {
+            product.getProductResources().forEach(r -> r.setProduct(product));
+        }
+        if (product.getProductVariantList() != null) {
+            product.getProductVariantList().forEach(v -> v.setProduct(product));
+        }
+    }
+
 }
+
+// Sub mappings
+//    List<ProductResource> toProductResources(List<ProductResourceDto> dtos);
+//    List<ProductResourceDto> toProductResourceDtos(List<ProductResource> entities);
+//
+//    List<ProductVariant> toProductVariants(List<ProductVariantDto> dtos);
+//    List<ProductVariantDto> toProductVariantDtos(List<ProductVariant> entities);
+//
+//    ProductVariantDto toProductVariantDto(ProductVariant variant);
+//    ProductVariant toProductVariant(ProductVariantDto dto);
+//
+//    ProductResourceDto toProductResourceDto(ProductResource resource);
+//    ProductResource toProductResource(ProductResourceDto dto);
+
+
 //    @Autowired
 //    private CategoryService categoryService;
 //    public Product mapToProductEntity(ProductDto productDto, Product existingProduct) {

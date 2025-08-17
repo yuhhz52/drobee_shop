@@ -3,24 +3,30 @@ package com.yuhecom.shopecom.service;
 import com.stripe.model.PaymentIntent;
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.auth.entity.User;
-import com.yuhecom.shopecom.dto.OrderDetails;
-import com.yuhecom.shopecom.dto.OrderItemDetail;
-import com.yuhecom.shopecom.dto.OrderRequest;
+import com.yuhecom.shopecom.dto.*;
 import com.yuhecom.shopecom.entity.*;
+import com.yuhecom.shopecom.exception.ResourceNotFoundEx;
+import com.yuhecom.shopecom.mapper.OrderMapper;
+import com.yuhecom.shopecom.mapper.ProductVariantMapper;
+import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.reponsitory.OrderRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import com.yuhecom.shopecom.dto.ProductDto;
 
 import java.security.Principal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +47,14 @@ public class OrderService {
 
 
     VnPayService vnPayService;
+
+    ProductVariantMapper productVariantMapper;
+
+    OrderMapper orderMapper;
+
+    UsersMapper usersMapper;
+
+
 
     // Tao code don hang de hien thi ben ui
     private String generateDisplayCode() {
@@ -73,9 +87,11 @@ public class OrderService {
                 .map(orderItemRequest -> {
                     try {
                         Product product = productService.fetchProductById(orderItemRequest.getProductId());
+                        ProductVariant productVariant = productService.fetchProductVariantById(
+                                orderItemRequest.getProductVariantId());
                         return OrderItem.builder()
                                 .product(product)
-                                .productVariantId(orderItemRequest.getProductVariantId())
+                                .productVariant(productVariant)
                                 .quantity(orderItemRequest.getQuantity())
                                 .order(order)
                                 .build();
@@ -173,6 +189,7 @@ public class OrderService {
                     .expectedDeliveryDate(order.getExpectedDeliveryDate())
                     .paymentMethod(order.getPaymentMethod())
                     .orderDisplayCode(order.getOrderDisplayCode())
+                    .user(usersMapper.toDto(order.getUser()))
                     .build();
         }).toList();
     }
@@ -181,31 +198,46 @@ public class OrderService {
     private List<OrderItemDetail> getItemDetails(List<OrderItem> orderItemList) {
         return orderItemList.stream().map(orderItem -> {
             ProductDto productDto = productService.getProductById(orderItem.getProduct().getId());
+            ProductVariantDto productVariantDto = productVariantMapper.toDto(orderItem.getProductVariant());
+
             return OrderItemDetail.builder()
                     .id(orderItem.getId())
                     .itemPrice(orderItem.getItemPrice())
                     .product(productDto)
-                    .productVariantId(orderItem.getProductVariantId())
+                    .productVariant(productVariantDto)
                     .quantity(orderItem.getQuantity())
                     .build();
         }).toList();
     }
 
-    public void cancelOrder(UUID id, Principal principal) {
+
+    @Transactional
+    public boolean cancelOrder(UUID id, Principal principal) {
         User user = (User) userDetailsService.loadUserByUsername(principal.getName());
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        
-        if(order.getUser().getId().equals(user.getId())){
-            order.setOrderStatus(OrderStatus.CANCELLED);
-            orderRepository.save(order);
+                .orElseThrow(() -> new ResourceNotFoundEx.OrderNotFoundException("Order not found with id " + id));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ResourceNotFoundEx.AccessDeniedException("Order does not belong to user");
         }
-        else{
-            throw new RuntimeException("Invalid request - Order does not belong to user");
+
+        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+            return false;
         }
+
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+
+
+        return true;
     }
 
-   
+    @Transactional(readOnly = true)
+    public Page<OrderDetails> getAllOrders(Pageable pageable) {
+        Page<Order> orders = orderRepository.findAll(pageable);
+        return orders.map(orderMapper::toDto);
+    }
+
 }
 
 

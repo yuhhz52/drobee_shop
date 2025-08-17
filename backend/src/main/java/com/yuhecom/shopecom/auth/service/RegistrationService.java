@@ -4,7 +4,7 @@ import com.yuhecom.shopecom.auth.dto.RegistrationRequest;
 import com.yuhecom.shopecom.auth.dto.RegistrationResponse;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.helper.VerificationCodeGenerator;
-import com.yuhecom.shopecom.auth.repository.UserDetailRepository;
+import com.yuhecom.shopecom.auth.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.web.server.ServerErrorException;
 @Service
 public class RegistrationService {
     @Autowired
-    private UserDetailRepository userDetailRepository;
+    private UsersRepository userDetailRepository;
 
     @Autowired
     private AuthorityService authorityService;

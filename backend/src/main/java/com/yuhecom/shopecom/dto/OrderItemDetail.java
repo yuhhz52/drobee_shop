@@ -13,7 +13,7 @@ import java.util.UUID;
 public class OrderItemDetail {
     private UUID id;
     private ProductDto product;
-    private UUID productVariantId;
+    private ProductVariantDto productVariant;
     private Integer quantity;
     private Double itemPrice;
 }

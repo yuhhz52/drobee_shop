@@ -7,6 +7,7 @@ import com.yuhecom.shopecom.exception.ResourceNotFoundEx;
 import com.yuhecom.shopecom.mapper.CategoryMapper;
 import com.yuhecom.shopecom.reponsitory.CategoryRepository;
 import com.yuhecom.shopecom.service.CategoryService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,9 +24,16 @@ public class CategoryServiceImpl implements CategoryService {
     CategoryRepository categoryRepository;
     CategoryMapper categoryMapper;
 
-    public Category getCategory(UUID categoryId){
-        return categoryRepository.findById(categoryId).orElse(null);
+    public Category getCategory(UUID categoryId) {
+        if (categoryId == null) {
+            throw new IllegalArgumentException("Category ID must not be null");
+        }
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Category not found with id " + categoryId
+                ));
     }
+
 
 
     public Category createCategory(CategoryDto categoryDto){

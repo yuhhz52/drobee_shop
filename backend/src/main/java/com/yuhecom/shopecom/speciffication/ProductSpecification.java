@@ -22,6 +22,10 @@ public class ProductSpecification {
         return (root, query, criteriaBuilder) -> root.get("categoryType").get("id").in(typeIds);
     }
 
+    public static Specification<Product> hasNewArrival(Boolean newArrival) {
+        return (root, query, cb) -> cb.equal(root.get("newArrival"), newArrival);
+    }
+
     public static Specification<Product> hasNameLike(String name) {
         return (root, query, criteriaBuilder) ->
             criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%");
