@@ -1,5 +1,7 @@
 package com.yuhecom.shopecom.dto;
 
+import com.yuhecom.shopecom.auth.dto.UsersDto;
+import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.entity.Address;
 import com.yuhecom.shopecom.entity.OrderStatus;
 import lombok.*;
@@ -25,4 +27,5 @@ public class OrderDetails {
     private Date expectedDeliveryDate;
     private List<OrderItemDetail> orderItemList;
     private String paymentMethod;
+    private UsersDto user;
 }

@@ -1,5 +1,6 @@
 package com.yuhecom.shopecom.dto;
 
+import com.yuhecom.shopecom.entity.Product;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jdk.jshell.Snippet;
@@ -32,7 +33,5 @@ public class ProductDto {
     private String categoryTypeName;
     private List<ProductVariantDto> variants;
     private List<ProductResourceDto> productResources;
-
-
 
 }

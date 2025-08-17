@@ -2,10 +2,18 @@ package com.yuhecom.shopecom.controller;
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
+import com.yuhecom.shopecom.entity.Order;
+import com.yuhecom.shopecom.mapper.OrderMapper;
+import com.yuhecom.shopecom.reponsitory.OrderRepository;
 import com.yuhecom.shopecom.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +34,22 @@ public class OrderController {
     @Autowired
     OrderService orderService;
 
+    @Autowired
+    OrderRepository orderRepository;
+
+    @Autowired
+    OrderMapper orderMapper;
+
+
+
     @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
         OrderResponse orderResponse = orderService.createOrder(orderRequest,principal);
         return new ResponseEntity<>(orderResponse,HttpStatus.OK);
     }
 
     @PostMapping("/update-payment")
-    public ResponseEntity<?> updatePaymentStatus(@RequestBody Map<String,String> request){
+    public ResponseEntity<Map<String,String>> updatePaymentStatus(@RequestBody Map<String,String> request){
         String paymentIntentId = request.get("paymentIntentId");
         String status = request.get("status");
         Map<String,String> response = orderService.updateStatus(paymentIntentId, status);
@@ -88,15 +104,36 @@ public class OrderController {
 
     @PostMapping("/cancel/{id}")
     public ResponseEntity<?> cancelOrder(@PathVariable UUID id, Principal principal){
-        orderService.cancelOrder(id,principal);
-        return new ResponseEntity<>(HttpStatus.OK);
+        boolean canceled = orderService.cancelOrder(id, principal);
+        if(canceled){
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không thể hủy đơn hàng này");
+        }
     }
+
 
     @GetMapping("/user")
     public ResponseEntity<List<OrderDetails>> getOrderByUser(Principal principal) {
         List<OrderDetails> orders = orderService.getOrdersByUser(principal.getName());
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
+
+    @GetMapping
+    public ResponseEntity<List<OrderDetails>> getAllOrders(Pageable pageable) {
+        Page<Order> orders = orderRepository.findAll(pageable);
+        List<OrderDetails> dtoList = orders.map(orderMapper::toDto).getContent();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Range", String.format("orders %d-%d/%d",
+                pageable.getPageNumber() * pageable.getPageSize(),
+                pageable.getPageNumber() * pageable.getPageSize() + dtoList.size() - 1,
+                orders.getTotalElements()));
+
+        return ResponseEntity.ok().headers(headers).body(dtoList);
+    }
+
+
 
 }
 

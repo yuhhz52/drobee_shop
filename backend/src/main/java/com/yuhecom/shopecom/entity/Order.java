@@ -61,7 +61,7 @@ public class Order {
 
     private Double discount;
 
-    @OneToOne(fetch = FetchType.LAZY,mappedBy = "order",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @ToString.Exclude
     private Payment payment;
 

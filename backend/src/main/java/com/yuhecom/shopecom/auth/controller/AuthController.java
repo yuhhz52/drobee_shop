@@ -49,7 +49,7 @@ public class AuthController {
                         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                     }
 
-                    String token = jwtTokenHelper.generateToken(user.getEmail());
+                    String token = jwtTokenHelper.generateToken(user);
                     UserToken userToken= UserToken.builder().token(token).build();
                     return new ResponseEntity<>(userToken,HttpStatus.OK);
 

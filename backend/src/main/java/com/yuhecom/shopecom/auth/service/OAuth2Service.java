@@ -1,7 +1,7 @@
 package com.yuhecom.shopecom.auth.service;
 
 import com.yuhecom.shopecom.auth.entity.User;
-import com.yuhecom.shopecom.auth.repository.UserDetailRepository;
+import com.yuhecom.shopecom.auth.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OAuth2Service {
     @Autowired
-    UserDetailRepository userDetailRepository;
+    UsersRepository userDetailRepository;
 
     @Autowired
     private AuthorityService authorityService;
