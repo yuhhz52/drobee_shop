@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class ProductsController {
     }
     // Tao san pham
     @PostMapping()
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> createProduct(@RequestBody  ProductDto productDto){
         Product product = productService.addProducts(productDto);
         return new ResponseEntity<>(product, HttpStatus.CREATED);
@@ -79,6 +81,7 @@ public class ProductsController {
     }
     // Xoa
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable("id") UUID id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok().build();
@@ -86,6 +89,7 @@ public class ProductsController {
 
     // Cap nhat
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> updateProduct(@RequestBody ProductDto productDto,@PathVariable UUID id){
         Product product = productService.updateProduct(productDto,id);
         return new ResponseEntity<>(product,HttpStatus.OK);

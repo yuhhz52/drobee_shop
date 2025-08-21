@@ -19,6 +19,7 @@ import AdminPanel from "./pages/AdminPanel/AdminPanel.jsx";
 import ShopPages from "./pages/ShopPages/ShopPages.jsx";
 import Logouts from "./pages/Account/Logouts.jsx";
 import StripeReturnHandler from "./pages/StripeReturnHandler/StripeReturnHandler.jsx";
+import Page403 from "./components/Page403.jsx";
 
 
 
@@ -83,8 +84,12 @@ export const router = createBrowserRouter([
                 element: <Checkout/>
             },
             {
-            path:'/orderConfirmed',
-            element: <OrderConfirmed />
+                path:'/orderConfirmed',
+                element: <OrderConfirmed />
+            },
+            {
+                path: "/403",
+                element: <Page403 />,
             }
 
 
@@ -114,6 +119,6 @@ export const router = createBrowserRouter([
     },
     {
       path:'/admin/*',
-      element:<ProtectedRoute><AdminPanel/></ProtectedRoute>
+      element:<ProtectedRoute requiredRole="ROLE_ADMIN"><AdminPanel/></ProtectedRoute>
     }         
 ]);

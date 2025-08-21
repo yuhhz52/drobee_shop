@@ -5,20 +5,20 @@
                 "title":"Các danh mục hàng đầu",
                 "list":[
                     {
-                        "label":"Quần áo nam",
-                        "path":"/men-clothing"
+                        "label":"Thời trang nam",
+                        "path":"/men"
                     },
                     {
-                        "label":"Quần áo nữ",
-                        "path":"/girls-clothing"
+                        "label":"Thời trang nũ",
+                        "path":"/women"
                     },
                     {
                         "label":"Giày & phụ kiện",
-                        "path":"/shoes-accessories"
+                        "path":"/"
                     },
                     {
                         "label":"Đồ thể thao",
-                        "path":"/sports"
+                        "path":"/"
                     }
                 ]
             },
@@ -27,15 +27,15 @@
                 "list":[
                     {
                         "label":"Cập nhật chính sách bảo mật",
-                        "path":"/cs1"
+                        "path":"/"
                     },
                     {
                         "label":"Điều khoản và điều kiện",
-                        "path":"/cs2"
+                        "path":"/"
                     },
                     {
                         "label":"Chính sách trả hàng",
-                        "path":"/cs3"
+                        "path":"/"
                     }
                 ]
             },
@@ -44,15 +44,15 @@
                 "list":[
                     {
                         "label":"Liên hệ với chúng tôi",
-                        "path":"/contact-us"
+                        "path":"/"
                     },
                     {
                         "label":"huymixi2k4@gmail.com",
-                        "path":"/email"
+                        "path":"/"
                     },
                     {
                         "label":"Gọi cho chúng tôi: 0335233753",
-                        "path":"/contact-number"
+                        "path":"/"
                     }
                 ]
             },

@@ -1,19 +1,19 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { isTokenValid } from "../../utils/jwt-helper";
+import { Navigate } from "react-router-dom";
+import { isTokenValid, getUserRoles } from "../../utils/jwt-helper";
 
-const ProtectedRoute = ({children}) => {
-  const navigate = useNavigate();
-  useEffect(()=>{
-    if(!isTokenValid()){
-        navigate("/v1/login")
+const ProtectedRoute = ({ children, requiredRole }) => {
+  if (!isTokenValid()) {
+    return <Navigate to="/v1/login" replace />;
+  }
+
+  if (requiredRole) {
+    const roles = getUserRoles();
+    if (!roles.includes(requiredRole)) {
+      return <Navigate to="/403" replace />;
     }
-  },[navigate]);
-  return (
-    <div>
-        {children}
-    </div>
-  )
-}
+  }
 
-export default ProtectedRoute
+  return children;
+};
+
+export default ProtectedRoute;
