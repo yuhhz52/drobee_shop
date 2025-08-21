@@ -36,7 +36,6 @@ public class User implements UserDetails {
 
     private String email;
 
-
     private Date createdOn;
 
     private Date updatedOn;

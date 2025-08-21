@@ -1,19 +1,18 @@
 package com.yuhecom.shopecom.auth.config;
 
 import com.yuhecom.shopecom.auth.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JWTTokenHelper {
@@ -24,48 +23,38 @@ public class JWTTokenHelper {
     @Value("${jwt.auth.expires_in}")
     private int expiresIn;
 
+    /**
+     * Sinh JWT token cho user
+     */
     public String generateToken(User user) {
-        String role = user.getAuthorities().stream()
-                .findFirst()
-                .map(grantedAuthority -> grantedAuthority.getAuthority())
-                .orElse("USER");
+        List<String> roles = user.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .collect(Collectors.toList());
 
         return Jwts.builder()
                 .setSubject(user.getUsername()) // hoặc user.getEmail()
-                .claim("role", role)
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(generateExpirationDate())
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-
-
+    /**
+     * Lấy Signing key từ secret
+     */
     private Key getSigningKey() {
-        byte[] keyBytes = hexStringToByteArray(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes); // dùng khi key là hex
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey); // secretKey để ở Base64 trong application.yml
+        return Keys.hmacShaKeyFor(keyBytes);
     }
-
-    private byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
-        }
-        return data;
-    }
-
-    public String getRoleFromToken(String token) {
-        final Claims claims = this.getAllClaimsFromToken(token);
-        return claims != null ? (String) claims.get("role") : null;
-    }
-
 
     private Date generateExpirationDate() {
         return new Date(System.currentTimeMillis() + expiresIn * 1000L);
     }
 
+    /**
+     * Lấy token từ request
+     */
     public String getToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -74,6 +63,9 @@ public class JWTTokenHelper {
         return null;
     }
 
+    /**
+     * Validate token
+     */
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUserNameFromToken(token);
         return (
@@ -83,38 +75,32 @@ public class JWTTokenHelper {
         );
     }
 
+
     private boolean isTokenExpired(String token) {
         Date expireDate = getExpirationDate(token);
         return expireDate.before(new Date());
     }
 
     private Date getExpirationDate(String token) {
-        try {
-            final Claims claims = this.getAllClaimsFromToken(token);
-            return claims.getExpiration();
-        } catch (Exception e) {
-            return null;
-        }
+        final Claims claims = this.getAllClaimsFromToken(token);
+        return claims.getExpiration();
     }
 
-    public String getUserNameFromToken(String authToken) {
-        try {
-            final Claims claims = this.getAllClaimsFromToken(authToken);
-            return claims.getSubject();
-        } catch (Exception e) {
-            return null;
-        }
+    public String getUserNameFromToken(String token) {
+        final Claims claims = this.getAllClaimsFromToken(token);
+        return claims.getSubject();
+    }
+
+    public List<String> getRolesFromToken(String token) {
+        final Claims claims = this.getAllClaimsFromToken(token);
+        return claims.get("roles", List.class);
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (Exception e) {
-            return null;
-        }
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
