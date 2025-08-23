@@ -1,26 +1,24 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { saveToken } from '../utils/jwt-helper';
+import { saveTokens } from '../utils/jwt-helper';
 
 const OAuth2loginCallback = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    useEffect(()=>{
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const accessToken = params.get("accessToken");
+    const refreshToken = params.get("refreshToken");
 
-    if(token){
-        saveToken(token);
-        navigate('/');
+    if (accessToken && refreshToken) {
+      saveTokens(accessToken, refreshToken);
+      navigate('/');
+    } else {
+      navigate('/v1/login');
     }
-    else{
-        navigate('/v1/login')
-    }
-  },[navigate])
+  }, [navigate]);
 
-  return (
-    <></>
-  )
+  return <></>;
 }
 
-export default OAuth2loginCallback
+export default OAuth2loginCallback;

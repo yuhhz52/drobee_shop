@@ -59,6 +59,8 @@ export const deleteAddressAPI = async (id)=>{
     }
 }
 
+
+
 export const fetchOrderAPI = async ()=>{
     const url = API_BASE_URL + `/api/order/user`;
     try{
@@ -86,3 +88,4 @@ export const cancelOrderAPI = async (id)=>{
         throw new Error(err);
     }
 }
+

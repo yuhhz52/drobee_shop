@@ -44,17 +44,25 @@ const Navigation = () => {
     }
     setLoadingSearch(true);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
     searchTimeout.current = setTimeout(async () => {
       try {
-        // Gọi API tìm kiếm tối ưu với tham số name
-        const data = await getAllProducts(null, [], searchTerm);
-        setSearchResults(data || []);
+        const { products } = await getAllProducts({
+          categoryId: null,
+          typeIds: [],
+          name: searchTerm,
+          page: 0,
+          size: 5, 
+        });
+
+        setSearchResults(products || []);
       } catch (e) {
         setSearchResults([]);
       } finally {
         setLoadingSearch(false);
       }
     }, 400);
+
     return () => clearTimeout(searchTimeout.current);
   }, [searchTerm, searchOpen]);
 
@@ -92,7 +100,7 @@ const Navigation = () => {
                       const imageSrc = product.thumbnail;
                       return (
                         <div
-                          key={product._id}
+                          key={product.id}
                           className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
                           onClick={() => {
                             setSearchOpen(false);
