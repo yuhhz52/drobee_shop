@@ -1,14 +1,16 @@
 import { Navigate } from "react-router-dom";
-import { isTokenValid, getUserRoles } from "../../utils/jwt-helper";
+import { isTokenValid, getAccessToken, getUserInfo } from "../../utils/jwt-helper";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  if (!isTokenValid()) {
+  const token = getAccessToken();
+
+  if (!isTokenValid(token)) {
     return <Navigate to="/v1/login" replace />;
   }
 
   if (requiredRole) {
-    const roles = getUserRoles();
-    if (!roles.includes(requiredRole)) {
+    const user = getUserInfo();
+    if (!user?.roles.includes(requiredRole)) {
       return <Navigate to="/403" replace />;
     }
   }

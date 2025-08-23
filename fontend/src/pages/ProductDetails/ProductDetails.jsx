@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { Link, useLoaderData} from 'react-router-dom';
-import {useState} from 'react';
+import { Link, useLoaderData } from 'react-router-dom';
+import { useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import Rating from '../../components/Rating/Rating';
 import SizeFilter from '../../components/Filters/SizeFilter';
@@ -19,30 +19,30 @@ import { formatDisplayPrice } from '../../utils/price-format';
 
 const extraSections = [
   {
-    icon:<SvgCreditCard />,
-    label:'Secure payment'
+    icon: <SvgCreditCard />,
+    label: 'Secure payment'
   },
   {
-    icon:<SvgCloth />,
-    label:'Size & Fit'
+    icon: <SvgCloth />,
+    label: 'Size & Fit'
   },
   {
-    icon:<SvgShipping />,
-    label:'Free shipping'
+    icon: <SvgShipping />,
+    label: 'Free shipping'
   },
   {
-    icon:<SvgReturn />,
-    label:'Free Shipping & Returns'
+    icon: <SvgReturn />,
+    label: 'Free Shipping & Returns'
   }
 ]
 
 const ProductDetails = () => {
-  const {product} = useLoaderData();
+  const { product } = useLoaderData();
   const [image, setImage] = useState();
-  const [breadcrumbLinks, setBreadCrumbLink] = useState(); 
+  const [breadcrumbLinks, setBreadCrumbLink] = useState();
   const dispatch = useDispatch();
-  const [similarProduct,setSimilarProducts] = useState([]);
-  const categories = useSelector((state)=> state?.categoryState?.categories);
+  const [similarProduct, setSimilarProducts] = useState([]);
+  const categories = useSelector((state) => state?.categoryState?.categories);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [error, setError] = useState('');
@@ -64,17 +64,21 @@ const ProductDetails = () => {
     return categories?.find((category) => category?.id === product?.categoryId);
   }, [product, categories]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (!product) return;
-    getAllProducts(product?.categoryId, product?.categoryTypeId ? [product?.categoryTypeId] : [])
-      .then(res=>{
-        const excludedProduct = res?.filter((item)=> item?.id !== product?.id);
+    getAllProducts({
+      categoryId: product?.categoryId,
+      typeIds: product?.categoryTypeId ? [product?.categoryTypeId] : []
+    })
+      .then(res => {
+        const excludedProduct = (res.products || []).filter(item => item?.id !== product?.id);
         setSimilarProducts(excludedProduct);
-      }).catch((error) => {
+      })
+      .catch(error => {
         console.error('Error fetching similar products:', error);
         setSimilarProducts([]);
       });
-  },[product?.categoryId, product?.categoryTypeId, product?.id, product]);
+  }, [product?.categoryId, product?.categoryTypeId, product?.id,product]);
 
   useEffect(() => {
     if (!product) return;
@@ -85,70 +89,70 @@ const ProductDetails = () => {
       setImage(product?.thumbnail);
     }
 
-  // Breadcrumb: Trang chủ > Nam/Nữ > Tên sản phẩm
-  const categoryName = productCategory?.name || '';
-  const lowerName = categoryName.toLowerCase();
+    // Breadcrumb: Trang chủ > Nam/Nữ > Tên sản phẩm
+    const categoryName = productCategory?.name || '';
+    const lowerName = categoryName.toLowerCase();
 
-  const genderPath = lowerName.includes('nam')
-    ? '/men'
-    : lowerName.includes('nữ')
-    ? '/women'
-    : '/';
+    const genderPath = lowerName.includes('nam')
+      ? '/men'
+      : lowerName.includes('nữ')
+        ? '/women'
+        : '/';
 
-  const genderTitle = lowerName.includes('nam')
-    ? 'Nam'
-    : lowerName.includes('nữ')
-    ? 'Nữ'
-    : categoryName;
+    const genderTitle = lowerName.includes('nam')
+      ? 'Nam'
+      : lowerName.includes('nữ')
+        ? 'Nữ'
+        : categoryName;
 
-  setBreadCrumbLink([
-    { title: 'Trang chủ', path: '/' },
-    productCategory ? { title: genderTitle, path: genderPath } : null,
-    { title: product?.name || product?.title },
-  ].filter(Boolean));
-}, [productCategory, product]);
+    setBreadCrumbLink([
+      { title: 'Trang chủ', path: '/' },
+      productCategory ? { title: genderTitle, path: genderPath } : null,
+      { title: product?.name || product?.title },
+    ].filter(Boolean));
+  }, [productCategory, product]);
 
   const addItemToCart = useCallback(() => {
-    if(!selectedSize){
+    if (!selectedSize) {
       setError('Please select size')
     }
     else if (!selectedColor) {
       setError('Please select color');
     }
-    else{
+    else {
       const selectedVariant = product?.variants.find(
         (variant) => variant?.size === selectedSize && variant?.color === selectedColor
       );
-      if(selectedVariant?.stockQuantity>0){
+      if (selectedVariant?.stockQuantity > 0) {
         const cartItem = {
-          productId:product?.id,
-          thumbnail:product?.thumbnail,
-          name:product?.name,
-          variant:selectedVariant,
-          quantity:1,
-          price:product?.price,
+          productId: product?.id,
+          thumbnail: product?.thumbnail,
+          name: product?.name,
+          variant: selectedVariant,
+          quantity: 1,
+          price: product?.price,
         };
         console.log("cartItem:", cartItem);
         dispatch(addItemToCartAction(cartItem))
-      }else{
+      } else {
         setError('Out of Stock');
       }
     }
-  },[dispatch, product, selectedSize, selectedColor]);
+  }, [dispatch, product, selectedSize, selectedColor]);
 
-    const colors = useMemo(()=>{
-    const colorSet = _.uniq(_.map(product?.variants,'color'));
+  const colors = useMemo(() => {
+    const colorSet = _.uniq(_.map(product?.variants, 'color'));
     return colorSet
 
-  },[product]);
+  }, [product]);
 
-  const sizes = useMemo(()=>{
-    const sizeSet = _.uniq(_.map(product?.variants,'size'));
+  const sizes = useMemo(() => {
+    const sizeSet = _.uniq(_.map(product?.variants, 'size'));
     return sizeSet
 
-  },[product]);
+  }, [product]);
 
- 
+
   // --- Sau khi đã gọi hết hooks, mới return ---
   if (!product) {
     return (
@@ -172,20 +176,20 @@ const ProductDetails = () => {
                 {
                   product?.productResources && product.productResources.length > 0 ? (
                     product.productResources.map((item, index) => (
-                      <button key={index} onClick={() => setImage(item?.url)} 
-                      className='rounded-lg w-fit p-2 mb-2'>
-                        <img src={item?.url} 
-                        className='h-[60px] w-[60px] rounded-lg bg-cover bg-center hover:scale-105 hover:border' 
-                        alt={'sample-' + index} />
+                      <button key={index} onClick={() => setImage(item?.url)}
+                        className='rounded-lg w-fit p-2 mb-2'>
+                        <img src={item?.url}
+                          className='h-[60px] w-[60px] rounded-lg bg-cover bg-center hover:scale-105 hover:border'
+                          alt={'sample-' + index} />
                       </button>
                     ))
                   ) : (
                     // Fallback to thumbnail if no productResources
-                    <button onClick={() => setImage(product?.thumbnail)} 
-                    className='rounded-lg w-fit p-2 mb-2'>
-                      <img src={product?.thumbnail} 
-                      className='h-[60px] w-[60px] rounded-lg bg-cover bg-center hover:scale-105 hover:border' 
-                      alt="product-thumbnail" />
+                    <button onClick={() => setImage(product?.thumbnail)}
+                      className='rounded-lg w-fit p-2 mb-2'>
+                      <img src={product?.thumbnail}
+                        className='h-[60px] w-[60px] rounded-lg bg-cover bg-center hover:scale-105 hover:border'
+                        alt="product-thumbnail" />
                     </button>
                   )
                 }
@@ -225,41 +229,41 @@ const ProductDetails = () => {
               selectedColor={selectedColor}
             />
           </div>
-           <div className='flex py-4'>
-         <button onClick={addItemToCart} className='bg-black rounded-lg hover:bg-gray-700'><div className='flex h-[42px] rounded-lg w-[150px] px-2 items-center justify-center bg-black text-white hover:bg-gray-700'><svg width="17" height="16" className='' viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.5 1.33325H2.00526C2.85578 1.33325 3.56986 1.97367 3.6621 2.81917L4.3379 9.014C4.43014 9.8595 5.14422 10.4999 5.99474 10.4999H13.205C13.9669 10.4999 14.6317 9.98332 14.82 9.2451L15.9699 4.73584C16.2387 3.68204 15.4425 2.65733 14.355 2.65733H4.5M4.52063 13.5207H5.14563M4.52063 14.1457H5.14563M13.6873 13.5207H14.3123M13.6873 14.1457H14.3123M5.66667 13.8333C5.66667 14.2935 5.29357 14.6666 4.83333 14.6666C4.3731 14.6666 4 14.2935 4 13.8333C4 13.373 4.3731 12.9999 4.83333 12.9999C5.29357 12.9999 5.66667 13.373 5.66667 13.8333ZM14.8333 13.8333C14.8333 14.2935 14.4602 14.6666 14 14.6666C13.5398 14.6666 13.1667 14.2935 13.1667 13.8333C13.1667 13.373 13.5398 12.9999 14 12.9999C14.4602 12.9999 14.8333 13.373 14.8333 13.8333Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>Add to cart</div></button>
-        </div>
-        {error && <p className='text-lg text-red-600'>{error}</p>}
-        <div className='grid md:grid-cols-2 gap-4 pt-4'>
-          {/*  */}
-          {
-            extraSections?.map((section,index)=>(
-              <div key={index} className='flex items-center'>
-                {section?.icon}
-                <p className='px-2'>{section?.label}</p>
-              </div>
-            ))
-          }  
-          </div>  
+          <div className='flex py-4'>
+            <button onClick={addItemToCart} className='bg-black rounded-lg hover:bg-gray-700'><div className='flex h-[42px] rounded-lg w-[150px] px-2 items-center justify-center bg-black text-white hover:bg-gray-700'><svg width="17" height="16" className='' viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.5 1.33325H2.00526C2.85578 1.33325 3.56986 1.97367 3.6621 2.81917L4.3379 9.014C4.43014 9.8595 5.14422 10.4999 5.99474 10.4999H13.205C13.9669 10.4999 14.6317 9.98332 14.82 9.2451L15.9699 4.73584C16.2387 3.68204 15.4425 2.65733 14.355 2.65733H4.5M4.52063 13.5207H5.14563M4.52063 14.1457H5.14563M13.6873 13.5207H14.3123M13.6873 14.1457H14.3123M5.66667 13.8333C5.66667 14.2935 5.29357 14.6666 4.83333 14.6666C4.3731 14.6666 4 14.2935 4 13.8333C4 13.373 4.3731 12.9999 4.83333 12.9999C5.29357 12.9999 5.66667 13.373 5.66667 13.8333ZM14.8333 13.8333C14.8333 14.2935 14.4602 14.6666 14 14.6666C13.5398 14.6666 13.1667 14.2935 13.1667 13.8333C13.1667 13.373 13.5398 12.9999 14 12.9999C14.4602 12.9999 14.8333 13.373 14.8333 13.8333Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>Add to cart</div></button>
+          </div>
+          {error && <p className='text-lg text-red-600'>{error}</p>}
+          <div className='grid md:grid-cols-2 gap-4 pt-4'>
+            {/*  */}
+            {
+              extraSections?.map((section, index) => (
+                <div key={index} className='flex items-center'>
+                  {section?.icon}
+                  <p className='px-2'>{section?.label}</p>
+                </div>
+              ))
+            }
+          </div>
         </div>
       </div>
-       {/* Product Description */}
-          <SectionHeading title={'Mô tả Sản phẩm'} />
-           <div className='md:w-[50%] w-full p-2'>
-              <p className='px-8'>{product?.description}</p>
-            </div>
+      {/* Product Description */}
+      <SectionHeading title={'Mô tả Sản phẩm'} />
+      <div className='md:w-[50%] w-full p-2'>
+        <p className='px-8'>{product?.description}</p>
+      </div>
 
-             <SectionHeading title={'Sản phẩm tương tự'}/>
-            <div className='flex px-10'></div>
+      <SectionHeading title={'Sản phẩm tương tự'} />
+      <div className='flex px-10'></div>
 
-             <div className='pt-4 grid grid-cols-1 lg:grid-cols-5 md:grid-cols-3 gap-8 px-2 pb-10'>
-                {similarProduct?.map((item,index)=>(
-                  <ProductCard key={item.id || index} {...item}/>
-                ))}
-                {!similarProduct?.length && <p>Sản phẩm không tồn tại!</p>}
+      <div className='pt-4 grid grid-cols-1 lg:grid-cols-5 md:grid-cols-3 gap-8 px-2 pb-10'>
+        {similarProduct?.map((item, index) => (
+          <ProductCard key={item.id || index} {...item} />
+        ))}
+        {!similarProduct?.length && <p>Sản phẩm không tồn tại!</p>}
 
-    </div>
+      </div>
     </>
   )
 }

@@ -1,19 +1,19 @@
-import React, { useCallback } from 'react'
-import { logOut } from '../../utils/jwt-helper';
-import { useNavigate } from 'react-router-dom';
+
+import { logoutAPI } from '../../api/authencation';
 
 const Logouts = () => {
-    const navigate = useNavigate();
+  const onLogOut = async () => {
+    await logoutAPI();
+  };
 
-    const onLogOut = useCallback(() => {
-        logOut();
-        navigate("/");
-      }, [navigate]);
   return (
-    <div>
-        <button onClick={onLogOut} className='w-[150px] items-center h-[48px] bg-black border rounded-lg mt-2 text-white hover:bg-gray-800'>Logout</button>
-    </div>
-  )
-}
+    <button
+      onClick={onLogOut}
+      className='w-[150px] h-[48px] bg-black text-white rounded-lg hover:bg-gray-800'
+    >
+      Logout
+    </button>
+  );
+};
 
-export default Logouts
+export default Logouts;
