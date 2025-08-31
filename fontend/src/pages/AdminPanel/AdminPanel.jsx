@@ -7,17 +7,59 @@ import CategoryList from './Category/CategoryList';
 import CategoryEdit from './Category/CategoryEdit';
 import { UserList } from './User/UserList.jsx';
 import { fileUploadAPI } from '../../api/fileUploadAPI.js';
-import { GrOrderedList } from "react-icons/gr";
 import OrderList from "./Order/OrderList.jsx";
 
-const httpClient = (url, options = {}) => {
-  const token = localStorage.getItem('authToken');
-  if (!options.headers) options.headers = new Headers();
-  options.headers.set('Authorization', `Bearer ${token}`);
-  return fetchUtils.fetchJson(url, options);
+const BASE_URL = 'http://localhost:8080/api';
+
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) return null;
+
+  try {
+    const response = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) throw new Error("Refresh token failed");
+
+    const data = await response.json();
+
+    //lưu lại accessToken mới
+    localStorage.setItem("accessToken", data.accessToken);
+
+    return data.accessToken;
+  } catch (err) {
+    console.error("Refresh token error:", err);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    window.location.href = "/login";
+    return null;
+  }
 };
 
-const BASE_URL = 'http://localhost:8080/api';
+const httpClient = async (url, options = {}) => {
+  let token = localStorage.getItem("accessToken"); 
+  if (!options.headers) options.headers = new Headers();
+
+  if (token && token !== "null" && token !== "undefined") {
+    options.headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  try {
+    return await fetchUtils.fetchJson(url, options);
+  } catch (error) {
+    if (error.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        options.headers.set("Authorization", `Bearer ${newToken}`);
+        return fetchUtils.fetchJson(url, options);
+      }
+    }
+    throw error;
+  }
+};
 
 // Tạo base provider
 const baseProvider = simpleRestProvider(BASE_URL, httpClient);
@@ -35,34 +77,30 @@ const customProvider = {
       const total = parseInt(headers.get('Content-Range')?.split('/')?.[1], 10);
       return {
         data: json,
-        total: total || json.length, // fallback nếu không có header
+        total: total || json.length,
       };
     });
   },
-   delete: (resource, params) => {
+  delete: (resource, params) => {
     const url = `${BASE_URL}/${resource}/${params.id}`;
     return httpClient(url, { method: 'DELETE' }).then(() => ({
-      data: { id: params.id }, // Trả về đúng format React Admin yêu cầu
+      data: { id: params.id },
     }));
   },
   deleteMany: (resource, params) =>
-  Promise.all(
-    params.ids.map(id =>
-      httpClient(`${BASE_URL}/${resource}/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      })
-    )
-  ).then(responses => ({
-    // Nếu response có json và json.id, lấy id đó, nếu không lấy từ params.ids
-    data: responses.map((res, index) => {
-      if (res && res.json && res.json.id) return res.json.id;
-      return params.ids[index];
-    }),
-  })),
-
+    Promise.all(
+      params.ids.map(id =>
+        httpClient(`${BASE_URL}/${resource}/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+        })
+      )
+    ).then(responses => ({
+      data: responses.map((res, index) => {
+        if (res && res.json && res.json.id) return res.json.id;
+        return params.ids[index];
+      }),
+    })),
 };
-
-
 
 // Thêm lifecycle upload ảnh
 const dataProvider = withLifecycleCallbacks(customProvider, [
@@ -109,7 +147,7 @@ const AdminPanel = () => (
     <Resource name="products" list={ProductList} edit={EditProduct} create={CreateProduct} />
     <Resource name="category" list={CategoryList} edit={CategoryEdit} />
     <Resource name="user" list={UserList} />
-     <Resource name="order" list={OrderList}  />
+    <Resource name="order" list={OrderList} />
   </Admin>
 );
 
