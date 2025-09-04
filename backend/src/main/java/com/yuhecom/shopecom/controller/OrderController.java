@@ -40,8 +40,6 @@ public class OrderController {
     @Autowired
     OrderMapper orderMapper;
 
-
-
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
         OrderResponse orderResponse = orderService.createOrder(orderRequest,principal);
@@ -55,7 +53,6 @@ public class OrderController {
         Map<String,String> response = orderService.updateStatus(paymentIntentId, status);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
-
 
     @GetMapping("/vnpay-return")
     public void vnpayReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -101,7 +98,6 @@ public class OrderController {
         throw new IllegalArgumentException("vnp_OrderInfo không chứa orderId hợp lệ");
     }
 
-
     @PostMapping("/cancel/{id}")
     public ResponseEntity<?> cancelOrder(@PathVariable UUID id, Principal principal){
         boolean canceled = orderService.cancelOrder(id, principal);
@@ -111,7 +107,6 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không thể hủy đơn hàng này");
         }
     }
-
 
     @GetMapping("/user")
     public ResponseEntity<List<OrderDetails>> getOrderByUser(Principal principal) {
@@ -132,9 +127,6 @@ public class OrderController {
 
         return ResponseEntity.ok().headers(headers).body(dtoList);
     }
-
-
-
 }
 
 

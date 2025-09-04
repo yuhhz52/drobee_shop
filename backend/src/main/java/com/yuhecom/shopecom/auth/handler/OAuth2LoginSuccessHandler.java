@@ -13,6 +13,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -44,9 +46,16 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             user = oAuth2Service.createUser(oAuth2User, "google");
         }
 
-        String token = jwtTokenHelper.generateToken(user);
+        // Sinh accessToken và refreshToken
+        String accessToken = jwtTokenHelper.generateToken(user);
+        String refreshToken = jwtTokenHelper.generateRefreshToken(user);
 
-        // Redirect về FE kèm token
-        response.sendRedirect(redirectUri + "?token=" + token);
+        // Encode token để tránh ký tự đặc biệt trong URL
+        String redirectUrl = redirectUri
+                + "?accessToken=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8)
+                + "&refreshToken=" + URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
+
+        response.sendRedirect(redirectUrl);
     }
+
 }
