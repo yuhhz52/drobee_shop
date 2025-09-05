@@ -16,7 +16,7 @@ public class SwaggerConfig {
                 .info(new Info().title("ShopEcom API's").description("Shop E-commerce Application APIs")
                         .version("1.0")
                         .contact(new Contact()
-                                .name("Huy")));
+                                .name("Thanh Huy")));
     }
 
 }
