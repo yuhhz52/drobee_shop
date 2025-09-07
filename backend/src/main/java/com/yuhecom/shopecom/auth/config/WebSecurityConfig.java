@@ -65,11 +65,12 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_APIS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products", "/api/category").permitAll()
-                        .anyRequest().authenticated()
+               .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(PUBLIC_APIS).permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/category/**").permitAll()
+                    .anyRequest().authenticated()
                 )
+
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler)
                         .loginPage("/oauth2/authorization/google")
@@ -96,7 +97,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5175"));
+        config.setAllowedOrigins(List.of("http://localhost:5175", "http://localhost:5173")); // chỉ định rõ
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Range"));
@@ -106,6 +107,8 @@ public class WebSecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+    
 
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -120,7 +123,7 @@ public class WebSecurityConfig {
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
             registry.addResourceHandler("/uploads/**")
-                    .addResourceLocations("file:uploads/");
+                    .addResourceLocations("file:/app/uploads/");
         }
     }
 

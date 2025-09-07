@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Timeline = ({stepCount}) => {
+const Timelines = ({stepCount}) => {
     return (
         <div className='w-full flex justify-center mb-4'>
             <ol className="items-center sm:flex">
@@ -49,4 +49,4 @@ const Timeline = ({stepCount}) => {
     )
 }
 
-export default Timeline
+export default Timelines
