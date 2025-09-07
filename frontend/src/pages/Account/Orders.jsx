@@ -5,7 +5,7 @@ import { cancelOrderAPI, fetchOrderAPI } from '../../api/userInfo.js';
 import { loadOrders, selectAllOrders } from '../../store/features/user';
 import moment from 'moment';
 import { getStepCount } from '../../utils/order-util';
-import Timeline from '../../components/Timeline/Timeline';
+import Timeline from '../../components/TimeLine/Timelines.jsx';
 import { formatDisplayPrice } from '../../utils/price-format';
 
 const Orders = () => {

@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class OAuth2Service {
     @Autowired
-    UsersRepository userDetailRepository;
+    UsersRepository usersRepository;
 
     @Autowired
     private AuthorityService authorityService;
 
     public User getUser(String userName) {
-        return userDetailRepository.findByEmail(userName);
+        return usersRepository.findByEmail(userName);
     }
 
     public User createUser(OAuth2User oAuth2User, String provider) {
@@ -23,12 +23,11 @@ public class OAuth2Service {
         String lastName = oAuth2User.getAttribute("family_name");
         String email = oAuth2User.getAttribute("email");
 
-        User existingUser = userDetailRepository.findByEmail(email);
+        User existingUser = usersRepository.findByEmail(email);
         if (existingUser != null) {
-            // Nếu đã tồn tại, cập nhật provider nếu khác
             if (!existingUser.getProvider().equalsIgnoreCase(provider)) {
                 existingUser.setProvider(provider);
-                userDetailRepository.save(existingUser);
+                usersRepository.save(existingUser);
             }
             return existingUser;
         }
@@ -42,7 +41,7 @@ public class OAuth2Service {
                 .authorities(authorityService.getUserAuthority())
                 .build();
 
-        return userDetailRepository.save(user);
+        return usersRepository.save(user);
     }
 }
 

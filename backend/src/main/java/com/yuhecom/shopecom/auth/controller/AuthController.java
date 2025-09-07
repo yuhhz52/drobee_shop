@@ -44,32 +44,32 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserToken> login(@RequestBody LoginRequest loginRequest){
-            try{
-                Authentication authentication= UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUserName(),
-                        loginRequest.getPassword());
+        try{
+            Authentication authentication= UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUserName(),
+                    loginRequest.getPassword());
 
-                Authentication authenticationResponse = this.authenticationManager.authenticate(authentication);
+            Authentication authenticationResponse = this.authenticationManager.authenticate(authentication);
 
-                if(authenticationResponse.isAuthenticated()){
-                    User user = (User) authenticationResponse.getPrincipal();
-                    if(!user.isEnabled()){
-                        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-                    }
-
-                    String accessToken = jwtTokenHelper.generateToken(user);
-                    String refreshToken = jwtTokenHelper.generateRefreshToken(user);
-
-                    UserToken userToken = UserToken.builder()
-                            .token(accessToken)
-                            .refreshToken(refreshToken)
-                            .build();
-                    return new ResponseEntity<>(userToken,HttpStatus.OK);
-
+            if(authenticationResponse.isAuthenticated()){
+                User user = (User) authenticationResponse.getPrincipal();
+                if(!user.isEnabled()){
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
-            }catch (Exception e){
-                throw new RuntimeException(e);
+
+                String accessToken = jwtTokenHelper.generateToken(user);
+                String refreshToken = jwtTokenHelper.generateRefreshToken(user);
+
+                UserToken userToken = UserToken.builder()
+                        .token(accessToken)
+                        .refreshToken(refreshToken)
+                        .build();
+                return new ResponseEntity<>(userToken,HttpStatus.OK);
+
             }
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/register")
@@ -142,9 +142,6 @@ public class AuthController {
         }
         return ResponseEntity.ok("Logged out successfully");
     }
-
-
-
 
 
 

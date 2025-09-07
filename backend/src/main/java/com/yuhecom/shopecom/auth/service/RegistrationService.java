@@ -31,7 +31,6 @@ public class RegistrationService {
             return RegistrationResponse.builder()
                     .code(400)
                     .message("Email already exist")
-
                     .build();
         }
 
@@ -44,7 +43,6 @@ public class RegistrationService {
             user.setEnabled(false);
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.setProvider("manual");
-
             String code = VerificationCodeGenerator.generateCode();
             user.setVerificationCode(code);
             user.setAuthorities(authorityService.getUserAuthority());
