@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: shopecom
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://shopecom-mysql:3306/shopecom?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "http://localhost:8080/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope:
+              - email
+              - profile
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
+logging:
+  level:
+    org.springframework.mail: DEBUG
+
+jwt:
+  signerKey: ${JWT_SECRET}
+  auth:
+    expires_in: 3600
+  refresh:
+    expires_in: 1296000
+
+app:
+  oauth2:
+    redirect-uri: http://localhost:5175/oauth2/callback
+
+stripe:
+  secret: ${STRIPE_SECRET}
+
+vnpay:
+  tmnCode: ${VNPAY_TMN_CODE}
+  hashSecret: ${VNPAY_HASH_SECRET}
+  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  returnUrl: http://host.docker.internal:8080/api/order/vnpay-return
+
+upload:
+  dir: uploads
