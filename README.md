@@ -1,60 +1,77 @@
-Drobee Fullstack E-Commerce Project
-  là ứng dụng **Fullstack** kết hợp **React (frontend)** và **Spring Boot (backend)**
-  Chào mừng bạn đến với dự án Drobee Fullstack E-Commerce Project!
-  Đây là một dự án đang trong quá trình phát triển, với mục tiêu xây dựng một ứng dụng thương mại điện tử hoàn chỉnh, sử dụng React.js cho giao diện người dùng (frontend) và Spring Boot cho phía máy chủ (backend).
-  Khi hoàn thiện, ứng dụng sẽ mang đến trải nghiệm mua sắm trực tuyến đầy đủ, bao gồm các tính năng như:
+# Drobee Fullstack E-Commerce Project 
 
-  Duyệt và tìm kiếm sản phẩm,quản lý giỏ hàng, xử lý và quản lý đơn hàng, thanh toán trực tuyến , đăng nhập bằng Google.
-  Mục tiêu của dự án là tạo ra một nền tảng thương mại điện tử dễ mở rộng, dễ bảo trì và thân thiện với người dùng.
-  
-  ## 🛠 Công nghệ sử dụng
-  ### Backend (Spring Boot)
-  - **Java 17+**
-  - **Spring Boot** (Web, Security, Data JPA, Validation)
-  - **MySQL** (hoặc PostgreSQL)
-  - **Hibernate** để ORM
-  - **Maven** để quản lý dependencies
-  - **Spring Security + JWT** cho xác thực
-  
-  ### Frontend (React)
-  - **React 18+**, **Vite**
-  - **React Router DOM** để điều hướng
-  - **Axios** để gọi API
-  - **TailwindCSS / ReactBootstrap** để làm giao diện
-  
-  ### Thanh toán trực tuyến
-  - **Tích hợp VNPay, Stripe
-  - Giả lập thanh toán trong môi trường dev
+Drobee Fullstack E-Commerce Project là ứng dụng **Fullstack** kết hợp **React (Frontend)** và **Spring Boot (Backend)**, được **Docker hóa** để triển khai nhanh chóng, dễ dàng và đồng nhất giữa các môi trường.
 
-## ⚙️ Cài đặt và chạy dự án
-- **Java 17+**
-- **Node.js 18+**
-- **MySQL**
-- **Maven**(Thường được tích hợp sẵn trong trang tạo dự án https://start.spring.io/)
+---
 
-Backend (Spring Boot)
-API chạy tại: http://localhost:8080
-Frontend (React.js)
-Ứng dụng chạy tại: http://localhost:5175 (Vite)
+## Giới thiệu
+Dự án đang trong quá trình phát triển với mục tiêu xây dựng một nền tảng thương mại điện tử hoàn chỉnh, mang đến trải nghiệm mua sắm trực tuyến với các tính năng:
 
-📦 Tính năng dự kiến
-Người dùng:
+- Duyệt & tìm kiếm sản phẩm  
+- Quản lý giỏ hàng  
+- Quản lý đơn hàng  
+- Thanh toán trực tuyến (VNPay, Stripe)  
+- Đăng nhập bằng Google  
+- Quản trị viên quản lý sản phẩm, đơn hàng, người dùng  
 
- - Đăng ký & đăng nhập (JWT)
-  
- - Xem & tìm kiếm sản phẩm
-  
- - Thêm sản phẩm vào giỏ hàng
-  
- - Thanh toán trực tuyến
-  
- - Quản trị viên:
-  
- - Quản lý sản phẩm
-  
- - Quản lý đơn hàng
-  
- - Quản lý người dùng
+---
 
-"Yuhhz52 >.<"
-    
+## Công nghệ sử dụng
+
+### **Backend (Spring Boot)**
+- Java 17+
+- Spring Boot (Web, Security, Data JPA, Validation)
+- Hibernate ORM
+- Spring Security + JWT
+- Maven
+
+### **Frontend (React)**
+- React 18+ (Vite)
+- React Router DOM
+- Axios
+- TailwindCSS
+
+### **Cơ sở dữ liệu & Cache**
+- MySQL 8
+- Redis 7
+
+### **Triển khai & DevOps**
+- Docker & Docker Compose
+
+---
+
+## ⚙️ Cài đặt & Chạy dự án với Docker
+
+### 1️⃣ Yêu cầu
+- [Docker](https://www.docker.com/products/docker-desktop/)  
+- [Docker Compose](https://docs.docker.com/compose/)  
+
+---
+
+### 2️⃣ Clone dự án
+```bash
+git clone https://github.com/yuhhz52/drobee_shop.git
+cd drobee_shop
+
+---
+
+3️⃣ Chạy toàn bộ services
+docker compose up -d --build
+
+
+Backend API: http://localhost:8080
+
+Frontend App: http://localhost:5175
+
+---
+
+5️⃣ Cấu trúc thư mục
+drobee-ecommerce/
+│-- backend/        # Spring Boot API
+│-- frontend/       # React frontend
+│-- docker-compose.yml
+│-- README.md
+
+--- 
+Database
+![alt text](ecomerd.webp)
