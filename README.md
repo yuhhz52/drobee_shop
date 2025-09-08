@@ -49,19 +49,21 @@ Dự án đang trong quá trình phát triển với mục tiêu xây dựng m�
 ---
 
 ### 2️⃣ Clone dự án
-```bash
 git clone https://github.com/yuhhz52/drobee_shop.git
 cd drobee_shop
 
 ---
 
-3️⃣ Chạy toàn bộ services
+### 3️⃣ Chạy toàn bộ services
 docker compose up -d --build
 
-
 Backend API: http://localhost:8080
-
 Frontend App: http://localhost:5175
+
+---
+
+4️⃣ Dừng toàn bộ services
+docker compose down
 
 ---
 
@@ -73,5 +75,6 @@ drobee-ecommerce/
 │-- README.md
 
 --- 
+
 Database
 ![alt text](ecomerd.webp)
