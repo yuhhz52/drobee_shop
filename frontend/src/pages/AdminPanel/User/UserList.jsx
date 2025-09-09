@@ -1,4 +1,4 @@
-import { List, Datagrid, TextField, EmailField, ArrayField, SingleFieldList, ChipField } from 'react-admin';
+import { List, Datagrid, TextField, EmailField, ArrayField, SingleFieldList, FunctionField } from 'react-admin';
 
 export const UserList = () => (
     <List>
@@ -10,7 +10,7 @@ export const UserList = () => (
             <TextField source="phoneNumber" />
             <ArrayField source="authorityList">
                 <SingleFieldList>
-                    <ChipField source="roleCode" />
+                    <FunctionField render={record => record} />  {/* render trực tiếp string */}
                 </SingleFieldList>
             </ArrayField>
         </Datagrid>
