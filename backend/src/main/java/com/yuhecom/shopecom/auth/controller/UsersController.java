@@ -1,16 +1,12 @@
 package com.yuhecom.shopecom.auth.controller;
 
 import com.yuhecom.shopecom.auth.dto.UsersDto;
-import com.yuhecom.shopecom.auth.entity.User;
-import com.yuhecom.shopecom.auth.repository.UsersRepository;
 import com.yuhecom.shopecom.auth.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -19,41 +15,14 @@ import java.util.UUID;
 @RestController
 @CrossOrigin
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UsersController {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UsersRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<UsersDto> getUserProfile(Principal principal){
-        User user = (User) userDetailsService.loadUserByUsername(principal.getName());
-
-        if(null == user){
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        UsersDto userDetailsDto = UsersDto.builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .id(user.getId())
-                .phoneNumber(user.getPhoneNumber())
-                .addressList(user.getAddressList())
-                .authorityList(
-                    user.getAuthorities().stream()
-                        .map(a -> a.getAuthority())
-                        .toList()
-        )
-                .build();
-
-        return new ResponseEntity<>(userDetailsDto, HttpStatus.OK);
-
+    public ResponseEntity<UsersDto> getUserProfile(Principal principal) {
+        return ResponseEntity.ok(userService.getUserProfile(principal));
     }
 
     @GetMapping
@@ -68,7 +37,7 @@ public class UsersController {
         int start = page * size;
         int end = Math.min(start + size - 1, (int) userPage.getTotalElements() - 1);
 
-        //React Admin cần Content-Range
+        // React Admin cần Content-Range
         response.setHeader("Content-Range", "users " + start + "-" + end + "/" + userPage.getTotalElements());
         response.setHeader("Access-Control-Expose-Headers", "Content-Range");
 
@@ -77,12 +46,8 @@ public class UsersController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.notFound().build(); // 404
-        }
-        userRepository.deleteById(id);
-        return ResponseEntity.noContent().build(); // 204
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
-
 }
