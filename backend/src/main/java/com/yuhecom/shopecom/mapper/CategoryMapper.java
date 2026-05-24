@@ -22,6 +22,7 @@ public interface CategoryMapper {
 
     CategoryTypeDto toCategoryTypeDto(CategoryType categoryType);
 
+    @Mapping(target = "category", ignore = true)
     CategoryType toCategoryType(CategoryTypeDto dto);
 
     List<CategoryTypeDto> toCategoryTypeDtoList(List<CategoryType> categoryTypes);

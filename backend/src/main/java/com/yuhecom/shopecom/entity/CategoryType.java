@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryType {
+public class CategoryType extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

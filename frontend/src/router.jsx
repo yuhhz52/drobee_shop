@@ -49,6 +49,14 @@ export const router = createBrowserRouter([
                 element: <ProductListPage categoryType={null} showNewArrivals={true} />,
             },
             {
+                path: "products",
+                element: <ProductListPage showAllProducts title="All" />,
+            },
+            {
+                path: "sale",
+                element: <ProductListPage showSale title="Sale" />,
+            },
+            {
                 path: "product/:productSlug",
                 loader: loaderProductBySlug,
                 element: <ProductDetails/>,

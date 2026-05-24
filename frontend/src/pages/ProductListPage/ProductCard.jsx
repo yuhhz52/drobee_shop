@@ -1,53 +1,172 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { FiShoppingCart } from 'react-icons/fi'
 import { formatDisplayPrice } from '../../utils/price-format'
+import { colorSelector } from '../../components/Filters/ColorFilter'
+import { addItemToCartAction } from '../../store/actions/cartAction'
+import './ProductCard.css'
 
-const ProductCard = ({ name, price, discount, rating, brand, thumbnail, newArrival, slug }) => {
+const ProductCard = ({
+  id,
+  name,
+  price,
+  discount,
+  thumbnail,
+  newArrival,
+  slug,
+  variants = [],
+}) => {
+  const dispatch = useDispatch()
+  const [selectedColor, setSelectedColor] = useState('')
+  const [selectedSize, setSelectedSize] = useState('')
+
+  const discountValue = discount ? Math.round(discount) : null
+  const oldPrice = discountValue ? Math.round(price / (1 - discountValue / 100)) : null
+
+  const colors = useMemo(
+    () => [...new Set((variants || []).map((v) => v.color).filter(Boolean))],
+    [variants]
+  )
+
+  const sizes = useMemo(() => {
+    const pool = selectedColor
+      ? (variants || []).filter((v) => v.color === selectedColor)
+      : variants || []
+    return [...new Set(pool.map((v) => v.size).filter(Boolean))]
+  }, [variants, selectedColor])
+
+  const hasVariants = colors.length > 0 || sizes.length > 0
+
+  const handleColorClick = (e, color) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedColor((prev) => (prev === color ? '' : color))
+    setSelectedSize('')
+  }
+
+  const handleSizeClick = (e, size) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedSize((prev) => (prev === size ? '' : size))
+  }
+
+  const handleAddToCart = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!variants?.length) return
+
+    const variant = variants.find((v) => {
+      const colorMatch = !colors.length || v.color === selectedColor
+      const sizeMatch = !sizes.length || v.size === selectedSize
+      return colorMatch && sizeMatch
+    })
+
+    if (!variant) return
+    if (variant.stockQuantity != null && variant.stockQuantity <= 0) return
+
+    dispatch(
+      addItemToCartAction({
+        productId: id,
+        thumbnail,
+        name,
+        variant,
+        quantity: 1,
+        price,
+      })
+    )
+  }
+
+  const canAddToCart =
+    variants?.length > 0 &&
+    (!colors.length || selectedColor) &&
+    (!sizes.length || selectedSize)
+
   return (
-    <div className='flex flex-col p-2 sm:p-3 h-90  md:h-110 lg:h-88 xl:h-90 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow bg-white'>
-      <Link to={`/product/${slug}`}>
-        <div className='relative overflow-hidden rounded-lg mb-3'>
-          {newArrival && (
-            <div className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded z-1 shadow">
-              Hàng mới
-            </div>
-          )}
-          <img
-            className='h-60 md:h-82 lg:h-56 xl:h-60 w-full object-cover hover:scale-105 cursor-pointer transition-transform duration-300 '
-            width="220px"
-            height="280px"
-            src={thumbnail}
-            alt={name}
-          />
-        </div>
-      </Link>
-      <div className='flex flex-col flex-1'>
-        <div className='flex justify-between items-start mb-2'>
-          <h3 className='text-sm sm:text-base font-medium text-gray-800 line-clamp-2 flex-1 pr-2'>{name}</h3>
-          {brand && (
-            <span className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded whitespace-nowrap'>
-              {brand}
-            </span>
-          )}
-        </div>
-
-        <div className='flex justify-between items-center mt-auto'>
-          <div className='flex items-center gap-2'>
-            <span className='text-base sm:text-lg font-bold text-gray-900'>{formatDisplayPrice(price)}</span>
-            {discount && (
-              <span className='text-xs sm:text-sm text-green-600 font-medium'>
-                {discount}% OFF
+    <div className="kalles-card">
+      <div className="kalles-card__media">
+        <Link to={`/product/${slug}`} className="kalles-card__image-link">
+          <div className="kalles-card__image">
+            {discountValue > 0 && (
+              <span className="kalles-card__badge">-{discountValue}%</span>
+            )}
+            {newArrival && (
+              <span className="kalles-card__badge kalles-card__badge--preorder">
+                Pre-Order
               </span>
             )}
+            <img src={thumbnail} alt={name} />
           </div>
-          {rating && (
-            <div className='flex items-center gap-1'>
-              <span className='text-yellow-400 text-sm'>★</span>
-              <span className='text-xs sm:text-sm text-gray-600'>{rating}</span>
-            </div>
-          )}
-        </div>
+        </Link>
+
+        {hasVariants && (
+          <div
+            className="kalles-card__variants"
+            onClick={(e) => e.preventDefault()}
+          >
+            {colors.length > 0 && (
+              <div className="kalles-card__variant-row">
+                <span className="kalles-card__variant-label">Color</span>
+                <div className="kalles-card__swatches">
+                  {colors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`kalles-card__swatch ${
+                        selectedColor === color ? 'is-active' : ''
+                      }`}
+                      style={{ background: colorSelector[color] || color }}
+                      title={color}
+                      aria-label={color}
+                      onClick={(e) => handleColorClick(e, color)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sizes.length > 0 && (
+              <div className="kalles-card__variant-row">
+                <span className="kalles-card__variant-label">Size</span>
+                <div className="kalles-card__sizes">
+                  {sizes.map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      className={`kalles-card__size ${
+                        selectedSize === size ? 'is-active' : ''
+                      }`}
+                      onClick={(e) => handleSizeClick(e, size)}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className={`kalles-card__atc ${canAddToCart ? '' : 'is-disabled'}`}
+              disabled={!canAddToCart}
+              onClick={handleAddToCart}
+              aria-label="Add to cart"
+            >
+              <FiShoppingCart size={16} />
+              <span>Add to cart</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      <Link to={`/product/${slug}`} className="kalles-card__info">
+        <div className="kalles-card__title">{name}</div>
+        <div className="kalles-card__price">
+          {oldPrice && <span className="old">{formatDisplayPrice(oldPrice)}</span>}
+          <span className={oldPrice ? 'current' : ''}>{formatDisplayPrice(price)}</span>
+        </div>
+      </Link>
     </div>
   )
 }

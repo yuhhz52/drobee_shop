@@ -1,209 +1,249 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCartItems } from '../../store/features/cart';
-import { NumberInput } from '../../components/NumberInput/NumberInput';
-import { delteItemFromCartAction, updateItemCartAction } from '../../store/actions/cartAction';
-import { Link, useNavigate } from 'react-router-dom';
-import { customStyles } from '../../styles/modal';
-import Modal from 'react-modal';
-import { isTokenValid } from '../../utils/jwt-helper';
-import EmptyCart from '../../assets/images/empty-cart.png';
-import { formatDisplayPrice } from '../../utils/price-format';
-import { FaRegTrashCan } from 'react-icons/fa6';
+import React, { useCallback, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
+import { FiArrowLeft, FiTrash2 } from 'react-icons/fi'
+import { selectCartItems } from '../../store/features/cart'
+import { delteItemFromCartAction, updateItemCartAction } from '../../store/actions/cartAction'
+import { formatDisplayPrice } from '../../utils/price-format'
+import EmptyCart from '../../assets/images/empty-cart.png'
+import '../../styles/kalles-shop.css'
+import './Cart.css'
 
-const headers = ['Sản phẩm', 'Giá', 'Số lượng', 'Vận chuyển', 'Tạm tính', 'Xóa'];
+const Chevron = () => (
+  <span className="kalles-shop__chevron">
+    <svg width="5" height="8" viewBox="0 0 5 8" aria-hidden="true">
+      <path
+        d="M0.887 0L4.887 4L0.887 8L0.177 7.29L3.467 4L0.177 0.71L0.887 0Z"
+        fill="currentColor"
+      />
+    </svg>
+  </span>
+)
+
+const CartQty = ({ quantity, onChange, onRemove }) => (
+  <div className="kalles-shop__qty">
+    <button
+      type="button"
+      onClick={() => (quantity <= 1 ? onRemove() : onChange(quantity - 1))}
+      aria-label="Decrease"
+    >
+      −
+    </button>
+    <span>{quantity}</span>
+    <button type="button" onClick={() => onChange(quantity + 1)} aria-label="Increase">
+      +
+    </button>
+  </div>
+)
 
 const Cart = () => {
-  const cartItems = useSelector(selectCartItems);
-  const dispatch = useDispatch();
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [deleteItem, setDeleteItem] = useState({});
-  const navigate = useNavigate();
-
-  const onChangeQuantity = useCallback((value, productId, variantId) => {
-    dispatch(
-      updateItemCartAction({
-        productId: productId,
-        variant_id: variantId,
-        quantity: value,
-      })
-    );
-  }, [dispatch]);
-
-  const onDeleteProduct = useCallback((productId, variantId) => {
-    setModalIsOpen(true);
-    setDeleteItem({
-      productId: productId,
-      variantId: variantId,
-    });
-  }, []);
-
-  const onCloseModal = useCallback(() => {
-    setDeleteItem({});
-    setModalIsOpen(false);
-  }, []);
-
-  const onDeleteItem = useCallback(() => {
-    dispatch(delteItemFromCartAction(deleteItem));
-    setModalIsOpen(false);
-  }, [deleteItem, dispatch]);
+  const cartItems = useSelector(selectCartItems)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleteItem, setDeleteItem] = useState({})
 
   const subTotal = useMemo(() => {
-    let value = 0;
-    cartItems?.forEach((element) => {
-      value += element?.subTotal;
-    });
-    return value?.toFixed(2);
-  }, [cartItems]);
+    let value = 0
+    cartItems?.forEach((el) => {
+      value += el?.subTotal || 0
+    })
+    return value
+  }, [cartItems])
 
-  const isLoggedIn = useMemo(() => {
-    return isTokenValid();
-  }, []);
+  const itemCount = useMemo(
+    () => cartItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+    [cartItems]
+  )
+
+  const onChangeQuantity = useCallback(
+    (value, productId, variantId) => {
+      dispatch(
+        updateItemCartAction({
+          productId,
+          variant_id: variantId,
+          quantity: value,
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  const onDeleteProduct = useCallback((productId, variantId) => {
+    setDeleteItem({ productId, variantId })
+    setModalOpen(true)
+  }, [])
+
+  const onDeleteItem = useCallback(() => {
+    dispatch(delteItemFromCartAction(deleteItem))
+    setModalOpen(false)
+    setDeleteItem({})
+  }, [deleteItem, dispatch])
+
+  if (!cartItems?.length) {
+    return (
+      <div className="kalles-shop">
+        <header className="kalles-shop__head">
+          <nav className="kalles-shop__breadcrumb" aria-label="Breadcrumb">
+            <Link to="/">Home</Link>
+            <Chevron />
+            <span className="is-current">Shopping Cart</span>
+          </nav>
+          <h1 className="kalles-shop__title">Shopping Cart</h1>
+        </header>
+        <div className="kalles-shop__container">
+          <div className="kalles-shop__empty">
+            <img src={EmptyCart} alt="Empty cart" />
+            <h2>Your cart is empty</h2>
+            <p>Looks like you have not added anything to your cart yet.</p>
+            <Link to="/products" className="kalles-shop__btn kalles-shop__btn--primary" style={{ width: 'auto', display: 'inline-flex' }}>
+              Continue shopping
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      {cartItems?.length > 0 ? (
-        <>
-          <h1 className="text-2xl font-bold mb-6">Giỏ hàng của bạn</h1>
-          <div className="overflow-x-auto shadow-lg rounded-lg bg-white">
-            <table className="w-full text-base">
-              <thead className="bg-gray-700 text-white uppercase">
-                <tr>
-                  {headers.map((header, idx) => (
-                    <th key={idx} className="px-6 py-3 text-left">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {cartItems?.map((item, index) => (
-                  <tr
-                    key={item.productId + '-' + (item.variant?.id || index)}
-                    className=" hover:bg-gray-50 transition"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <img
-                          src={item?.thumbnail}
-                          alt={'product' + index}
-                          className="w-[100px] h-[100px] object-cover rounded-md shadow"
-                        />
-                        <div className="ml-4 text-gray-700">
-                          <p className="font-semibold">{item?.name}</p>
-                          <p className="text-sm">Size: {item?.variant?.size}</p>
-                          <p className="text-sm">Màu: {item?.variant?.color}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">{formatDisplayPrice(item?.price)}</td>
-                    <td className="px-6 py-4">
-                      <NumberInput quantity={item?.quantity}onChangeQuantity={
-                        (value) => onChangeQuantity(value, item?.productId, item?.variant?.id)}onRemoveItem={
-                          () => onDeleteProduct(item?.productId, item?.variant?.id)}/>
-                    </td>
-                    <td className="px-6 py-4 text-green-600 font-medium">Miễn phí</td>
-                    <td className="px-6 py-4">{formatDisplayPrice(item?.subTotal)}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        className="p-2 rounded hover:bg-red-100 text-red-600 transition"
-                        onClick={() => onDeleteProduct(item?.productId, item?.variant?.id)}
-                      >
-                        <FaRegTrashCan size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <div className="kalles-shop">
+      <header className="kalles-shop__head">
+        <nav className="kalles-shop__breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <Chevron />
+          <span className="is-current">Shopping Cart</span>
+        </nav>
+        <h1 className="kalles-shop__title">
+          Shopping Cart
+          <span className="kalles-cart__count">({itemCount} items)</span>
+        </h1>
+      </header>
 
-          <div className="flex flex-col md:flex-row justify-between mt-8 gap-6">
-            {/* Mã giảm giá */}
-            <div className="bg-white p-6 rounded-lg shadow w-full md:w-1/2">
-              <h2 className="text-lg font-bold mb-2"> Mã giảm giá</h2>
-              <p className="text-sm text-gray-500 mb-4">Nhập mã giảm giá của bạn</p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-black"
-                  placeholder="Nhập mã"
-                />
-                <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                  Áp dụng
-                </button>
-              </div>
-            </div>
-
-            {/* Tổng tiền */}
-            <div className="bg-white p-6 rounded-lg shadow w-full md:w-1/2">
-              <div className="flex justify-between text-lg mb-2">
-                <span>Tạm tính:</span>
-                <span>{formatDisplayPrice(subTotal)}</span>
-              </div>
-              <div className="flex justify-between text-lg mb-2">
-                <span>Vận chuyển:</span>
-                <span>{formatDisplayPrice(0)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold border-t pt-2">
-                <span>Tổng cộng:</span>
-                <span>{formatDisplayPrice(subTotal)}</span>
-              </div>
-              
-                <button
-                  className="w-full mt-4 bg-black text-white py-3 rounded-lg text-lg hover:bg-gray-800 transition"
-                  onClick={() => navigate('/checkout')}
+      <div className="kalles-shop__container">
+        <div className="kalles-cart__layout">
+          <div>
+            <div className="kalles-cart__items kalles-shop__card" style={{ padding: '0 1.25rem' }}>
+              {cartItems.map((item, index) => (
+                <article
+                  key={`${item.productId}-${item.variant?.id || index}`}
+                  className="kalles-cart__item"
                 >
-                  Thanh toán ngay
-                </button>
-              
+                  <Link to={`/product/${item.slug || item.productId}`} className="kalles-cart__item-image">
+                    <img src={item.thumbnail} alt={item.name} />
+                  </Link>
+
+                  <div className="kalles-cart__item-info">
+                    <h3>
+                      <Link to={`/product/${item.slug || item.productId}`}>{item.name}</Link>
+                    </h3>
+                    <p className="kalles-cart__item-meta">
+                      {item.variant?.color && <span>Color: {item.variant.color}</span>}
+                      {item.variant?.color && item.variant?.size && ' · '}
+                      {item.variant?.size && <span>Size: {item.variant.size}</span>}
+                    </p>
+                    <div className="kalles-cart__item-actions">
+                      <CartQty
+                        quantity={item.quantity}
+                        onChange={(v) =>
+                          onChangeQuantity(v, item.productId, item.variant?.id)
+                        }
+                        onRemove={() => onDeleteProduct(item.productId, item.variant?.id)}
+                      />
+                      <button
+                        type="button"
+                        className="kalles-cart__remove"
+                        onClick={() => onDeleteProduct(item.productId, item.variant?.id)}
+                        aria-label="Remove item"
+                      >
+                        <FiTrash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="kalles-cart__item-price">
+                    <span className="unit">{formatDisplayPrice(item.price)} each</span>
+                    <span className="sub">{formatDisplayPrice(item.subTotal)}</span>
+                  </div>
+                </article>
+              ))}
             </div>
+
+            <div className="kalles-cart__coupon">
+              <h3>Discount code</h3>
+              <p>Enter your coupon code if you have one.</p>
+              <div className="kalles-cart__coupon-row">
+                <input type="text" className="kalles-shop__input" placeholder="Coupon code" />
+                <button type="button" className="kalles-shop__btn kalles-shop__btn--outline" style={{ width: 'auto' }}>
+                  Apply
+                </button>
+              </div>
+            </div>
+
+            <Link to="/products" className="kalles-cart__continue">
+              <FiArrowLeft size={16} /> Continue shopping
+            </Link>
           </div>
 
-          {/* Modal xác nhận xóa */}
-          <Modal
-            isOpen={modalIsOpen}
-            onRequestClose={onCloseModal}
-            style={customStyles}
-            contentLabel="Xác nhận xóa"
-          >
-            <p>Bạn có chắc chắn muốn xóa sản phẩm này không?</p>
-            <div className="flex justify-between p-4">
+          <aside className="kalles-cart__summary kalles-shop__summary">
+            <h2>Order summary</h2>
+            <div className="kalles-shop__summary-row">
+              <span>Subtotal</span>
+              <strong>{formatDisplayPrice(subTotal)}</strong>
+            </div>
+            <div className="kalles-shop__summary-row">
+              <span>Shipping</span>
+              <strong style={{ color: '#2e7d32' }}>Free</strong>
+            </div>
+            <div className="kalles-shop__summary-total">
+              <span>Total</span>
+              <span className="amount">{formatDisplayPrice(subTotal)}</span>
+            </div>
+            <button
+              type="button"
+              className="kalles-shop__btn kalles-shop__btn--primary"
+              style={{ marginTop: '1.25rem' }}
+              onClick={() => navigate('/checkout')}
+            >
+              Proceed to checkout
+            </button>
+            <p className="kalles-cart__note">Taxes and shipping calculated at checkout.</p>
+          </aside>
+        </div>
+      </div>
+
+      {modalOpen && (
+        <>
+          <button
+            type="button"
+            className="kalles-shop__modal-backdrop"
+            aria-label="Close"
+            onClick={() => setModalOpen(false)}
+          />
+          <div className="kalles-shop__modal" role="dialog" aria-modal="true">
+            <p>Remove this item from your cart?</p>
+            <div className="kalles-shop__modal-actions">
               <button
-                className="h-[40px] px-4 border rounded-lg"
-                onClick={onCloseModal}
+                type="button"
+                className="kalles-shop__btn kalles-shop__btn--ghost"
+                style={{ width: 'auto' }}
+                onClick={() => setModalOpen(false)}
               >
-                Hủy bỏ
+                Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-4 h-[40px] rounded-lg"
+                type="button"
+                className="kalles-shop__btn kalles-shop__btn--danger"
+                style={{ width: 'auto' }}
                 onClick={onDeleteItem}
               >
-                Xóa
+                Remove
               </button>
             </div>
-          </Modal>
-        </>
-      ) : (
-        <div className="w-full text-center py-12">
-          <div className="flex justify-center mb-4">
-            <img
-              src={EmptyCart}
-              className="w-[200px] h-[200px] object-contain"
-              alt="empty-cart"
-            />
           </div>
-          <p className="text-2xl font-bold">Giỏ hàng trống!</p>
-          <Link
-            to="/men"
-            className="inline-block mt-4 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition"
-          >
-            Tiếp tục mua sắm
-          </Link>
-        </div>
+        </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Cart;
+export default Cart

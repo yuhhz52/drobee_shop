@@ -3,18 +3,17 @@ package com.yuhecom.shopecom.service;
 import com.yuhecom.shopecom.dto.CategoryDto;
 import com.yuhecom.shopecom.entity.Category;
 import com.yuhecom.shopecom.entity.CategoryType;
-import com.yuhecom.shopecom.exception.ResourceNotFoundEx;
+import com.yuhecom.shopecom.exception.BusinessException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.mapper.CategoryMapper;
 import com.yuhecom.shopecom.reponsitory.CategoryRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CategoryServiceTest {
@@ -38,7 +37,7 @@ public class CategoryServiceTest {
 
     public Category updateCategory(CategoryDto categoryDto, UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundEx("Category not found with Id " + categoryId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND, "Category not found with Id " + categoryId));
 
         // Cập nhật thông tin chính Category
         categoryMapper.updateCategoryFromDto(categoryDto, category);
@@ -52,7 +51,7 @@ public class CategoryServiceTest {
                     CategoryType existing = existingTypes.stream()
                             .filter(t -> t.getId().equals(dto.getId()))
                             .findFirst()
-                            .orElseThrow(() -> new ResourceNotFoundEx("CategoryType not found with Id " + dto.getId()));
+                            .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_TYPE_NOT_FOUND, "CategoryType not found with Id " + dto.getId()));
 
                     categoryMapper.updateCategoryTypeFromDto(dto, existing);
                     return existing;
@@ -148,6 +147,12 @@ public class CategoryServiceTest {
 //
 //        return  categoryRepository.save(category);
 //    }
+
+
+
+
+
+
 
 
 

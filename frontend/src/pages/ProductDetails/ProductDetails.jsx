@@ -1,270 +1,483 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
-import { Link, useLoaderData } from 'react-router-dom';
-import { useState } from 'react';
-import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
-import Rating from '../../components/Rating/Rating';
-import SizeFilter from '../../components/Filters/SizeFilter';
-import ProductColor from './ProductColor.jsx';
-import SvgCreditCard from '../../components/commom/SvgCreditCard';
-import SvgCloth from '../../components/commom/SvgCloth';
-import SvgShipping from '../../components/commom/SvgShipping';
-import SvgReturn from '../../components/commom/SvgReturn';
-import SectionHeading from '../../components/Sections/SectionHeading';
-import ProductCard from '../../pages/ProductListPage/ProductCard.jsx';
-import { useSelector, useDispatch } from 'react-redux';
-import { getAllProducts } from '../../api/fetchProducts.js';
-import _ from 'lodash';
-import { addItemToCartAction } from '../../store/actions/cartAction.js';
-import { formatDisplayPrice } from '../../utils/price-format';
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useLoaderData } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { FiHeart, FiShuffle } from 'react-icons/fi'
+import _ from 'lodash'
+import { getAllProducts } from '../../api/fetchProducts.js'
+import { addItemToCartAction } from '../../store/actions/cartAction.js'
+import { formatDisplayPrice } from '../../utils/price-format'
+import { colorSelector } from '../../components/Filters/ColorFilter'
+import ProductCard from '../ProductListPage/ProductCard.jsx'
+import './ProductDetails.css'
 
-const extraSections = [
-  {
-    icon: <SvgCreditCard />,
-    label: 'Secure payment'
-  },
-  {
-    icon: <SvgCloth />,
-    label: 'Size & Fit'
-  },
-  {
-    icon: <SvgShipping />,
-    label: 'Free shipping'
-  },
-  {
-    icon: <SvgReturn />,
-    label: 'Free Shipping & Returns'
-  }
-]
+const TRUST_IMG =
+  'https://kalles-5-2.myshopify.com/cdn/shop/files/trust_img.png?v=1763135869&width=760'
 
-const ProductDetails = () => {
-  const { product } = useLoaderData();
-  const [image, setImage] = useState();
-  const [breadcrumbLinks, setBreadCrumbLink] = useState();
-  const dispatch = useDispatch();
-  const [similarProduct, setSimilarProducts] = useState([]);
-  const categories = useSelector((state) => state?.categoryState?.categories);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [error, setError] = useState('');
+const Chevron = () => (
+  <svg width="5" height="8" viewBox="0 0 5 8" aria-hidden="true">
+    <path
+      d="M0.887 0L4.887 4L0.887 8L0.177 7.29L3.467 4L0.177 0.71L0.887 0Z"
+      fill="currentColor"
+    />
+  </svg>
+)
 
-  // --- Đưa các hook lên trên ---
-
-  useEffect(() => {
-    if (selectedSize) setError('');
-  }, [selectedSize]);
-
-  useEffect(() => {
-    if (selectedColor) setError('');
-  }, [selectedColor]);
-
-  const productCategory = useMemo(() => {
-    if (product?.categoryId && product?.categoryName) {
-      return { id: product.categoryId, name: product.categoryName };
-    }
-    return categories?.find((category) => category?.id === product?.categoryId);
-  }, [product, categories]);
-
-  useEffect(() => {
-    if (!product) return;
-    getAllProducts({
-      categoryId: product?.categoryId,
-      typeIds: product?.categoryTypeId ? [product?.categoryTypeId] : []
-    })
-      .then(res => {
-        const excludedProduct = (res.products || []).filter(item => item?.id !== product?.id);
-        setSimilarProducts(excludedProduct);
-      })
-      .catch(error => {
-        console.error('Error fetching similar products:', error);
-        setSimilarProducts([]);
-      });
-  }, [product?.categoryId, product?.categoryTypeId, product?.id,product]);
-
-  useEffect(() => {
-    if (!product) return;
-    // Set initial image from productResources or thumbnail
-    if (product?.productResources && product.productResources.length > 0) {
-      setImage(product.productResources[0]?.url);
-    } else {
-      setImage(product?.thumbnail);
-    }
-
-    // Breadcrumb: Trang chủ > Nam/Nữ > Tên sản phẩm
-    const categoryName = productCategory?.name || '';
-    const lowerName = categoryName.toLowerCase();
-
-    const genderPath = lowerName.includes('nam')
-      ? '/men'
-      : lowerName.includes('nữ')
-        ? '/women'
-        : '/';
-
-    const genderTitle = lowerName.includes('nam')
-      ? 'Nam'
-      : lowerName.includes('nữ')
-        ? 'Nữ'
-        : categoryName;
-
-    setBreadCrumbLink([
-      { title: 'Trang chủ', path: '/' },
-      productCategory ? { title: genderTitle, path: genderPath } : null,
-      { title: product?.name || product?.title },
-    ].filter(Boolean));
-  }, [productCategory, product]);
-
-  const addItemToCart = useCallback(() => {
-    if (!selectedSize) {
-      setError('Please select size')
-    }
-    else if (!selectedColor) {
-      setError('Please select color');
-    }
-    else {
-      const selectedVariant = product?.variants.find(
-        (variant) => variant?.size === selectedSize && variant?.color === selectedColor
-      );
-      if (selectedVariant?.stockQuantity > 0) {
-        const cartItem = {
-          productId: product?.id,
-          thumbnail: product?.thumbnail,
-          name: product?.name,
-          variant: selectedVariant,
-          quantity: 1,
-          price: product?.price,
-        };
-        console.log("cartItem:", cartItem);
-        dispatch(addItemToCartAction(cartItem))
-      } else {
-        setError('Out of Stock');
-      }
-    }
-  }, [dispatch, product, selectedSize, selectedColor]);
-
-  const colors = useMemo(() => {
-    const colorSet = _.uniq(_.map(product?.variants, 'color'));
-    return colorSet
-
-  }, [product]);
-
-  const sizes = useMemo(() => {
-    const sizeSet = _.uniq(_.map(product?.variants, 'size'));
-    return sizeSet
-
-  }, [product]);
-
-
-  // --- Sau khi đã gọi hết hooks, mới return ---
-  if (!product) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-xl">Product not found!</p>
-      </div>
-    );
-  }
-
-
-
+const ProductModal = ({ title, open, onClose, children }) => {
+  if (!open) return null
   return (
     <>
-      <div className='flex flex-col md:flex-row px-10 pt-20 '>
-        <div className='w-[100%] lg:w-[50%] md:w-[40%]' >
-          {/*Images*/}
-          <div className='flex flex-col md:flex-row '>
-            <div className='w-[100%] md:w-[20%] justify-center h-[40px] md:h-[420px]'>
-              {/*Stack of images*/}
-              <div className='flex flex-row md:flex-col justify-center h-full'>
-                {
-                  product?.productResources && product.productResources.length > 0 ? (
-                    product.productResources.map((item, index) => (
-                      <button key={index} onClick={() => setImage(item?.url)}
-                        className='rounded-lg w-fit p-2 mb-2'>
-                        <img src={item?.url}
-                          className='h-[60px] w-[60px] rounded-lg bg-cover bg-center hover:scale-105 hover:border'
-                          alt={'sample-' + index} />
-                      </button>
-                    ))
-                  ) : (
-                    // Fallback to thumbnail if no productResources
-                    <button onClick={() => setImage(product?.thumbnail)}
-                      className='rounded-lg w-fit p-2 mb-2'>
-                      <img src={product?.thumbnail}
-                        className='h-[60px] w-[60px] rounded-lg bg-cover bg-center hover:scale-105 hover:border'
-                        alt="product-thumbnail" />
-                    </button>
-                  )
-                }
-              </div>
-            </div>
-            <div className='w-full md:w-[80%] flex justify-center md:pt-0 pt-10'>
-              <img src={image} alt={product?.name || product?.title} className='h-full w-full max-h-[520px]
-         border rounded-lg cursor-pointer object-cover'/>
-            </div>
-          </div>
+      <button type="button" className="kalles-pdp__modal-backdrop" aria-label="Close" onClick={onClose} />
+      <div className="kalles-pdp__modal" role="dialog" aria-modal="true">
+        <div className="kalles-pdp__modal-header">
+          <h3>{title}</h3>
+          <button type="button" className="kalles-pdp__modal-close" onClick={onClose} aria-label="Close">
+            <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true">
+              <path d="M15 0L1 14m14 0L1 0" stroke="currentColor" fill="none" />
+            </svg>
+          </button>
         </div>
-        <div className='w-[60%] px-10' >
-          {/*Product Information*/}
-          <Breadcrumb links={breadcrumbLinks} />
-          <p className='text-3xl pt-4'>{product?.name || product?.title}</p>
-          <Rating rating={product?.rating} />
-          {/* Price Tag */}
-          <p className='text-xl bold py-2'>{formatDisplayPrice(product?.price)}</p>
-          <div className='flex flex-col'>
-            <div className='flex gap-2 pb-2'>
-              <p className='text-sm bold'>Select Size</p>
-              <Link className='text-sm  text-gray-500 hover:text-gray-900' to={'https://en.wikipedia.org/wiki/Clothing_sizes'} target='_blank'>{'Size Guide ->'}</Link>
-            </div>
-          </div>
-          <div >
-            <SizeFilter
-              onChange={(size) => setSelectedSize(selectedSize === size ? '' : size)}
-              sizes={sizes}
-            />
-          </div>
-
-          <div>
-            <p className='text-sm bold mb-2'>Select Color</p>
-            <ProductColor
-              onChange={(color) => setSelectedColor(selectedColor === color ? '' : color)}
-              colors={colors}
-              selectedColor={selectedColor}
-            />
-          </div>
-          <div className='flex py-4'>
-            <button onClick={addItemToCart} className='bg-black rounded-lg hover:bg-gray-700'><div className='flex h-[42px] rounded-lg w-[150px] px-2 items-center justify-center bg-black text-white hover:bg-gray-700'><svg width="17" height="16" className='' viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1.5 1.33325H2.00526C2.85578 1.33325 3.56986 1.97367 3.6621 2.81917L4.3379 9.014C4.43014 9.8595 5.14422 10.4999 5.99474 10.4999H13.205C13.9669 10.4999 14.6317 9.98332 14.82 9.2451L15.9699 4.73584C16.2387 3.68204 15.4425 2.65733 14.355 2.65733H4.5M4.52063 13.5207H5.14563M4.52063 14.1457H5.14563M13.6873 13.5207H14.3123M13.6873 14.1457H14.3123M5.66667 13.8333C5.66667 14.2935 5.29357 14.6666 4.83333 14.6666C4.3731 14.6666 4 14.2935 4 13.8333C4 13.373 4.3731 12.9999 4.83333 12.9999C5.29357 12.9999 5.66667 13.373 5.66667 13.8333ZM14.8333 13.8333C14.8333 14.2935 14.4602 14.6666 14 14.6666C13.5398 14.6666 13.1667 14.2935 13.1667 13.8333C13.1667 13.373 13.5398 12.9999 14 12.9999C14.4602 12.9999 14.8333 13.373 14.8333 13.8333Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>Add to cart</div></button>
-          </div>
-          {error && <p className='text-lg text-red-600'>{error}</p>}
-          <div className='grid md:grid-cols-2 gap-4 pt-4'>
-            {/*  */}
-            {
-              extraSections?.map((section, index) => (
-                <div key={index} className='flex items-center'>
-                  {section?.icon}
-                  <p className='px-2'>{section?.label}</p>
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </div>
-      {/* Product Description */}
-      <SectionHeading title={'Mô tả Sản phẩm'} />
-      <div className='md:w-[50%] w-full p-2'>
-        <p className='px-8'>{product?.description}</p>
-      </div>
-
-      <SectionHeading title={'Sản phẩm tương tự'} />
-      <div className='flex px-10'></div>
-
-      <div className='pt-4 grid grid-cols-1 lg:grid-cols-5 md:grid-cols-3 gap-8 px-2 pb-10'>
-        {similarProduct?.map((item, index) => (
-          <ProductCard key={item.id || index} {...item} />
-        ))}
-        {!similarProduct?.length && <p>Sản phẩm không tồn tại!</p>}
-
+        <div className="kalles-pdp__modal-body">{children}</div>
       </div>
     </>
+  )
+}
+
+const ProductDetails = () => {
+  const { product } = useLoaderData()
+  const dispatch = useDispatch()
+  const categories = useSelector((state) => state?.categoryState?.categories)
+
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [similarProducts, setSimilarProducts] = useState([])
+  const [selectedSize, setSelectedSize] = useState('')
+  const [selectedColor, setSelectedColor] = useState('')
+  const [quantity, setQuantity] = useState(1)
+  const [error, setError] = useState('')
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
+  const [deliveryOpen, setDeliveryOpen] = useState(false)
+
+  const images = useMemo(() => {
+    const fromResources = (product?.productResources || [])
+      .map((r) => r?.url)
+      .filter(Boolean)
+    if (fromResources.length) return fromResources
+    if (product?.thumbnail) return [product.thumbnail]
+    return []
+  }, [product])
+
+  const discountPercent = product?.discount ? Math.round(product.discount) : 0
+  const comparePrice =
+    discountPercent > 0 ? Math.round(product.price / (1 - discountPercent / 100)) : null
+
+  const colors = useMemo(
+    () => _.uniq((product?.variants || []).map((v) => v.color).filter(Boolean)),
+    [product]
+  )
+
+  const sizes = useMemo(() => {
+    const pool = selectedColor
+      ? (product?.variants || []).filter((v) => v.color === selectedColor)
+      : product?.variants || []
+    return _.uniq(pool.map((v) => v.size).filter(Boolean))
+  }, [product, selectedColor])
+
+  const selectedVariant = useMemo(() => {
+    if (!product?.variants?.length) return null
+    return product.variants.find((v) => {
+      const colorOk = !colors.length || v.color === selectedColor
+      const sizeOk = !sizes.length || v.size === selectedSize
+      return colorOk && sizeOk
+    })
+  }, [product, colors, sizes, selectedColor, selectedSize])
+
+  const inStock = selectedVariant
+    ? (selectedVariant.stockQuantity ?? 1) > 0
+    : (product?.variants || []).some((v) => (v.stockQuantity ?? 1) > 0)
+
+  const categoryPath = useMemo(() => {
+    const name = (product?.categoryName || '').toLowerCase()
+    if (name.includes('nam') || name.includes('men')) return { label: 'Men', path: '/men' }
+    if (name.includes('nữ') || name.includes('nu') || name.includes('women'))
+      return { label: 'Women', path: '/women' }
+    if (name.includes('phụ kiện') || name.includes('accessories'))
+      return { label: 'Accessories', path: '/accessories' }
+    return { label: 'All', path: '/products' }
+  }, [product?.categoryName])
+
+  useEffect(() => {
+    if (!product?.id) return
+    getAllProducts({
+      categoryId: product.categoryId,
+      typeIds: product.categoryTypeId ? [product.categoryTypeId] : [],
+      size: 8,
+    })
+      .then((res) => {
+        setSimilarProducts((res.products || []).filter((p) => p.id !== product.id).slice(0, 8))
+      })
+      .catch(() => setSimilarProducts([]))
+  }, [product])
+
+  useEffect(() => {
+    setActiveImageIndex(0)
+    setSelectedSize('')
+    setSelectedColor('')
+    setQuantity(1)
+    setError('')
+  }, [product?.id])
+
+  useEffect(() => {
+    if (selectedSize || selectedColor) setError('')
+  }, [selectedSize, selectedColor])
+
+  const goImage = (dir) => {
+    if (!images.length) return
+    setActiveImageIndex((i) => {
+      const next = i + dir
+      if (next < 0) return images.length - 1
+      if (next >= images.length) return 0
+      return next
+    })
+  }
+
+  const addItemToCart = useCallback(() => {
+    if (sizes.length && !selectedSize) {
+      setError('Please select a size')
+      return
+    }
+    if (colors.length && !selectedColor) {
+      setError('Please select a color')
+      return
+    }
+    if (!selectedVariant) {
+      setError('Please select product options')
+      return
+    }
+    if ((selectedVariant.stockQuantity ?? 0) <= 0) {
+      setError('Out of stock')
+      return
+    }
+
+    dispatch(
+      addItemToCartAction({
+        productId: product.id,
+        thumbnail: product.thumbnail,
+        name: product.name,
+        variant: selectedVariant,
+        quantity,
+        price: product.price,
+      })
+    )
+    setError('')
+  }, [dispatch, product, selectedVariant, selectedSize, selectedColor, sizes, colors, quantity])
+
+  if (!product) {
+    return <div className="kalles-pdp__empty">Product not found.</div>
+  }
+
+  const activeImage = images[activeImageIndex] || product.thumbnail
+  const nextSimilar = similarProducts[0]
+
+  return (
+    <div className="kalles-pdp">
+      <nav className="kalles-pdp__breadcrumb" aria-label="Breadcrumb">
+        <div className="kalles-pdp__breadcrumb-inner">
+          <div className="kalles-pdp__breadcrumb-list">
+            <Link to="/">Home</Link>
+            <Chevron />
+            <Link to={categoryPath.path}>{categoryPath.label}</Link>
+            <Chevron />
+            <span className="is-current">{product.name}</span>
+          </div>
+          <div className="kalles-pdp__breadcrumb-actions">
+            <Link to={categoryPath.path} title="Back to collection" aria-label="Back to collection">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+            </Link>
+            {nextSimilar?.slug && (
+              <Link
+                to={`/product/${nextSimilar.slug}`}
+                title={nextSimilar.name}
+                aria-label="Next product"
+              >
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor">
+                  <path d="M12.969 4.281L11.531 5.718L21.812 16L11.531 26.281L12.969 27.718L23.969 16.718L24.656 16L23.969 15.281Z" />
+                </svg>
+              </Link>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      <div className="kalles-pdp__main">
+        <div className="kalles-pdp__media">
+          {images.length > 1 && (
+            <div className="kalles-pdp__thumbs">
+              {images.map((url, index) => (
+                <button
+                  key={url + index}
+                  type="button"
+                  className={`kalles-pdp__thumb ${activeImageIndex === index ? 'is-active' : ''}`}
+                  onClick={() => setActiveImageIndex(index)}
+                >
+                  <img src={url} alt="" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="kalles-pdp__main-image">
+            {discountPercent > 0 && (
+              <span className="kalles-pdp__badge">-{discountPercent}%</span>
+            )}
+            {product.newArrival && (
+              <span className="kalles-pdp__badge kalles-pdp__badge--new">New</span>
+            )}
+            <img src={activeImage} alt={product.name} />
+
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="kalles-pdp__nav kalles-pdp__nav--prev"
+                  onClick={() => goImage(-1)}
+                  aria-label="Previous image"
+                >
+                  <svg width="7" height="11" viewBox="0 0 7 11" fill="currentColor">
+                    <path d="M5.5 11L0 5.5L5.5 0L6.476 0.976L1.952 5.5L6.476 10.024L5.5 11Z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="kalles-pdp__nav kalles-pdp__nav--next"
+                  onClick={() => goImage(1)}
+                  aria-label="Next image"
+                >
+                  <svg width="7" height="11" viewBox="0 0 7 11" fill="currentColor">
+                    <path d="M1.5 11L7 5.5L1.5 0L0.524 0.976L5.048 5.5L0.524 10.024L1.5 11Z" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="kalles-pdp__info">
+          <h1 className="kalles-pdp__title">{product.name}</h1>
+
+          <div className="kalles-pdp__price">
+            {comparePrice && (
+              <span className="compare">{formatDisplayPrice(comparePrice)}</span>
+            )}
+            <span className={`current ${comparePrice ? 'on-sale' : ''}`}>
+              {formatDisplayPrice(product.price)}
+            </span>
+          </div>
+
+          {product.description && (
+            <p className="kalles-pdp__desc">
+              {product.description.length > 220
+                ? `${product.description.slice(0, 220)}...`
+                : product.description}
+            </p>
+          )}
+
+          {sizes.length > 0 && (
+            <div className="kalles-pdp__variant">
+              <div className="kalles-pdp__variant-label">
+                <span>Size</span>
+                <button type="button" onClick={() => setSizeGuideOpen(true)}>
+                  Size Guide
+                </button>
+              </div>
+              <div className="kalles-pdp__sizes">
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    className={`kalles-pdp__size ${selectedSize === size ? 'is-active' : ''}`}
+                    onClick={() => setSelectedSize(selectedSize === size ? '' : size)}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {colors.length > 0 && (
+            <div className="kalles-pdp__variant">
+              <p className="kalles-pdp__variant-label">
+                <span>Color{selectedColor ? `: ${selectedColor}` : ''}</span>
+              </p>
+              <div className="kalles-pdp__colors">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`kalles-pdp__swatch ${selectedColor === color ? 'is-active' : ''}`}
+                    style={{ background: colorSelector[color] || color }}
+                    title={color}
+                    aria-label={color}
+                    onClick={() => {
+                      setSelectedColor(selectedColor === color ? '' : color)
+                      setSelectedSize('')
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {error && <p className="kalles-pdp__error">{error}</p>}
+
+          <div className="kalles-pdp__buy">
+            <div className="kalles-pdp__qty">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                aria-label="Quantity"
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => q + 1)}
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="kalles-pdp__atc"
+              onClick={addItemToCart}
+              disabled={!inStock}
+            >
+              {inStock ? 'Add to cart' : 'Sold out'}
+            </button>
+
+            <div className="kalles-pdp__icon-btns">
+              <button type="button" className="kalles-pdp__icon-btn" aria-label="Add to wishlist">
+                <FiHeart size={20} />
+              </button>
+              <button type="button" className="kalles-pdp__icon-btn" aria-label="Add to compare">
+                <FiShuffle size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="kalles-pdp__trust">
+            <img src={TRUST_IMG} alt="Secure checkout" loading="lazy" />
+          </div>
+
+          <div className="kalles-pdp__links">
+            <button type="button" onClick={() => setSizeGuideOpen(true)}>
+              Size Guide
+            </button>
+            <button type="button" onClick={() => setDeliveryOpen(true)}>
+              Delivery &amp; Return
+            </button>
+          </div>
+
+          <div className="kalles-pdp__meta">
+            <p>
+              Availability:{' '}
+              <span className={inStock ? 'in-stock' : 'out-stock'}>
+                {inStock ? 'In stock' : 'Out of stock'}
+              </span>
+            </p>
+            {selectedVariant && (
+              <p>
+                SKU: <span>{selectedVariant.id?.slice(0, 8) || product.slug}</span>
+              </p>
+            )}
+            <p>
+              Categories:{' '}
+              <Link to={categoryPath.path}>{categoryPath.label}</Link>
+              {product.categoryTypeName && (
+                <span> / {product.categoryTypeName}</span>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {product.description && (
+        <section className="kalles-pdp__accordion">
+          <details open>
+            <summary>Description</summary>
+            <div className="content">{product.description}</div>
+          </details>
+          <details>
+            <summary>Shipping &amp; Returns</summary>
+            <div className="content">
+              <p>Free shipping on orders over 2,000,000₫. Standard delivery 3–5 business days.</p>
+              <p>Returns accepted within 14 days in original condition.</p>
+            </div>
+          </details>
+        </section>
+      )}
+
+      {similarProducts.length > 0 && (
+        <section className="kalles-pdp__related">
+          <h3>You may also like</h3>
+          <div className="kalles-pdp__related-grid">
+            {similarProducts.map((item) => (
+              <ProductCard key={item.id} {...item} title={item.name} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ProductModal title="Size Guide" open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)}>
+        <p>Measure carefully before ordering. For scooter gear, refer to manufacturer sizing charts.</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #ddd' }}>
+              <th style={{ padding: '0.5rem', textAlign: 'left' }}>Size</th>
+              <th style={{ padding: '0.5rem', textAlign: 'left' }}>US</th>
+              <th style={{ padding: '0.5rem', textAlign: 'left' }}>EU</th>
+            </tr>
+          </thead>
+          <tbody>
+            {['XS', 'S', 'M', 'L', 'XL'].map((s, i) => (
+              <tr key={s} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '0.5rem' }}>{s}</td>
+                <td style={{ padding: '0.5rem' }}>{2 + i * 2}</td>
+                <td style={{ padding: '0.5rem' }}>{34 + i * 2}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ProductModal>
+
+      <ProductModal title="Delivery & Return" open={deliveryOpen} onClose={() => setDeliveryOpen(false)}>
+        <h4>Delivery</h4>
+        <ul>
+          <li>All orders shipped with express courier.</li>
+          <li>Free shipping for orders over 2,000,000₫.</li>
+          <li>Tracking number provided for every order.</li>
+        </ul>
+        <h4>Returns</h4>
+        <ul>
+          <li>Items returned within 14 days in same condition are eligible for refund.</li>
+          <li>Refunds processed to the original payment method.</li>
+          <li>Customer pays return shipping unless item is defective.</li>
+        </ul>
+      </ProductModal>
+    </div>
   )
 }
 

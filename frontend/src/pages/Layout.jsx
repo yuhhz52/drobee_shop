@@ -13,9 +13,9 @@ const LayoutShop = () => {
     <div>
         <ScrollToTop />
         <Navigation />
-        <div className='pt-14 md:pt-20 lg:pt-26'>
-        <Outlet />
-        </div>
+        <main className="site-main">
+          <Outlet />
+        </main>
         <Footer content={content?.footer} />
         {isLoading && <Spinner />}
     </div>

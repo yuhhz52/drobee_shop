@@ -2,7 +2,8 @@ package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.dto.ProductDto;
 import com.yuhecom.shopecom.entity.*;
-import com.yuhecom.shopecom.exception.ResourceNotFoundEx;
+import com.yuhecom.shopecom.exception.BusinessException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.reponsitory.ProductRepository;
 import com.yuhecom.shopecom.reponsitory.ProductVariantRepository;
@@ -40,11 +41,12 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryService.getCategory(productDto.getCategoryId());
         product.setCategory(category);
 
-        if (productDto.getCategoryTypeId() != null) {
+        if (productDto.getCategoryTypeId() != null && category.getCategoryTypes() != null) {
             CategoryType categoryType = category.getCategoryTypes().stream()
                     .filter(ct -> ct.getId().equals(productDto.getCategoryTypeId()))
                     .findFirst()
-                    .orElse(null);
+                    .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_TYPE_NOT_FOUND,
+                            "Category type not found with id " + productDto.getCategoryTypeId()));
             product.setCategoryType(categoryType);
         }
 
@@ -56,23 +58,11 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(productId);
     }
 
-//    @Override
-//    public ProductDto getProductBySlug(String slug) {
-//        Product product = productRepository.findBySlug(slug);
-//        if(null == product){
-//            throw new ResourceNotFoundEx("Product not found");
-//        }
-//        ProductDto dto = productMapper.toDto(product);
-//        dto.setVariants(productMapper.toProductVariantDtos(product.getProductVariantList()));
-//        dto.setProductResources(productMapper.toProductResourceDtos(product.getProductResources()));
-//        return dto;
-//    }
-
     @Override
     public ProductDto getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug);
         if (product == null) {
-            throw new ResourceNotFoundEx("Product not found");
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found");
         }
         return productMapper.toDto(product);
     }
@@ -104,31 +94,17 @@ public class ProductServiceImpl implements ProductService {
         return productPage.map(productMapper::toDto);
     }
 
-
-//    @Override
-//    public ProductDto getProductById(UUID id) {
-//        Product product= productRepository.findById(id).orElseThrow(()-> new ResourceNotFoundEx("Product Not Found!"));
-//        if(null == product){
-//            throw new ResourceNotFoundEx("Product not found");
-//        }
-//
-//        ProductDto dto = productMapper.toDto(product);
-//        dto.setVariants(productMapper.toProductVariantDtos(product.getProductVariantList()));
-//        dto.setProductResources(productMapper.toProductResourceDtos(product.getProductResources()));
-//        return dto;
-//    }
-
     @Override
     public ProductDto getProductById(UUID id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundEx("Product not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found"));
         return productMapper.toDto(product);
     }
 
     @Override
     public Product updateProduct(ProductDto productDto, UUID id) {
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundEx("Product Not Found!"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "Product Not Found!"));
 
         // Cập nhật các field có trong DTO (chỉ ghi đè khi DTO không null)
         if (productDto.getName() != null) {
@@ -161,7 +137,7 @@ public class ProductServiceImpl implements ProductService {
                 CategoryType categoryType = category.getCategoryTypes().stream()
                         .filter(ct -> ct.getId().equals(productDto.getCategoryTypeId()))
                         .findFirst()
-                        .orElseThrow(() -> new ResourceNotFoundEx("Category Type not found in selected Category"));
+                        .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_TYPE_NOT_FOUND, "Category Type not found in selected Category"));
                 existingProduct.setCategoryType(categoryType);
             }
         }
@@ -174,23 +150,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product fetchProductById(UUID id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundEx("Product not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found"));
     }
 
     @Override
     public ProductVariant fetchProductVariantById(UUID id) {
         return productVariantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundEx("ProductVariant not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, "ProductVariant not found"));
     }
 
 }
-
-
-
-
-
-
-
-
-
-
