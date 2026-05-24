@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.controller;
 
 
+import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.ProductDto;
 import com.yuhecom.shopecom.entity.Product;
 import com.yuhecom.shopecom.service.ProductService;
@@ -30,7 +31,7 @@ public class ProductsController {
 
     //Hien thi toan bo san pham
     @GetMapping
-    public ResponseEntity<List<ProductDto>> getAllProducts(
+    public ResponseEntity<ApiResponse<List<ProductDto>>> getAllProducts(
             @RequestParam(required = false, name = "categoryId") UUID categoryId,
             @RequestParam(required = false, name = "typeIds") List<UUID> typeIds,
             @RequestParam(required = false, name = "typeId") UUID typeId,
@@ -43,7 +44,7 @@ public class ProductsController {
     ) {
         if (StringUtils.isNotBlank(slug)) {
             ProductDto productDto = productService.getProductBySlug(slug);
-            return ResponseEntity.ok(List.of(productDto));
+            return ResponseEntity.ok(ApiResponse.<List<ProductDto>>builder().result(List.of(productDto)).build());
         }
 
         if (typeId != null) {
@@ -61,38 +62,39 @@ public class ProductsController {
         response.setHeader("Content-Range", "products " + start + "-" + end + "/" + productPage.getTotalElements());
         response.setHeader("Access-Control-Expose-Headers", "Content-Range");
 
-        return ResponseEntity.ok(productPage.getContent());
+        return ResponseEntity.ok(ApiResponse.<List<ProductDto>>builder().result(productPage.getContent()).build());
     }
 
 
     // Kiem san theo id
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable UUID id){
+    public ResponseEntity<ApiResponse<ProductDto>> getProductById(@PathVariable UUID id){
         ProductDto productDto = productService.getProductById(id);
-        return new ResponseEntity<>(productDto, HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.<ProductDto>builder().result(productDto).build());
     }
     // Tao san pham
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> createProduct(@RequestBody  ProductDto productDto){
+    public ResponseEntity<ApiResponse<Product>> createProduct(@RequestBody  ProductDto productDto){
         Product product = productService.addProducts(productDto);
-        return new ResponseEntity<>(product, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<Product>builder().result(product).build());
 
     }
     // Xoa
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteProduct(@PathVariable("id") UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable("id") UUID id) {
         productService.deleteProduct(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.<Void>builder().result(null).build());
     }
 
     // Cap nhat
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> updateProduct(@RequestBody ProductDto productDto,@PathVariable UUID id){
+    public ResponseEntity<ApiResponse<Product>> updateProduct(@RequestBody ProductDto productDto,@PathVariable UUID id){
         Product product = productService.updateProduct(productDto,id);
-        return new ResponseEntity<>(product,HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.<Product>builder().result(product).build());
     }
 
 }

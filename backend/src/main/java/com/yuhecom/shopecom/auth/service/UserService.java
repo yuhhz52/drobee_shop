@@ -3,6 +3,9 @@ package com.yuhecom.shopecom.auth.service;
 import com.yuhecom.shopecom.auth.dto.UsersDto;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.repository.UsersRepository;
+import com.yuhecom.shopecom.exception.AppException;
+import com.yuhecom.shopecom.exception.BusinessException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.mapper.UsersMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +31,12 @@ public class UserService {
      */
     public UsersDto getUserProfile(Principal principal) {
         if (principal == null) {
-            throw new IllegalArgumentException("Principal is null");
+            throw new AppException(ErrorCode.PRINCIPAL_REQUIRED, "Principal is null");
         }
 
         User user = (User) userDetailsService.loadUserByUsername(principal.getName());
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found");
         }
 
         return usersMapper.toDto(user);
@@ -53,7 +56,7 @@ public class UserService {
     @Transactional
     public void deleteUser(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found with id: " + id));
 
         user.getAuthorities().clear();
         user.getAddressList().clear();

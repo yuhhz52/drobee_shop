@@ -2,7 +2,7 @@ import React from 'react'
 
 const Spinner = () => {
   return (
-    <div className="flex justify-center items-center h-screen fixed top-0 left-0 right-0 bottom-0 w-full z-50 overflow-hidden bg-gray-100 opacity-75">
+    <div className="flex justify-center items-center h-screen fixed top-0 left-0 right-0 bottom-0 w-full z-[900] overflow-hidden bg-gray-100 opacity-75">
     <div className="spinner-border animate-spin inline-block w-8 h-8 rounded-full" role="status">
         <span className="visually-hidden">
             <svg aria-hidden="true" className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">

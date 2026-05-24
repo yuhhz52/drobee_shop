@@ -1,0 +1,234 @@
+.kalles-card {
+  background: #ffffff;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  text-align: center;
+}
+
+.kalles-card__media {
+  position: relative;
+}
+
+.kalles-card__image-link {
+  display: block;
+}
+
+.kalles-card__image {
+  position: relative;
+  background: var(--kalles-soft);
+  padding: 0;
+  min-height: auto;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.kalles-card__image img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.kalles-card:hover .kalles-card__image img {
+  transform: scale(1.03);
+}
+
+.kalles-card__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #ff4e00;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-transform: none;
+  z-index: 2;
+}
+
+.kalles-card__badge--preorder {
+  left: auto;
+  right: 10px;
+  background: #0774d7;
+}
+
+.kalles-card__title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+  color: var(--kalles-dark);
+  line-height: 1.4;
+}
+
+.kalles-card__price {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  align-items: center;
+}
+
+.kalles-card__price .old {
+  text-decoration: line-through;
+  color: var(--kalles-muted);
+}
+
+.kalles-card__price .current {
+  color: var(--kalles-sale);
+  font-weight: 500;
+}
+
+/* Variant picker on hover */
+.kalles-card__variants {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  padding: 0.75rem 0.6rem 0.65rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.92) 35%,
+    #ffffff 100%
+  );
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  pointer-events: none;
+}
+
+.kalles-card:hover .kalles-card__variants,
+.kalles-card__variants:focus-within {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.kalles-card__variant-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.kalles-card__variant-label {
+  font-size: 0.7rem;
+  color: var(--kalles-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 2.2rem;
+  text-align: left;
+}
+
+.kalles-card__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-start;
+}
+
+.kalles-card__swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.kalles-card__swatch:hover {
+  transform: scale(1.1);
+}
+
+.kalles-card__swatch.is-active {
+  border-color: #222;
+  box-shadow: 0 0 0 1px #222;
+}
+
+.kalles-card__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-start;
+}
+
+.kalles-card__size {
+  min-width: 2rem;
+  height: 1.75rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  font-size: 0.75rem;
+  color: var(--kalles-dark);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.kalles-card__size:hover {
+  border-color: #222;
+}
+
+.kalles-card__size.is-active {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+
+.kalles-card__atc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  background: #222;
+  color: #fff;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.kalles-card__atc:hover:not(.is-disabled) {
+  background: var(--kalles-accent);
+}
+
+.kalles-card__atc.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kalles-card__info {
+  display: block;
+  padding: 1rem 0.5rem 1.25rem;
+  color: inherit;
+}
+
+.kalles-card__info:hover .kalles-card__title {
+  color: var(--kalles-accent);
+}
+
+@media (hover: none) {
+  .kalles-card__variants {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+    background: #fff;
+    border-top: 1px solid var(--kalles-border);
+  }
+}

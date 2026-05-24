@@ -1,22 +1,46 @@
 @import "tailwindcss";
-
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap");
 
 :root {
-  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-  line-height: 1.5;
+  --font-display: "Poppins", "Segoe UI", sans-serif;
+  --font-body: "Poppins", "Segoe UI", sans-serif;
+  --kalles-accent: #f92c2c;
+  --kalles-accent-hover: #f70000;
+  --kalles-sale: #f85712;
+  --kalles-dark: #222222;
+  --kalles-muted: #878787;
+  --kalles-border: #dddddd;
+  --kalles-soft: #f2f2f2;
+  --kalles-shadow: 0 12px 30px rgba(34, 34, 34, 0.08);
+  --kalles-container: 1440px;
+  --site-header-height: 72px;
+
+  font-family: var(--font-body);
+  line-height: 1.7;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(16, 16, 16, 0.87);
-  background-color: #fffcfc;
-
+  color-scheme: light;
+  color: var(--kalles-dark);
+  background-color: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ẩn icon "eye" trong trình duyệt (Chrome, Edge, Safari) */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
 input[type='password']::-ms-reveal,
 input[type='password']::-ms-clear {
   display: none;
@@ -26,4 +50,15 @@ input[type='password']::-webkit-credentials-auto-fill-button,
 input[type='password']::-webkit-password-reveal-button {
   display: none !important;
   appearance: none;
+}
+
+.site-main {
+  padding-top: var(--site-header-height);
+  min-height: 100vh;
+}
+
+@media (max-width: 1150px) {
+  :root {
+    --site-header-height: 60px;
+  }
 }

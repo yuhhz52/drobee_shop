@@ -1,0 +1,132 @@
+.kalles-order__success {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #c8e6c9;
+  background: #f1f8f1;
+  color: #2e7d32;
+}
+
+.kalles-order__success svg {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.kalles-order__success h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--kalles-dark);
+}
+
+.kalles-order__success p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--kalles-muted);
+}
+
+.kalles-order__success strong {
+  color: var(--kalles-dark);
+}
+
+.kalles-order__meta {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--kalles-muted);
+}
+
+.kalles-order__panel {
+  border: 1px solid var(--kalles-border);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.kalles-order__panel h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kalles-order__details {
+  font-size: 0.9rem;
+  color: var(--kalles-muted);
+  line-height: 1.8;
+}
+
+.kalles-order__details strong {
+  color: var(--kalles-dark);
+}
+
+.kalles-order__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.kalles-order__item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--kalles-soft);
+  border: 1px solid var(--kalles-border);
+}
+
+.kalles-order__item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.kalles-order__item h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.kalles-order__item p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--kalles-muted);
+}
+
+.kalles-order__address {
+  padding: 1.25rem;
+  background: var(--kalles-soft);
+  border: 1px solid var(--kalles-border);
+}
+
+.kalles-order__address h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.kalles-order__address p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--kalles-muted);
+  line-height: 1.6;
+}
+
+.kalles-order__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.kalles-order__error {
+  text-align: center;
+  padding: 3rem;
+  color: #e81e1e;
+}

@@ -1,6 +1,11 @@
 import axios from "axios";
 import { API_BASE_URL, API_URL } from "./constant"
 
+const extractProductList = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.result)) return data.result;
+  return [];
+};
 
 export const getAllProducts = async ({ categoryId, typeIds = [], name, newArrival, page = 0, size = 12 }) => {
   typeIds = Array.isArray(typeIds) ? typeIds : (typeIds ? [typeIds] : []);
@@ -25,7 +30,7 @@ export const getAllProducts = async ({ categoryId, typeIds = [], name, newArriva
       totalElements = parseInt(contentRange.split("/")[1], 10) || 0;
     }
     return {
-      products: result?.data || [],
+      products: extractProductList(result?.data),
       totalElements
     };
   } catch (err) {
@@ -40,7 +45,7 @@ export const getProductBySlug = async (slug)=>{
         const result = await axios(url,{
             method:"GET",
         });
-        return result?.data?.[0];
+        return extractProductList(result?.data)[0];
     }
     catch(err){
         console.error(err);

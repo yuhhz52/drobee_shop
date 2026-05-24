@@ -15,14 +15,15 @@ export const colorSelector = {
   "Green": "#008000"
 };
 
-const ColorFilter = ({ colors, onChange }) => {
-  const [selectedColor, setSelectedColor] = useState('');
+const ColorFilter = ({ colors, onChange, selectedColor: controlledColor }) => {
+  const [internalColor, setInternalColor] = useState('');
+  const selectedColor = controlledColor !== undefined ? controlledColor : internalColor;
 
   const onClickDiv = useCallback((item) => {
     const newColor = selectedColor === item ? '' : item;
-    setSelectedColor(newColor);
-    onChange && onChange(newColor);
-  }, [selectedColor, onChange]);
+    if (controlledColor === undefined) setInternalColor(newColor);
+    onChange?.(newColor);
+  }, [selectedColor, onChange, controlledColor]);
 
   return (
     <div className='flex flex-col mb-4'>

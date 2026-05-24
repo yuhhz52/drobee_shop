@@ -1,4 +1,3 @@
-
 # Ignore build & IDE files
 target/
 *.iml
@@ -8,3 +7,5 @@ target/
 /.mvn/
 .mvn/wrapper/maven-wrapper.jar
 .env
+.tmp_*.html
+.tmp_*.txt

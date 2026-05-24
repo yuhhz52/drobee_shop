@@ -1,11 +1,11 @@
 package com.yuhecom.shopecom.controller;
 
+import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.CategoryDto;
 import com.yuhecom.shopecom.entity.Category;
 import com.yuhecom.shopecom.service.CategoryService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,52 +21,37 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable("id") UUID categoryId){
+    public ResponseEntity<ApiResponse<Category>> getCategoryById(@PathVariable("id") UUID categoryId){
         Category category = categoryService.getCategory(categoryId);
-        return new ResponseEntity<>(category, HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.<Category>builder().result(category).build());
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories(HttpServletResponse response){
+    public ResponseEntity<ApiResponse<List<Category>>> getAllCategories(HttpServletResponse response){
         List<Category> categoryList = categoryService.getAllCategory();
         response.setHeader("Content-Range",String.valueOf(categoryList.size()));
-        return new ResponseEntity<>(categoryList, HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.<List<Category>>builder().result(categoryList).build());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Category> createCategory(@RequestBody CategoryDto categoryDto){
+    public ResponseEntity<ApiResponse<Category>> createCategory(@RequestBody CategoryDto categoryDto){
         Category category = categoryService.createCategory(categoryDto);
-        return new ResponseEntity<>(category, HttpStatus.CREATED);
+        return ResponseEntity.status(201).body(ApiResponse.<Category>builder().result(category).build());
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Category> updateCategory(@RequestBody CategoryDto categoryDto, @PathVariable("id") UUID categoryId){
+    public ResponseEntity<ApiResponse<Category>> updateCategory(@RequestBody CategoryDto categoryDto, @PathVariable("id") UUID categoryId){
         Category category = categoryService.updateCategory(categoryDto, categoryId);
-        return new ResponseEntity<>(category, HttpStatus.CREATED);
+        return ResponseEntity.ok(ApiResponse.<Category>builder().result(category).build());
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteCategory(@PathVariable("id") UUID categoryId){
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable("id") UUID categoryId){
         categoryService.deleteCategory(categoryId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.<Void>builder().result(null).build());
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

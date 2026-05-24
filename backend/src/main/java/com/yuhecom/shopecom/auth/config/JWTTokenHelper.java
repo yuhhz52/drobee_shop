@@ -1,6 +1,8 @@
 package com.yuhecom.shopecom.auth.config;
 
 import com.yuhecom.shopecom.auth.entity.User;
+import com.yuhecom.shopecom.exception.AppException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -98,7 +100,7 @@ public class JWTTokenHelper {
         try {
             getAllClaimsFromToken(token); // parse ok => chữ ký đúng
             return !isTokenExpired(token);
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException | AppException e) {
             return false;
         }
     }
@@ -107,7 +109,7 @@ public class JWTTokenHelper {
         try {
             getAllClaimsFromToken(token);
             return true; // chữ ký hợp lệ, ignore expired
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException | AppException e) {
             return false;
         }
     }
@@ -134,10 +136,10 @@ public class JWTTokenHelper {
 
     private Claims getAllClaimsFromToken(String token) {
         if (token == null || token.trim().isEmpty()) {
-            throw new IllegalArgumentException("JWT Token is missing");
+            throw new AppException(ErrorCode.JWT_TOKEN_MISSING, "JWT Token is missing");
         }
         if (token.split("\\.").length != 3) {
-            throw new MalformedJwtException("Invalid JWT format: " + token);
+            throw new AppException(ErrorCode.JWT_TOKEN_INVALID, "Invalid JWT format: " + token);
         }
 
         return Jwts.parserBuilder()
