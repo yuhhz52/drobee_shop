@@ -3,22 +3,15 @@ import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
-import com.yuhecom.shopecom.entity.Order;
-import com.yuhecom.shopecom.exception.BusinessException;
-import com.yuhecom.shopecom.exception.ErrorCode;
-import com.yuhecom.shopecom.mapper.OrderMapper;
-import com.yuhecom.shopecom.reponsitory.OrderRepository;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
 
 
 import java.io.IOException;
@@ -35,11 +28,17 @@ public class OrderController {
     @Autowired
     OrderService orderService;
 
-    @Autowired
-    OrderRepository orderRepository;
+    @GetMapping("/vnpay-return")
+    public void vnpayReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        Map<String, String> params = new HashMap<>();
+        for (String key : parameterMap.keySet()) {
+            params.put(key, parameterMap.get(key)[0]);
+        }
 
-    @Autowired
-    OrderMapper orderMapper;
+        String redirectUrl = orderService.buildVnPayRedirectUrl(params);
+        response.sendRedirect(redirectUrl);
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
@@ -55,61 +54,6 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.<Map<String,String>>builder().result(response).build());
     }
 
-    @GetMapping("/vnpay-return")
-    public void vnpayReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Map<String, String[]> parameterMap = request.getParameterMap();
-        Map<String, String> params = new HashMap<>();
-        for (String key : parameterMap.keySet()) {
-            params.put(key, parameterMap.get(key)[0]);
-        }
-
-        boolean valid = orderService.validateVnPayReturn(params);
-        String orderId = null;
-        String status = "fail";
-
-        try {
-            // Lấy orderId từ vnp_OrderInfo thay vì vnp_TxnRef
-            String orderInfo = params.get("vnp_OrderInfo");
-            
-            if (orderInfo != null && orderInfo.startsWith("ORDER_ID_")) {
-                orderId = orderInfo.replace("ORDER_ID_", "");
-            } else {
-                throw new BusinessException(ErrorCode.ORDER_INFO_INVALID,
-                        "vnp_OrderInfo không chứa orderId hợp lệ: " + orderInfo);
-            }
-
-            if (valid && "00".equals(params.get("vnp_ResponseCode"))) {
-                orderService.updateOrderStatusVnpay(orderId, true);
-                status = "success";
-            } else {
-                orderService.updateOrderStatusVnpay(orderId, false);
-            }
-
-            String redirectUrl = "http://localhost:5175/orderConfirmed?orderId=" + orderId + "&status=" + status;
-            response.sendRedirect(redirectUrl);
-
-        } catch (Exception e) {
-            response.sendRedirect("http://localhost:5175/orderConfirmed?status=fail&error=" + e.getMessage());
-        }
-    }
-
-    private String extractOrderId(String orderInfo) {
-        if (orderInfo != null && orderInfo.startsWith("ORDER_ID=")) {
-            return orderInfo.replace("ORDER_ID=", "");
-        }
-        throw new BusinessException(ErrorCode.ORDER_INFO_INVALID,
-                "vnp_OrderInfo không chứa orderId hợp lệ");
-    }
-
-    @PostMapping("/cancel/{id}")
-    public ResponseEntity<ApiResponse<Void>> cancelOrder(@PathVariable UUID id, Principal principal){
-        boolean canceled = orderService.cancelOrder(id, principal);
-        if(canceled){
-            return ResponseEntity.ok(ApiResponse.<Void>builder().result(null).build());
-        }
-        throw new BusinessException(ErrorCode.BAD_REQUEST, "Không thể hủy đơn hàng này");
-    }
-
     @GetMapping("/user")
     public ResponseEntity<ApiResponse<List<OrderDetails>>> getOrderByUser(Principal principal) {
         List<OrderDetails> orders = orderService.getOrdersByUser(principal.getName());
@@ -118,16 +62,10 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrderDetails>>> getAllOrders(Pageable pageable) {
-        Page<Order> orders = orderRepository.findAll(pageable);
-        List<OrderDetails> dtoList = orders.map(orderMapper::toDto).getContent();
-
+        PagingResult<OrderDetails> pageResult = orderService.getOrdersPage(pageable);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Range", String.format("orders %d-%d/%d",
-                pageable.getPageNumber() * pageable.getPageSize(),
-                pageable.getPageNumber() * pageable.getPageSize() + dtoList.size() - 1,
-                orders.getTotalElements()));
-
+        headers.add("Content-Range", pageResult.contentRange());
         return ResponseEntity.ok().headers(headers)
-                .body(ApiResponse.<List<OrderDetails>>builder().result(dtoList).build());
+                .body(ApiResponse.<List<OrderDetails>>builder().result(pageResult.items()).build());
     }
 }

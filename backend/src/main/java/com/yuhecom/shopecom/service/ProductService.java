@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.service;
 
 import com.yuhecom.shopecom.dto.ProductDto;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.Product;
 import com.yuhecom.shopecom.entity.ProductVariant;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,9 @@ public interface ProductService {
 
     public Page<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name, Boolean newArrival, int page, int size);
 
+    PagingResult<ProductDto> getProductsPage(UUID categoryId, List<UUID> typeIds, UUID typeId, String slug, String name,
+                                      Boolean newArrival, int page, int size);
+
     ProductDto getProductById(UUID id);
 
     Product updateProduct(ProductDto productDto, UUID id);
@@ -29,16 +33,3 @@ public interface ProductService {
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

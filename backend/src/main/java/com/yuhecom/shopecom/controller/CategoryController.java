@@ -2,6 +2,7 @@ package com.yuhecom.shopecom.controller;
 
 import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.CategoryDto;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.Category;
 import com.yuhecom.shopecom.service.CategoryService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,9 +29,9 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Category>>> getAllCategories(HttpServletResponse response){
-        List<Category> categoryList = categoryService.getAllCategory();
-        response.setHeader("Content-Range",String.valueOf(categoryList.size()));
-        return ResponseEntity.ok(ApiResponse.<List<Category>>builder().result(categoryList).build());
+        PagingResult<Category> pageResult = categoryService.getCategoryPage();
+        response.setHeader("Content-Range", pageResult.contentRange());
+        return ResponseEntity.ok(ApiResponse.<List<Category>>builder().result(pageResult.items()).build());
     }
 
     @PostMapping

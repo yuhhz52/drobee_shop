@@ -65,6 +65,7 @@ jwt:
 app:
   oauth2:
     redirect-uri: http://localhost:5175/oauth2/callback
+  order-confirmed-url: ${ORDER_CONFIRMED_URL:http://localhost:5175/orderConfirmed}
 
 stripe:
   secret: ${STRIPE_SECRET}

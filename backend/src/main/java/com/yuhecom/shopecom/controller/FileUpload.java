@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.controller;
 
 import com.yuhecom.shopecom.dto.ApiResponse;
+import com.yuhecom.shopecom.dto.UploadResult;
 import com.yuhecom.shopecom.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,14 +25,14 @@ public class FileUpload {
     public ResponseEntity<ApiResponse<String>> upload(@RequestParam("file") MultipartFile file,
                                     @RequestParam("fileName") String fileName) {
 
-        String imageUrl = fileUploadService.uploadFile(file, fileName);
+        UploadResult result = fileUploadService.uploadFileResult(file, fileName);
 
-        if (imageUrl != null) {
+        if (result.success()) {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<String>builder().result(imageUrl).build());
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.<String>builder().message("Upload failed").result(null).build());
+                    .body(ApiResponse.<String>builder().result(result.url()).build());
         }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.<String>builder().message(result.message()).result(null).build());
     }
 }
