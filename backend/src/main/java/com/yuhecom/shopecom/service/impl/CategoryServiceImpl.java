@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.dto.CategoryDto;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.dto.CategoryTypeDto;
 import com.yuhecom.shopecom.entity.Category;
 import com.yuhecom.shopecom.entity.CategoryType;
@@ -132,5 +133,17 @@ public class CategoryServiceImpl implements CategoryService {
                 managedTypes.add(newType);
             }
         }
+    }
+
+    @Override
+    public PagingResult<Category> getCategoryPage() {
+        List<Category> categories = getAllCategory();
+        String contentRange = buildContentRange(categories.size());
+        return new PagingResult<>(categories, contentRange);
+    }
+
+    private String buildContentRange(int itemCount) {
+        int end = itemCount == 0 ? 0 : itemCount - 1;
+        return "categories 0-" + end + "/" + itemCount;
     }
 }

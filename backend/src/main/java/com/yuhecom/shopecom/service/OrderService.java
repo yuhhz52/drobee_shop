@@ -3,6 +3,7 @@ package com.yuhecom.shopecom.service;
 import com.stripe.model.PaymentIntent;
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.auth.entity.User;
+import com.yuhecom.shopecom.config.AppProperties;
 import com.yuhecom.shopecom.dto.*;
 import com.yuhecom.shopecom.entity.*;
 import com.yuhecom.shopecom.exception.AppException;
@@ -16,16 +17,14 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.Principal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +51,8 @@ public class OrderService {
     OrderMapper orderMapper;
 
     UsersMapper usersMapper;
+
+    AppProperties appProperties;
 
 
 
@@ -160,6 +161,48 @@ public class OrderService {
         return vnPayService.validateReturn(params);
     }
 
+    public String buildVnPayRedirectUrl(Map<String, String> params) {
+        boolean valid = validateVnPayReturn(params);
+        String status = "fail";
+        String orderId;
+
+        try {
+            String orderInfo = params.get("vnp_OrderInfo");
+            orderId = extractOrderIdFromVnpOrderInfo(orderInfo);
+
+            if (valid && "00".equals(params.get("vnp_ResponseCode"))) {
+                updateOrderStatusVnpay(orderId, true);
+                status = "success";
+            } else {
+                updateOrderStatusVnpay(orderId, false);
+            }
+
+            return buildRedirectUrl(orderId, status, null);
+        } catch (Exception e) {
+            return buildRedirectUrl(null, "fail", e.getMessage());
+        }
+    }
+
+    private String buildRedirectUrl(String orderId, String status, String error) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(appProperties.getOrderConfirmedUrl())
+                .queryParam("status", status);
+        if (orderId != null && !orderId.isBlank()) {
+            builder.queryParam("orderId", orderId);
+        }
+        if (error != null && !error.isBlank()) {
+            builder.queryParam("error", error);
+        }
+        return builder.build(true).toUriString();
+    }
+
+    private String extractOrderIdFromVnpOrderInfo(String orderInfo) {
+        if (orderInfo != null && orderInfo.startsWith("ORDER_ID_")) {
+            return orderInfo.replace("ORDER_ID_", "");
+        }
+        throw new BusinessException(ErrorCode.ORDER_INFO_INVALID,
+                "vnp_OrderInfo không chứa orderId hợp lệ: " + orderInfo);
+    }
+
     @Transactional
     public void updateOrderStatusVnpay(String orderId, boolean success) {
         Optional<Order> optionalOrder = orderRepository.findById(UUID.fromString(orderId));
@@ -234,6 +277,20 @@ public class OrderService {
 
 
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public PagingResult<OrderDetails> getOrdersPage(Pageable pageable) {
+        Page<Order> orders = orderRepository.findAll(pageable);
+        List<OrderDetails> items = orders.map(orderMapper::toDto).getContent();
+        String contentRange = buildContentRange(pageable, items.size(), orders.getTotalElements());
+        return new PagingResult<>(items, contentRange);
+    }
+
+    private String buildContentRange(Pageable pageable, int itemCount, long totalElements) {
+        int start = pageable.getPageNumber() * pageable.getPageSize();
+        int end = totalElements == 0 ? 0 : Math.min(start + itemCount - 1, (int) totalElements - 1);
+        return String.format("orders %d-%d/%d", start, end, totalElements);
     }
 
     @Transactional(readOnly = true)

@@ -3,18 +3,16 @@ package com.yuhecom.shopecom.controller;
 
 import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.ProductDto;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.Product;
 import com.yuhecom.shopecom.service.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,27 +40,11 @@ public class ProductsController {
             @RequestParam(defaultValue = "12") int size,
             HttpServletResponse response
     ) {
-        if (StringUtils.isNotBlank(slug)) {
-            ProductDto productDto = productService.getProductBySlug(slug);
-            return ResponseEntity.ok(ApiResponse.<List<ProductDto>>builder().result(List.of(productDto)).build());
-        }
-
-        if (typeId != null) {
-            if (typeIds == null) typeIds = new ArrayList<>();
-            typeIds.add(typeId);
-        }
-
-        // Gọi service trả về Page
-        Page<ProductDto> productPage = productService.getAllProduct(categoryId, typeIds, name, newArrival, page, size);
-
-        // startIndex = page * size
-        int start = page * size;
-        int end = Math.min(start + size - 1, (int) productPage.getTotalElements() - 1);
-
-        response.setHeader("Content-Range", "products " + start + "-" + end + "/" + productPage.getTotalElements());
+        PagingResult<ProductDto> pageResult = productService.getProductsPage(categoryId, typeIds, typeId, slug, name, newArrival, page, size);
+        response.setHeader("Content-Range", pageResult.contentRange());
         response.setHeader("Access-Control-Expose-Headers", "Content-Range");
 
-        return ResponseEntity.ok(ApiResponse.<List<ProductDto>>builder().result(productPage.getContent()).build());
+        return ResponseEntity.ok(ApiResponse.<List<ProductDto>>builder().result(pageResult.items()).build());
     }
 
 

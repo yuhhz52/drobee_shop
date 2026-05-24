@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.dto.ProductDto;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.*;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
@@ -13,12 +14,14 @@ import com.yuhecom.shopecom.speciffication.ProductSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +95,30 @@ public class ProductServiceImpl implements ProductService {
 
         // Map entity → DTO và giữ nguyên thông tin phân trang
         return productPage.map(productMapper::toDto);
+    }
+
+    @Override
+    public PagingResult<ProductDto> getProductsPage(UUID categoryId, List<UUID> typeIds, UUID typeId, String slug, String name,
+                                                    Boolean newArrival, int page, int size) {
+        if (StringUtils.isNotBlank(slug)) {
+            ProductDto product = getProductBySlug(slug);
+            return new PagingResult<>(List.of(product), "products 0-0/1");
+        }
+
+        List<UUID> resolvedTypeIds = typeIds == null ? new ArrayList<>() : new ArrayList<>(typeIds);
+        if (typeId != null) {
+            resolvedTypeIds.add(typeId);
+        }
+
+        Page<ProductDto> productPage = getAllProduct(categoryId, resolvedTypeIds, name, newArrival, page, size);
+        String contentRange = buildContentRange(page, size, productPage.getNumberOfElements(), productPage.getTotalElements());
+        return new PagingResult<>(productPage.getContent(), contentRange);
+    }
+
+    private String buildContentRange(int page, int size, int itemCount, long totalElements) {
+        int start = page * size;
+        int end = totalElements == 0 ? 0 : Math.min(start + itemCount - 1, (int) totalElements - 1);
+        return "products " + start + "-" + end + "/" + totalElements;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.service;
 
 import com.yuhecom.shopecom.dto.CategoryDto;
+import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.Category;
 
 import java.util.List;
@@ -13,6 +14,8 @@ public interface CategoryService {
     public Category createCategory(CategoryDto categoryDto);
 
     public List<Category> getAllCategory();
+
+    PagingResult<Category> getCategoryPage();
 
     public Category updateCategory(CategoryDto categoryDto, UUID categoryId);
 
