@@ -46,6 +46,8 @@ public class User implements UserDetails {
 
     private String phoneNumber;
 
+    private String avatarUrl;
+
     private boolean enabled=false;
 
     @ManyToMany(fetch = FetchType.EAGER)

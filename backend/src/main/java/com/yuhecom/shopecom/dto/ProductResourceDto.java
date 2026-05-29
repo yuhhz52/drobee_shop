@@ -1,8 +1,7 @@
 package com.yuhecom.shopecom.dto;
 
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import com.yuhecom.shopecom.entity.ResourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +18,6 @@ public class ProductResourceDto {
     private UUID id;
     private String name;
     private String url;
-    private String type;
+    private ResourceType type;
     private  Boolean isPrimary;
 }

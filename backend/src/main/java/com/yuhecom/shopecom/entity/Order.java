@@ -8,6 +8,7 @@ import lombok.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name="orders")
@@ -39,8 +40,8 @@ public class Order extends BaseEntity {
     @JsonIgnore
     private Address address;
 
-    @Column(nullable = false)
-    private Double totalAmount;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -60,7 +61,8 @@ public class Order extends BaseEntity {
     @ToString.Exclude
     private List<OrderItem> orderItemList;
 
-    private Double discount;
+    @Column(precision = 19, scale = 2)
+    private BigDecimal discount;
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @ToString.Exclude

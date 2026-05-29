@@ -19,6 +19,7 @@ public class UsersDto {
     private String firstName;
     private String lastName;
     private String phoneNumber;
+    private String avatarUrl;
     private String email;
     private List<String> authorityList;
     private List<Address> addressList;

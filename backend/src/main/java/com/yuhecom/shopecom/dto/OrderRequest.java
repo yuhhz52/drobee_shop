@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -17,9 +18,9 @@ public class OrderRequest {
     private Date orderDate;
     private UUID addressId;
     private List<OrderItemRequest> orderItemRequest;
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     private String paymentMethod;
-    private Double discount;
+    private BigDecimal discount;
     private Date expectedDeliveryDate;
 
 

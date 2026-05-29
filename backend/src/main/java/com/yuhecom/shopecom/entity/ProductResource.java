@@ -29,10 +29,11 @@ public class ProductResource extends BaseEntity {
     @Column(nullable = false)
     private Boolean isPrimary;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type;
+    private ResourceType type;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",nullable = false)
     @JsonIgnore
     private Product product;

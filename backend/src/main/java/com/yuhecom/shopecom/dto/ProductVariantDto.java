@@ -1,9 +1,8 @@
 package com.yuhecom.shopecom.dto;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -15,6 +14,7 @@ public class ProductVariantDto {
 
     private UUID id;
     private String color;
-    private String size;
+    private String variantName;
     private Integer stockQuantity;
+    private BigDecimal additionalPrice;
 }

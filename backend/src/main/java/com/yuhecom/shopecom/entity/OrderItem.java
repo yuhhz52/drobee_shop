@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name="order_items")
@@ -37,6 +38,7 @@ public class OrderItem extends BaseEntity {
     @Column(nullable = false)
     private Integer quantity;
 
-    private Double itemPrice;
+    @Column(precision = 19, scale = 2)
+    private BigDecimal itemPrice;
 
 }

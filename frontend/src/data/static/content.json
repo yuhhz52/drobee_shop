@@ -1,0 +1,38 @@
+{
+  "footer": {
+    "aboutTitle": "ABOUT VEPACE",
+    "aboutLead": "Vepace is your trusted partner for premium electric mobility.",
+    "aboutText": "Vepace delivers top electric scooters from Dualtron, KuKirin, Teverun & more — powerful, long-range, and safe. Best prices, expert advice, and 7/7 support across Europe.",
+    "items": [
+      {
+        "title": "ELECTRIC SCOOTERS",
+        "list": [
+          { "label": "Electric Scooters", "path": "/products" },
+          { "label": "Dualtron", "path": "/products" },
+          { "label": "Kukirin", "path": "/products" },
+          { "label": "Teverun", "path": "/products" },
+          { "label": "Rovoron", "path": "/products" },
+          { "label": "KuickWheel", "path": "/products" },
+          { "label": "Spare Parts", "path": "/products" }
+        ]
+      },
+      {
+        "title": "HELP & SUPPORT",
+        "list": [
+          { "label": "Terms of Sale", "path": "/" },
+          { "label": "Terms of Service", "path": "/" },
+          { "label": "Return Policy", "path": "/" },
+          { "label": "Privacy Policy", "path": "/" },
+          { "label": "Legal Notice", "path": "/" },
+          { "label": "My Account", "path": "/account-details/profile" },
+          { "label": "Track Your Order", "path": "/" },
+          { "label": "VEPACE Blog", "path": "/" },
+          { "label": "Contact", "path": "/contact" },
+          { "label": "Affiliation", "path": "/" },
+          { "label": "FAQ", "path": "/" }
+        ]
+      }
+    ],
+    "copyright": "© 2026 VEPACE"
+  }
+}

@@ -4,6 +4,7 @@ import com.yuhecom.shopecom.dto.ProductDto;
 import lombok.*;
 
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -15,5 +16,5 @@ public class OrderItemDetail {
     private ProductDto product;
     private ProductVariantDto productVariant;
     private Integer quantity;
-    private Double itemPrice;
+    private BigDecimal itemPrice;
 }

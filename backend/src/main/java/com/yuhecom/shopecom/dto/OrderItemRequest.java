@@ -3,6 +3,7 @@ package com.yuhecom.shopecom.dto;
 import lombok.*;
 
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -14,7 +15,7 @@ public class OrderItemRequest {
 
     private UUID productVariantId;
 
-    private Double discount;
+    private BigDecimal discount;
 
     private Integer quantity;
 

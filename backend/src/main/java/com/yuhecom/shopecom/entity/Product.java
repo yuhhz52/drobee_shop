@@ -22,40 +22,56 @@ public class Product extends BaseEntity {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String name;
 
-    @Column
-    private String description;
-
-    @Column(nullable = false)
-    private BigDecimal price;
+    @Column(nullable = false, unique = true, length = 255)
+    private String slug;
 
     @Column(nullable = false)
     private String brand;
 
+    @Column(columnDefinition = "TEXT")
+    private String shortDescription;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String description;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal price;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal salePrice;
+
+    @Column(precision = 2, scale = 1)
+    private BigDecimal rating;
+
     @Column
-    private Float rating;
+    private Integer totalSold;
+
+    @Column
+    private Boolean featured;
 
     @Column(nullable = false)
-    private boolean newArrival;
+    private Boolean newArrival;
 
-    @Column(nullable = false, unique = true)
-    private String slug;
+    @Column
+    private Boolean active;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductVariant> productVariantList;
+    @Column(unique = true)
+    private String sku;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductResource> productResources;
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ScooterSpec scooterSpec;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductVariant> variants;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductResource> resources;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    @JsonIgnore
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoryType_id", nullable = false)
+    @JoinColumn(name = "category_type_id", nullable = false)
     @JsonIgnore
     private CategoryType categoryType;
 

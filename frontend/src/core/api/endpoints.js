@@ -1,0 +1,26 @@
+export const ENDPOINTS = {
+  categories: '/api/category',
+  categoryById: (id) => `/api/category/${id}`,
+  products: '/api/products',
+  productById: (id) => `/api/products/${id}`,
+  auth: {
+    login: '/api/auth/login',
+    register: '/api/auth/register',
+    verify: '/api/auth/verify',
+    profile: '/api/auth/profile',
+    logout: '/api/auth/logout',
+    refresh: '/api/auth/refresh',
+  },
+  user: {
+    profile: '/api/user/profile',
+    avatar: '/api/user/avatar',
+    byId: (id) => `/api/user/${id}`,
+  },
+  address: '/api/address',
+  addressById: (id) => `/api/address/${id}`,
+  order: '/api/order',
+  orderByUser: '/api/order/user',
+  orderCancel: (id) => `/api/order/cancel/${id}`,
+  orderUpdatePayment: '/api/order/update-payment',
+  fileUpload: '/api/file',
+};

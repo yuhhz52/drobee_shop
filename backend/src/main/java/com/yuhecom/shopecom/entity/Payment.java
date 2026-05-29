@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name="payment")
@@ -30,8 +31,8 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private Date paymentDate;
 
-    @Column(nullable = false)
-    private Double amount;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
 
     @Column(nullable = false)
     private String paymentMethod;
