@@ -4,10 +4,13 @@ import com.yuhecom.shopecom.auth.dto.UsersDto;
 import com.yuhecom.shopecom.auth.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.UUID;
@@ -16,6 +19,7 @@ import java.util.UUID;
 @CrossOrigin
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@Slf4j
 public class UsersController {
 
     private final UserService userService;
@@ -23,6 +27,25 @@ public class UsersController {
     @GetMapping("/profile")
     public ResponseEntity<UsersDto> getUserProfile(Principal principal) {
         return ResponseEntity.ok(userService.getUserProfile(principal));
+    }
+
+    @RequestMapping(
+            value = "/avatar",
+            method = {RequestMethod.POST, RequestMethod.PUT},
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<UsersDto> updateAvatar(
+            Principal principal,
+            @RequestParam("avatar") MultipartFile avatarFile
+    ) {
+        log.info(
+                "Avatar upload request received. principal={}, originalFilename={}, size={}, contentType={}",
+                principal != null ? principal.getName() : "null",
+                avatarFile != null ? avatarFile.getOriginalFilename() : "null",
+                avatarFile != null ? avatarFile.getSize() : -1,
+                avatarFile != null ? avatarFile.getContentType() : "null"
+        );
+        return ResponseEntity.ok(userService.updateAvatar(principal, avatarFile));
     }
 
     @GetMapping

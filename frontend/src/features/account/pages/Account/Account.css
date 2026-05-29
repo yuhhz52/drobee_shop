@@ -1,0 +1,336 @@
+.vepace-account-page {
+  max-width: var(--kalles-container);
+  margin: 0 auto;
+  padding: 2rem 15px 3rem;
+}
+
+.vepace-account-admin-link {
+  display: inline-flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  color: #1a4fd6;
+}
+
+.vepace-account-shell {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.vepace-account-sidebar {
+  background: #fff;
+  border: 1px solid var(--kalles-border);
+  padding: 0.75rem;
+}
+
+.vepace-account-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.vepace-account-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  color: #222;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.7rem 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.vepace-account-nav a svg {
+  width: 16px;
+  height: 16px;
+  color: var(--kalles-muted);
+}
+
+.vepace-account-nav a:hover {
+  border-color: #cfcfcf;
+  background: #f8f8f8;
+}
+
+.vepace-account-nav a.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.vepace-account-nav a.active svg {
+  color: #fff;
+}
+
+.vepace-account-content {
+  background: #fff;
+  border: 1px solid var(--kalles-border);
+  min-height: 420px;
+}
+
+.vepace-account-loading {
+  margin-top: 0.75rem;
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.vepace-account-loading p {
+  margin: 0.35rem 0;
+}
+
+.vepace-profile-panel {
+  padding: 1.25rem;
+}
+
+.vepace-profile-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.vepace-profile-card {
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.vepace-profile-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.vepace-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--kalles-border);
+}
+
+.vepace-profile-avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+}
+
+.vepace-avatar-upload-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.vepace-avatar-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.vepace-avatar-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: var(--kalles-muted);
+}
+
+.vepace-profile-row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.35rem 0;
+  font-size: 0.92rem;
+}
+
+.vepace-profile-row strong {
+  font-weight: 600;
+}
+
+.vepace-address-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.vepace-address-head h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.vepace-address-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.vepace-address-card {
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  padding: 0.95rem;
+}
+
+.vepace-address-card p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+.vepace-address-card p:first-child {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+.vepace-address-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.7rem;
+}
+
+.vepace-address-actions button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.vepace-address-actions button:first-child {
+  color: #1a4fd6;
+}
+
+.vepace-address-actions button:last-child {
+  color: #dc2626;
+}
+
+.vepace-address-empty {
+  border: 1px dashed #d3d3d3;
+  background: #fafafa;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--kalles-muted);
+}
+
+.vepace-address-form {
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  padding: 1rem;
+}
+
+.vepace-address-form h2 {
+  margin: 0 0 0.85rem;
+  font-size: 1.15rem;
+}
+
+.vepace-form-field {
+  margin-bottom: 0.75rem;
+}
+
+.vepace-form-field label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.vepace-form-field input {
+  width: 100%;
+  height: 38px;
+  border: 1px solid var(--kalles-border);
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.vepace-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.vepace-form-error {
+  margin: 0.4rem 0;
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
+.vepace-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.vepace-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  height: 36px;
+  padding: 0 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vepace-btn--outline {
+  border-color: #111;
+  background: #fff;
+  color: #111;
+}
+
+.vepace-btn--outline:hover {
+  background: #111;
+  color: #fff;
+}
+
+.vepace-btn--dark {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+.vepace-btn--dark:hover {
+  background: #333;
+  border-color: #333;
+}
+
+@media (max-width: 980px) {
+  .vepace-account-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .vepace-account-content {
+    min-height: unset;
+  }
+}
+
+@media (max-width: 720px) {
+  .vepace-address-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vepace-profile-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .vepace-form-row {
+    grid-template-columns: 1fr;
+  }
+}

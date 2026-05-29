@@ -40,10 +40,8 @@ public class ProductServiceImpl implements ProductService {
     public Product addProducts(ProductDto productDto) {
         Product product = productMapper.toEntity(productDto);
 
-        // Thiết lập Category và CategoryType
+        // Validate CategoryType belongs to Category (if provided)
         Category category = categoryService.getCategory(productDto.getCategoryId());
-        product.setCategory(category);
-
         if (productDto.getCategoryTypeId() != null && category.getCategoryTypes() != null) {
             CategoryType categoryType = category.getCategoryTypes().stream()
                     .filter(ct -> ct.getId().equals(productDto.getCategoryTypeId()))
@@ -140,8 +138,14 @@ public class ProductServiceImpl implements ProductService {
         if (productDto.getDescription() != null) {
             existingProduct.setDescription(productDto.getDescription());
         }
+        if (productDto.getShortDescription() != null) {
+            existingProduct.setShortDescription(productDto.getShortDescription());
+        }
         if (productDto.getPrice() != null) {
             existingProduct.setPrice(productDto.getPrice());
+        }
+        if (productDto.getSalePrice() != null) {
+            existingProduct.setSalePrice(productDto.getSalePrice());
         }
         if (productDto.getBrand() != null) {
             existingProduct.setBrand(productDto.getBrand());
@@ -149,30 +153,148 @@ public class ProductServiceImpl implements ProductService {
         if (productDto.getRating() != null) {
             existingProduct.setRating(productDto.getRating());
         }
-        existingProduct.setNewArrival(productDto.getNewArrival());
+        if (productDto.getTotalSold() != null) {
+            existingProduct.setTotalSold(productDto.getTotalSold());
+        }
+        if (productDto.getFeatured() != null) {
+            existingProduct.setFeatured(productDto.getFeatured());
+        }
+        if (productDto.getNewArrival() != null) {
+            existingProduct.setNewArrival(productDto.getNewArrival());
+        }
+        if (productDto.getActive() != null) {
+            existingProduct.setActive(productDto.getActive());
+        }
+        if (productDto.getSku() != null) {
+            existingProduct.setSku(productDto.getSku());
+        }
+
+        ScooterSpec scooterSpec = ensureScooterSpec(existingProduct);
+        if (productDto.getMotorPowerW() != null) {
+            scooterSpec.setMotorPowerW(productDto.getMotorPowerW());
+        }
+        if (productDto.getPeakPowerW() != null) {
+            scooterSpec.setPeakPowerW(productDto.getPeakPowerW());
+        }
+        if (productDto.getMaxSpeedKmh() != null) {
+            scooterSpec.setMaxSpeedKmh(productDto.getMaxSpeedKmh());
+        }
+        if (productDto.getMaxSpeedUnlockedKmh() != null) {
+            scooterSpec.setMaxSpeedUnlockedKmh(productDto.getMaxSpeedUnlockedKmh());
+        }
+        if (productDto.getRangeKm() != null) {
+            scooterSpec.setRangeKm(productDto.getRangeKm());
+        }
+        if (productDto.getMaxInclinePercent() != null) {
+            scooterSpec.setMaxInclinePercent(productDto.getMaxInclinePercent());
+        }
+        if (productDto.getBatteryCapacityAh() != null) {
+            scooterSpec.setBatteryCapacityAh(productDto.getBatteryCapacityAh());
+        }
+        if (productDto.getBatteryVoltageV() != null) {
+            scooterSpec.setBatteryVoltageV(productDto.getBatteryVoltageV());
+        }
+        if (productDto.getBatteryType() != null) {
+            scooterSpec.setBatteryType(productDto.getBatteryType());
+        }
+        if (productDto.getChargingTimeHours() != null) {
+            scooterSpec.setChargingTimeHours(productDto.getChargingTimeHours());
+        }
+        if (productDto.getRemovableBattery() != null) {
+            scooterSpec.setRemovableBattery(productDto.getRemovableBattery());
+        }
+        if (productDto.getWeightKg() != null) {
+            scooterSpec.setWeightKg(productDto.getWeightKg());
+        }
+        if (productDto.getMaxLoadKg() != null) {
+            scooterSpec.setMaxLoadKg(productDto.getMaxLoadKg());
+        }
+        if (productDto.getFrameMaterial() != null) {
+            scooterSpec.setFrameMaterial(productDto.getFrameMaterial());
+        }
+        if (productDto.getWheelSizeInch() != null) {
+            scooterSpec.setWheelSizeInch(productDto.getWheelSizeInch());
+        }
+        if (productDto.getTireType() != null) {
+            scooterSpec.setTireType(productDto.getTireType());
+        }
+        if (productDto.getBrakeFront() != null) {
+            scooterSpec.setBrakeFront(productDto.getBrakeFront());
+        }
+        if (productDto.getBrakeRear() != null) {
+            scooterSpec.setBrakeRear(productDto.getBrakeRear());
+        }
+        if (productDto.getSuspensionFront() != null) {
+            scooterSpec.setSuspensionFront(productDto.getSuspensionFront());
+        }
+        if (productDto.getSuspensionRear() != null) {
+            scooterSpec.setSuspensionRear(productDto.getSuspensionRear());
+        }
+        if (productDto.getLengthCm() != null) {
+            scooterSpec.setLengthCm(productDto.getLengthCm());
+        }
+        if (productDto.getWidthCm() != null) {
+            scooterSpec.setWidthCm(productDto.getWidthCm());
+        }
+        if (productDto.getHeightCm() != null) {
+            scooterSpec.setHeightCm(productDto.getHeightCm());
+        }
+        if (productDto.getFoldedLengthCm() != null) {
+            scooterSpec.setFoldedLengthCm(productDto.getFoldedLengthCm());
+        }
+        if (productDto.getFoldedWidthCm() != null) {
+            scooterSpec.setFoldedWidthCm(productDto.getFoldedWidthCm());
+        }
+        if (productDto.getFoldedHeightCm() != null) {
+            scooterSpec.setFoldedHeightCm(productDto.getFoldedHeightCm());
+        }
+        if (productDto.getLights() != null) {
+            scooterSpec.setLights(productDto.getLights());
+        }
+        if (productDto.getDisplayType() != null) {
+            scooterSpec.setDisplayType(productDto.getDisplayType());
+        }
+        if (productDto.getConnectivity() != null) {
+            scooterSpec.setConnectivity(productDto.getConnectivity());
+        }
+        if (productDto.getWaterResistanceRating() != null) {
+            scooterSpec.setWaterResistanceRating(productDto.getWaterResistanceRating());
+        }
+        if (productDto.getCertifications() != null) {
+            scooterSpec.setCertifications(productDto.getCertifications());
+        }
+        if (productDto.getWarrantyMonths() != null) {
+            scooterSpec.setWarrantyMonths(productDto.getWarrantyMonths());
+        }
+
         if (productDto.getSlug() != null) {
             existingProduct.setSlug(productDto.getSlug());
         }
 
-        // Cập nhật Category
-        if (productDto.getCategoryId() != null) {
-            Category category = categoryService.getCategory(productDto.getCategoryId());
-            existingProduct.setCategory(category);
-
-            // Cập nhật CategoryType
-            if (productDto.getCategoryTypeId() != null) {
-                CategoryType categoryType = category.getCategoryTypes().stream()
-                        .filter(ct -> ct.getId().equals(productDto.getCategoryTypeId()))
-                        .findFirst()
-                        .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_TYPE_NOT_FOUND, "Category Type not found in selected Category"));
-                existingProduct.setCategoryType(categoryType);
-            }
+        if (productDto.getCategoryTypeId() != null) {
+            Category category = productDto.getCategoryId() == null
+                    ? existingProduct.getCategoryType().getCategory()
+                    : categoryService.getCategory(productDto.getCategoryId());
+            CategoryType categoryType = category.getCategoryTypes().stream()
+                    .filter(ct -> ct.getId().equals(productDto.getCategoryTypeId()))
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_TYPE_NOT_FOUND,
+                            "Category Type not found in selected Category"));
+            existingProduct.setCategoryType(categoryType);
         }
 
         // updatedAt sẽ tự cập nhật nhờ @PreUpdate
         return productRepository.save(existingProduct);
     }
 
+    private ScooterSpec ensureScooterSpec(Product product) {
+        if (product.getScooterSpec() == null) {
+            ScooterSpec scooterSpec = new ScooterSpec();
+            scooterSpec.setProduct(product);
+            product.setScooterSpec(scooterSpec);
+        }
+        return product.getScooterSpec();
+    }
 
     @Override
     public Product fetchProductById(UUID id) {

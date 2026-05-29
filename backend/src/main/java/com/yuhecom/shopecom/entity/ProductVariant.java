@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name="product_variant")
+@Table(name="product_variants")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,12 +24,15 @@ public class ProductVariant extends BaseEntity {
     private String color;
 
     @Column(nullable = false)
-    private String size;
+    private String variantName;
 
     @Column(nullable = false)
     private Integer stockQuantity;
 
-    @ManyToOne
+    @Column(precision = 12, scale = 2)
+    private BigDecimal additionalPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="product_id", nullable = false)
     @JsonIgnore
     private Product product;

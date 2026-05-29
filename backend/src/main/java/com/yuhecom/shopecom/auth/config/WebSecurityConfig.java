@@ -2,6 +2,7 @@ package com.yuhecom.shopecom.auth.config;
 
 import com.yuhecom.shopecom.auth.handler.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +48,9 @@ public class WebSecurityConfig {
 
     @Autowired
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
+    @Value("${upload.dir:uploads}")
+    private String uploadDir;
 
     private static final String[] PUBLIC_APIS = {
             "/api/auth/**",
@@ -123,7 +127,7 @@ public class WebSecurityConfig {
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
             registry.addResourceHandler("/uploads/**")
-                    .addResourceLocations("file:/app/uploads/");
+                    .addResourceLocations("file:" + uploadDir + "/");
         }
     }
 

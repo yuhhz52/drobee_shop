@@ -1,19 +1,22 @@
-@import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap");
+
+@import "tailwindcss";
 
 :root {
   --font-display: "Poppins", "Segoe UI", sans-serif;
   --font-body: "Poppins", "Segoe UI", sans-serif;
-  --kalles-accent: #f92c2c;
-  --kalles-accent-hover: #f70000;
-  --kalles-sale: #f85712;
-  --kalles-dark: #222222;
-  --kalles-muted: #878787;
-  --kalles-border: #dddddd;
-  --kalles-soft: #f2f2f2;
-  --kalles-shadow: 0 12px 30px rgba(34, 34, 34, 0.08);
+  --vepace-red: #e31e24;
+  --vepace-red-hover: #c41a1f;
+  --kalles-accent: #e31e24;
+  --kalles-accent-hover: #c41a1f;
+  --kalles-sale: #e31e24;
+  --kalles-dark: #111111;
+  --kalles-muted: #6b6b6b;
+  --kalles-border: #e6e6e6;
+  --kalles-soft: #f5f5f5;
+  --kalles-shadow: 0 12px 30px rgba(11, 11, 11, 0.06);
   --kalles-container: 1440px;
-  --site-header-height: 72px;
+  --site-header-height: 148px;
 
   font-family: var(--font-body);
   line-height: 1.7;

@@ -1,0 +1,54 @@
+.zentro-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.vepace-logo-mark {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--kalles-dark);
+  text-transform: uppercase;
+}
+
+.vepace-logo-mark__v {
+  font-size: 2.4rem;
+  font-weight: 900;
+  margin-right: 0.05em;
+  transform: skewX(-8deg);
+}
+
+.vepace-logo-mark__text {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.vepace-logo .vepace-logo-mark {
+  color: #fff;
+}
+
+.vepace-logo .vepace-logo-mark__v {
+  font-size: 2.2rem;
+}
+
+.vepace-logo .vepace-logo-mark__text {
+  font-size: 1.45rem;
+}
+
+.zentro-logo--sm .vepace-logo-mark__v {
+  font-size: 1.5rem;
+}
+
+.zentro-logo--sm .vepace-logo-mark__text {
+  font-size: 1rem;
+}
+
+.zentro-logo-link:hover .vepace-logo-mark {
+  opacity: 0.92;
+}

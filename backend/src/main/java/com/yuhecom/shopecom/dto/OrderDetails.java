@@ -9,6 +9,7 @@ import lombok.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class OrderDetails {
     private String orderDisplayCode;
     private Date orderDate;
     private Address address;
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     private OrderStatus orderStatus;
     private String shipmentNumber;
     private Date expectedDeliveryDate;

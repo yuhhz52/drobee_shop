@@ -10,12 +10,12 @@ public class ProductSpecification {
 
     public static Specification<Product> hasCategoryId(UUID categoryId){
         return  (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("category").get("id"),categoryId);
+                criteriaBuilder.equal(root.get("categoryType").get("category").get("id"), categoryId);
     }
 
     public static Specification<Product> hasCategoryTypeId(UUID typeId){
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("categoryType").get("id"),typeId);
+                criteriaBuilder.equal(root.get("categoryType").get("id"), typeId);
     }
 
     public static Specification<Product> hasCategoryTypeIds(List<UUID> typeIds) {

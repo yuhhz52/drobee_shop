@@ -1,0 +1,290 @@
+/* Vepace auth pages – login / register / logout */
+.vepace-auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  background: #fff;
+}
+
+@media (min-width: 1024px) {
+  .vepace-auth-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.vepace-auth-brand {
+  display: none;
+  background: #111;
+  color: #fff;
+  padding: 3rem clamp(2rem, 5vw, 4rem);
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .vepace-auth-brand {
+    display: flex;
+  }
+}
+
+.vepace-auth-brand__logo {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 2rem;
+}
+
+.vepace-auth-brand h2 {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vepace-auth-brand p {
+  margin: 0 0 2rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.vepace-auth-brand ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vepace-auth-brand li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.vepace-auth-brand li::before {
+  content: '✓';
+  color: var(--vepace-red);
+  font-weight: 700;
+}
+
+.vepace-auth-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem clamp(1.25rem, 4vw, 3rem);
+  background: var(--kalles-soft);
+}
+
+.vepace-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid var(--kalles-border);
+  padding: 2rem clamp(1.25rem, 4vw, 2rem);
+}
+
+.vepace-auth-card__head {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.vepace-auth-card__head h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--kalles-dark);
+}
+
+.vepace-auth-card__head p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--kalles-muted);
+  line-height: 1.5;
+}
+
+.vepace-auth-field {
+  margin-bottom: 1.1rem;
+}
+
+.vepace-auth-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--kalles-dark);
+}
+
+.vepace-auth-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--kalles-border);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.vepace-auth-field input:focus {
+  border-color: #111;
+}
+
+.vepace-auth-field input.is-error {
+  border-color: var(--vepace-red);
+}
+
+.vepace-auth-error {
+  color: var(--vepace-red);
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+}
+
+.vepace-auth-forgot {
+  display: block;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--kalles-muted);
+  margin-bottom: 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  width: 100%;
+}
+
+.vepace-auth-forgot:hover {
+  color: var(--vepace-red);
+}
+
+.vepace-auth-submit {
+  width: 100%;
+  height: 48px;
+  background: #111;
+  color: #fff;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.vepace-auth-submit:hover {
+  background: #333;
+}
+
+.vepace-auth-submit--red {
+  background: var(--vepace-red);
+}
+
+.vepace-auth-submit--red:hover {
+  background: var(--vepace-red-hover);
+}
+
+.vepace-auth-submit--outline {
+  background: #fff;
+  color: #111;
+  border: 1px solid #111;
+}
+
+.vepace-auth-submit--outline:hover {
+  background: var(--kalles-soft);
+}
+
+.vepace-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: var(--kalles-muted);
+  font-size: 0.8rem;
+}
+
+.vepace-auth-divider::before,
+.vepace-auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--kalles-border);
+}
+
+.vepace-auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--kalles-muted);
+}
+
+.vepace-auth-footer a {
+  color: var(--vepace-red);
+  font-weight: 600;
+}
+
+.vepace-auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.vepace-auth-toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2000;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: #fff;
+  border-left: 4px solid #2d8a4e;
+  box-shadow: var(--kalles-shadow);
+  padding: 1rem 1.25rem;
+  max-width: 320px;
+  font-size: 0.85rem;
+}
+
+.vepace-auth-toast strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.vepace-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.vepace-auth-mobile-logo {
+  display: block;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+  color: var(--kalles-dark);
+}
+
+@media (min-width: 1024px) {
+  .vepace-auth-mobile-logo {
+    display: none;
+  }
+}
+
+/* PasswordInput inside auth card */
+.vepace-auth-card .flex.flex-col label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--kalles-dark);
+}
+
+.vepace-auth-card .flex.flex-col input {
+  height: 44px;
+  border: 1px solid var(--kalles-border);
+  border-radius: 0;
+}
+
+.vepace-auth-card .flex.flex-col input:focus {
+  border-color: #111;
+  outline: none;
+}
