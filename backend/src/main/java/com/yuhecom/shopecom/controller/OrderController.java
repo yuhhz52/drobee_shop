@@ -46,6 +46,12 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(orderResponse).build());
     }
 
+    @PostMapping("/cancel/{id}")
+    public ResponseEntity<ApiResponse<Boolean>> cancelOrder(@PathVariable("id") UUID id, Principal principal) {
+        boolean result = orderService.cancelOrder(id, principal);
+        return ResponseEntity.ok(ApiResponse.<Boolean>builder().result(result).build());
+    }
+
     @PostMapping("/update-payment")
     public ResponseEntity<ApiResponse<Map<String,String>>> updatePaymentStatus(@RequestBody Map<String,String> request){
         String paymentIntentId = request.get("paymentIntentId");

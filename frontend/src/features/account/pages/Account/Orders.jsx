@@ -39,6 +39,7 @@ const Orders = () => {
       dispatch(loadOrders(res));
     }).catch(err => {
 
+      console.error('Fetch orders failed', err);
     }).finally(() => {
       dispatch(setLoading(false));
     })
@@ -79,16 +80,25 @@ const Orders = () => {
   }, []);
 
   const onCancelOrder = useCallback((id) => {
+    if (!window.confirm('Bạn có chắc muốn huỷ đơn này?')) return;
     dispatch(setLoading(true));
-    cancelOrderAPI(id).then(res => {
-      setOrders(prevOrders => prevOrders.map(order =>
-        order.id === id ? { ...order, orderStatus: 'CANCELLED', status: 'CANCELLED' } : order
-      ));
-    }).catch(err => {
-
-    }).finally(() => {
-      dispatch(setLoading(false));
-    });
+    cancelOrderAPI(id)
+      .then(() => {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === id ? { ...order, orderStatus: 'CANCELLED', status: 'CANCELLED' } : order
+          )
+        );
+        // Give user quick feedback
+        alert('Đã huỷ đơn hàng');
+      })
+      .catch(() => {
+        console.error('Cancel order failed');
+        alert('Huỷ đơn không thành công. Vui lòng thử lại.');
+      })
+      .finally(() => {
+        dispatch(setLoading(false));
+      });
   }, [dispatch])
 
 

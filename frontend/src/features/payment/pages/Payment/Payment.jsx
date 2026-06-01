@@ -1,34 +1,52 @@
 // src/pages/payment/PaymentPage.jsx
 import { Elements } from '@stripe/react-stripe-js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutPayment';
 import { useSelector } from 'react-redux';
 import { selectCartItems } from '@app/store/slices/cart.jsx';
 import { placeOrderAPI } from '@services/order.service';
 import { createOrderRequest } from '@shared/utils/order-util';
+import { env } from '@core/config/env';
 
-const stripePromise = loadStripe("pk_test_51RitF8QTOMW9o79JqpIR8NPiGFw8tzoXaQKiCy9MISFfXPz0WmBA7vf3TrcZpFktqRVR5Mv9o5VGaHFzKbe47kIh0081EiTXiq");
+const stripePublicKey = env.stripePublicKey;
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
 
 const PaymentPage = ({ userId, addressId }) => {
   const cartItems = useSelector(selectCartItems);
   const [clientSecret, setClientSecret] = useState(null);
   const [orderId, setOrderId] = useState(null);
+  const [initError, setInitError] = useState('');
+  const [isPreparing, setIsPreparing] = useState(false);
+
+  const initPayment = useCallback(async () => {
+    if (!stripePublicKey) {
+      setInitError('Stripe public key is not configured.');
+      return;
+    }
+    try {
+      setIsPreparing(true);
+      setInitError('');
+      const orderRequest = createOrderRequest(cartItems, userId, addressId);
+      const res = await placeOrderAPI(orderRequest);
+      setClientSecret(res.credentials.client_secret);
+      setOrderId(res.orderId);
+    } catch (error) {
+      console.error("Lỗi khi tạo đơn hàng:", error);
+      setInitError('Không thể khởi tạo thanh toán. Vui lòng thử lại.');
+    } finally {
+      setIsPreparing(false);
+    }
+  }, [cartItems, userId, addressId]);
 
   useEffect(() => {
-    const initPayment = async () => {
-      try {
-        const orderRequest = createOrderRequest(cartItems, userId, addressId);
-        const res = await placeOrderAPI(orderRequest);
-        setClientSecret(res.credentials.client_secret);
-        setOrderId(res.orderId);
-      } catch (error) {
-        console.error(" Lỗi khi tạo đơn hàng:", error);
-      }
-    };
-
+    if (!userId || !addressId || !cartItems?.length || !stripePublicKey) return;
     initPayment();
-  }, [cartItems, userId, addressId]);
+  }, [cartItems, userId, addressId, initPayment]);
+
+  if (!stripePromise) {
+    return <p>Stripe public key is not configured.</p>;
+  }
 
   const options = {
     clientSecret,
@@ -39,12 +57,25 @@ const PaymentPage = ({ userId, addressId }) => {
 
   return (
    <div>
+    {initError && (
+      <div className="mb-3 text-sm text-red-600">
+        <p>{initError}</p>
+        <button
+          type="button"
+          onClick={initPayment}
+          className="mt-2 px-3 py-2 rounded border border-gray-300"
+          disabled={isPreparing}
+        >
+          Thử lại
+        </button>
+      </div>
+    )}
     {clientSecret ? (
       <Elements stripe={stripePromise} options={options}>
         <CheckoutForm clientSecret={clientSecret} orderId={orderId} />
       </Elements>
     ) : (
-      <p>Đang xử lý thanh toán...</p>
+      <p>{isPreparing ? 'Đang xử lý thanh toán...' : 'Đang chuẩn bị thanh toán...'}</p>
     )}
   </div>
   );

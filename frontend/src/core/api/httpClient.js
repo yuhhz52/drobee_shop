@@ -34,7 +34,7 @@ httpClient.interceptors.response.use(
 
       if (!refreshToken) {
         clearTokens();
-        window.location.href = '/login';
+        window.location.href = '/v1/login';
         return Promise.reject(err);
       }
 
@@ -49,7 +49,7 @@ httpClient.interceptors.response.use(
         return httpClient(originalRequest);
       } catch (refreshError) {
         clearTokens();
-        window.location.href = '/login';
+        window.location.href = '/v1/login';
         return Promise.reject(refreshError);
       }
     }

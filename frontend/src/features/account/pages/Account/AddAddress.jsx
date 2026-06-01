@@ -1,10 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setLoading } from '@app/store/slices/common.jsx';
 import { addAddressAPI } from '@services/user.service';
 import { saveAddress } from '@app/store/slices/user.jsx';
 
-const AddAddress = ({ onCancel }) => {
+const AddAddress = ({ onCancel, onSaved }) => {
   const [values, setValues] = useState({
     name: '',
     phoneNumber: '',
@@ -14,24 +13,26 @@ const AddAddress = ({ onCancel }) => {
     zipCode: ''
   });
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const dispatch = useDispatch();
 
   const onSubmit = useCallback((evt) => {
     evt.preventDefault();
-    dispatch(setLoading(true));
+    setSaving(true);
     setError('');
     addAddressAPI(values)
-      .then(res => {
+      .then((res) => {
         dispatch(saveAddress(res));
-        onCancel && onCancel();
+        const afterSave = onSaved || onCancel;
+        afterSave && afterSave();
       })
       .catch(() => {
         setError('Không thể thêm địa chỉ. Vui lòng thử lại.');
       })
       .finally(() => {
-        dispatch(setLoading(false));
+        setSaving(false);
       });
-  }, [dispatch, onCancel, values]);
+  }, [dispatch, onCancel, onSaved, values]);
 
   const handleOnChange = useCallback((e) => {
     setValues(prev => ({
@@ -127,8 +128,9 @@ const AddAddress = ({ onCancel }) => {
           <button
             type="submit"
             className="vepace-btn vepace-btn--dark"
+            disabled={saving}
           >
-            Lưu
+            {saving ? 'Đang lưu…' : 'Lưu'}
           </button>
         </div>
       </form>

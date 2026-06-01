@@ -8,6 +8,7 @@ import { addItemToCartAction } from '@app/store/actions/cartAction';
 import { formatPriceEUR } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
+import { colorSelector } from '@shared/components/Filters/ColorFilter';
 import VepaceProductCard from '@features/home/pages/HomeScooter/VepaceProductCard';
 import './ProductDetails.css';
 

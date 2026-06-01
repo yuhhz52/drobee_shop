@@ -12,7 +12,9 @@ export const colorSelector = {
   "Grey": "#808080",
   "Yellow": "#FFFF00",
   "Pink": "#FFC0CB",
-  "Green": "#008000"
+  "Green": "#008000",
+  "Gunmetal": "#2C3539",
+  "Matte Black": "#1a1a1a",
 };
 
 const ColorFilter = ({ colors, onChange, selectedColor: controlledColor }) => {

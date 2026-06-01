@@ -17,4 +17,3 @@ SET @drop_thumbnail_sql := IF(
 PREPARE drop_thumbnail_stmt FROM @drop_thumbnail_sql;
 EXECUTE drop_thumbnail_stmt;
 DEALLOCATE PREPARE drop_thumbnail_stmt;
-

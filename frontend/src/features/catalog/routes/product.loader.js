@@ -28,10 +28,17 @@ export const loaderProductBySlug = async ({ params }) => {
       const status = err.response.status;
       const message =
         err.response.data?.message || err.message || 'Failed to fetch product';
-      throw new Response(message, { status });
+      throw new Response(message, { status, statusText: message });
     }
 
-    throw new Response('Internal server error', { status: 500 });
+    if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
+      throw new Response(
+        'Cannot reach the API server. Start the backend on port 8080, then refresh.',
+        { status: 503, statusText: 'Service unavailable' }
+      );
+    }
+
+    throw new Response(err.message || 'Internal server error', { status: 500 });
   } finally {
     store.dispatch(setLoading(false));
   }

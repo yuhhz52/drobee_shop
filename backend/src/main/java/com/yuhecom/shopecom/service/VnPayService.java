@@ -4,6 +4,7 @@ import com.yuhecom.shopecom.entity.Order;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.net.URLEncoder;
@@ -16,6 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class VnPayService {
 
     @Value("${vnpay.tmnCode}")
@@ -83,9 +85,12 @@ public class VnPayService {
             String secureHash = hmacSHA512(vnpHashSecret, hashData.toString());
             query.append("&vnp_SecureHash=").append(secureHash);
 
-            return vnpPayUrl + "?" + query.toString();
+            String url = vnpPayUrl + "?" + query.toString();
+            log.info("VNPay payment URL created orderId={}", order.getId());
+            return url;
 
         } catch (Exception e) {
+            log.error("VNPay payment URL creation failed orderId={}", order.getId(), e);
             throw new RuntimeException("Lỗi tạo URL thanh toán VNPay", e);
         }
     }
@@ -116,6 +121,7 @@ public class VnPayService {
 
             return receivedHash != null && receivedHash.equals(generatedHash);
         } catch (Exception e) {
+            log.warn("VNPay return validation failed", e);
             return false;
         }
     }

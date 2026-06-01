@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { selectCartItems } from '@app/store/slices/cart.jsx'
 import { fetchUserDetails } from '@services/user.service'
 import { setLoading } from '@app/store/slices/common.jsx'
+import { clearTokens } from '@shared/utils/jwt-helper'
 import Payment from '@features/payment/pages/Payment/Payment'
 import { placeOrderAPI } from '@services/order.service'
 import { createOrderRequest } from '@shared/utils/order-util'
@@ -29,13 +30,23 @@ const PAYMENT_OPTIONS = [
   { id: 'CARD', label: 'Credit card (Stripe)' },
 ]
 
+const MESSAGES = {
+  ADDRESS_REQUIRED: 'Please select a delivery address.',
+  ORDER_FAILED: 'Order failed. Please try again.',
+  VNPAY_FAILED: 'VNPay failed. Please try again.',
+  VNPAY_URL_MISSING: 'Payment URL not received. Please try again.',
+}
+
 const Checkout = () => {
   const cartItems = useSelector(selectCartItems)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [userInfo, setUserInfo] = useState()
+  const [addressLoading, setAddressLoading] = useState(true)
+  const [profileError, setProfileError] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
   const [selectedAddressId, setSelectedAddressId] = useState(null)
+  const [submittingMethod, setSubmittingMethod] = useState('')
 
   const subTotal = useMemo(() => {
     let value = 0
@@ -51,47 +62,59 @@ const Checkout = () => {
   )
 
   const refetchUser = () => {
-    dispatch(setLoading(true))
-    fetchUserDetails()
+    setAddressLoading(true)
+    setProfileError('')
+    return fetchUserDetails()
       .then((res) => {
         setUserInfo(res)
         if (res?.addressList?.length > 0) {
           setSelectedAddressId(res.addressList[0].id)
         }
       })
-      .catch((err) => console.error('Failed to fetch user info:', err))
-      .finally(() => dispatch(setLoading(false)))
+      .catch((err) => {
+        console.error('Failed to fetch user info:', err)
+        const status = err?.response?.status
+        if (status === 401 || status === 403) {
+          clearTokens()
+          navigate('/v1/login', { replace: true, state: { from: '/checkout' } })
+          return
+        }
+        setProfileError('Could not load your profile. Please refresh or sign in again.')
+      })
+      .finally(() => setAddressLoading(false))
   }
 
   useEffect(() => {
+    dispatch(setLoading(false))
     refetchUser()
-  }, [dispatch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleCODPayment = async () => {
     if (!selectedAddressId) {
-      alert('Please select a delivery address.')
+      alert(MESSAGES.ADDRESS_REQUIRED)
       return
     }
     try {
-      dispatch(setLoading(true))
+      setSubmittingMethod('COD')
       const orderRequest = createOrderRequest(cartItems, userInfo?.id, selectedAddressId)
       orderRequest.paymentMethod = 'COD'
       const res = await placeOrderAPI(orderRequest)
       navigate(`/orderConfirmed?orderId=${res?.orderId}`)
     } catch {
-      alert('Order failed. Please try again.')
+      alert(MESSAGES.ORDER_FAILED)
     } finally {
-      dispatch(setLoading(false))
+      setSubmittingMethod('')
     }
   }
 
   const handleVNPayPayment = async () => {
     if (!selectedAddressId) {
-      alert('Please select a delivery address.')
+      alert(MESSAGES.ADDRESS_REQUIRED)
       return
     }
     try {
-      dispatch(setLoading(true))
+      setSubmittingMethod('VNPAY')
       const orderRequest = createOrderRequest(cartItems, userInfo?.id, selectedAddressId)
       orderRequest.paymentMethod = 'VNPAY'
       const res = await placeOrderAPI(orderRequest)
@@ -99,14 +122,17 @@ const Checkout = () => {
       if (paymentUrl) {
         window.location.href = paymentUrl
       } else {
-        alert('Payment URL not received. Please try again.')
+        alert(MESSAGES.VNPAY_URL_MISSING)
       }
     } catch (err) {
-      alert(`VNPay failed: ${err.message || 'Connection error'}`)
+      console.error('VNPay error', err)
+      alert(MESSAGES.VNPAY_FAILED)
     } finally {
-      dispatch(setLoading(false))
+      setSubmittingMethod('')
     }
   }
+
+  const isBusy = addressLoading || submittingMethod !== ''
 
   if (!cartItems?.length) {
     return <Navigate to="/cart-items" replace />
@@ -130,7 +156,13 @@ const Checkout = () => {
           <div>
             <section className="kalles-checkout__section">
               <h2 className="kalles-checkout__section-title">Delivery address</h2>
-              {userInfo?.addressList?.length > 0 ? (
+              {addressLoading ? (
+                <p className="kalles-checkout__empty-hint">Loading addresses…</p>
+              ) : profileError ? (
+                <p className="kalles-checkout__empty-hint" style={{ color: '#c62828' }}>
+                  {profileError}
+                </p>
+              ) : userInfo?.addressList?.length > 0 ? (
                 <div className="kalles-checkout__address-list">
                   {userInfo.addressList.map((address) => (
                     <label
@@ -162,7 +194,7 @@ const Checkout = () => {
                   <p style={{ margin: '0 0 1rem' }}>
                     You have no saved address. Add one to continue checkout.
                   </p>
-                  <AddAddress onCancel={refetchUser} />
+                  <AddAddress onSaved={refetchUser} />
                 </div>
               )}
             </section>
@@ -183,6 +215,7 @@ const Checkout = () => {
                       value={opt.id}
                       checked={paymentMethod === opt.id}
                       onChange={() => setPaymentMethod(opt.id)}
+                      disabled={isBusy}
                     />
                     <span>{opt.label}</span>
                   </label>
@@ -202,9 +235,9 @@ const Checkout = () => {
                     className="kalles-shop__btn kalles-shop__btn--primary"
                     style={{ width: 'auto', minWidth: '200px' }}
                     onClick={handleCODPayment}
-                    disabled={!selectedAddressId}
+                    disabled={!selectedAddressId || isBusy}
                   >
-                    Place order
+                    {submittingMethod === 'COD' ? 'Placing order...' : 'Place order'}
                   </button>
                 )}
                 {paymentMethod === 'VNPAY' && (
@@ -213,9 +246,9 @@ const Checkout = () => {
                     className="kalles-shop__btn kalles-shop__btn--vnpay"
                     style={{ width: 'auto', minWidth: '200px' }}
                     onClick={handleVNPayPayment}
-                    disabled={!selectedAddressId}
+                    disabled={!selectedAddressId || isBusy}
                   >
-                    Pay with VNPay
+                    {submittingMethod === 'VNPAY' ? 'Redirecting...' : 'Pay with VNPay'}
                   </button>
                 )}
               </div>

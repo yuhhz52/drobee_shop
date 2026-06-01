@@ -1,35 +1,23 @@
-import { publicClient, getAuthHeaders } from '@core/api/publicClient';
 import httpClient from '@core/api/httpClient';
 import { ENDPOINTS } from '@core/api/endpoints';
 
-const withAuth = (config = {}) => ({
-  ...config,
-  headers: { ...config.headers, ...getAuthHeaders() },
-});
+const unwrap = (res) => res.data?.result ?? res.data;
 
 export const userService = {
   fetchUserDetails() {
-    return publicClient
-      .get(ENDPOINTS.user.profile, withAuth())
-      .then((res) => res.data);
+    return httpClient.get(ENDPOINTS.user.profile).then((res) => res.data);
   },
 
   deleteUser(id) {
-    return publicClient
-      .delete(ENDPOINTS.user.byId(id), withAuth())
-      .then((res) => res.data);
+    return httpClient.delete(ENDPOINTS.user.byId(id)).then((res) => res.data);
   },
 
   addAddress(data) {
-    return publicClient
-      .post(ENDPOINTS.address, data, withAuth())
-      .then((res) => res.data);
+    return httpClient.post(ENDPOINTS.address, data).then(unwrap);
   },
 
   deleteAddress(id) {
-    return publicClient
-      .delete(ENDPOINTS.addressById(id), withAuth())
-      .then((res) => res.data);
+    return httpClient.delete(ENDPOINTS.addressById(id)).then(unwrap);
   },
 
   uploadAvatar(file) {
@@ -46,24 +34,18 @@ export const userService = {
   },
 
   fetchOrders() {
-    return publicClient
-      .get(ENDPOINTS.orderByUser, withAuth())
-      .then((res) => res.data);
+    return httpClient.get(ENDPOINTS.orderByUser).then(unwrap);
   },
 
   cancelOrder(id) {
-    return publicClient
-      .post(ENDPOINTS.orderCancel(id), null, withAuth())
-      .then((res) => res.data);
+    return httpClient.post(ENDPOINTS.orderCancel(id)).then(unwrap);
   },
 };
 
-export const {
-  fetchUserDetails,
-  deleteUserAPI,
-  addAddressAPI,
-  deleteAddressAPI,
-  uploadAvatar,
-  fetchOrderAPI,
-  cancelOrderAPI,
-} = userService;
+export const fetchUserDetails = userService.fetchUserDetails.bind(userService);
+export const deleteUserAPI = userService.deleteUser.bind(userService);
+export const addAddressAPI = userService.addAddress.bind(userService);
+export const deleteAddressAPI = userService.deleteAddress.bind(userService);
+export const uploadAvatar = userService.uploadAvatar.bind(userService);
+export const fetchOrderAPI = userService.fetchOrders.bind(userService);
+export const cancelOrderAPI = userService.cancelOrder.bind(userService);

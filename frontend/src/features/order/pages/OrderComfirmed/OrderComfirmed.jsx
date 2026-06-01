@@ -27,11 +27,12 @@ const OrderConfirmed = () => {
   const isLoading = useSelector((state) => state.commonState.loading)
   const dispatch = useDispatch()
 
-  const { orderId, status } = useMemo(() => {
+  const { orderId, status, paymentError } = useMemo(() => {
     const query = new URLSearchParams(location.search)
     return {
       orderId: query.get('orderId'),
       status: query.get('status'),
+      paymentError: query.get('error'),
     }
   }, [location.search])
 
@@ -109,6 +110,9 @@ const OrderConfirmed = () => {
         <div className="kalles-order__meta">
           {order?.orderDate && (
             <p>Order date: {new Date(order.orderDate).toLocaleString()}</p>
+          )}
+          {paymentError && (
+            <p style={{ color: '#c62828' }}>Payment error: {paymentError}</p>
           )}
           {isPaymentSuccess && order?.paymentMethod === 'VNPAY' && (
             <p style={{ color: '#2e7d32' }}>VNPay payment successful. Thank you!</p>

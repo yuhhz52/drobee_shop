@@ -72,6 +72,7 @@ const ProductListPage = ({
 
   const categoryIdFromQuery = searchParams.get('categoryId')
   const typeIdFromQuery = searchParams.get('typeId')
+  const searchTermFromQuery = (searchParams.get('name') || '').trim()
   const category = useMemo(
     () =>
       categoryIdFromQuery
@@ -128,6 +129,7 @@ const ProductListPage = ({
       !category?.id &&
       !showNewArrivals &&
       !showSale &&
+      !searchTermFromQuery &&
       (categoryType || categoryIdFromQuery)
     ) return
 
@@ -136,15 +138,16 @@ const ProductListPage = ({
       try {
         let res
         if (showNewArrivals) {
-          res = await getAllProducts({ newArrival: true, page: page - 1, size })
+          res = await getAllProducts({ newArrival: true, page: page - 1, size, name: searchTermFromQuery || undefined })
         } else if (showSale || showAllProducts) {
-          res = await getAllProducts({ page: page - 1, size })
+          res = await getAllProducts({ page: page - 1, size, name: searchTermFromQuery || undefined })
         } else {
           res = await getAllProducts({
             categoryId: category?.id,
             typeIds: selectedTypes,
             page: page - 1,
             size,
+            name: searchTermFromQuery || undefined,
           })
         }
         setProducts(res.products || [])
@@ -158,11 +161,11 @@ const ProductListPage = ({
     }
 
     fetchProducts()
-  }, [category?.id, showNewArrivals, showSale, showAllProducts, categoryType, categoryIdFromQuery, selectedTypes, page, size, dispatch])
+  }, [category?.id, showNewArrivals, showSale, showAllProducts, categoryType, categoryIdFromQuery, selectedTypes, page, size, dispatch, searchTermFromQuery])
 
   useEffect(() => {
     setPage(1)
-  }, [selectedTypes, category?.id, showNewArrivals, showSale])
+  }, [selectedTypes, category?.id, showNewArrivals, showSale, searchTermFromQuery])
 
   useEffect(() => {
     handleCloseFilter()

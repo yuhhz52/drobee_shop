@@ -9,11 +9,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+@Slf4j
 public class JWTAuthentication extends OncePerRequestFilter {
 
 
@@ -47,25 +50,35 @@ public class JWTAuthentication extends OncePerRequestFilter {
 
 
         String authHeader = request.getHeader("Authorization");
-        System.out.println("===> Authorization header: " + authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            String username = jwtTokenHelper.getUserNameFromToken(token);
+            try {
+                String username = jwtTokenHelper.getUserNameFromToken(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails;
+                    try {
+                        userDetails = userDetailsService.loadUserByUsername(username);
+                    } catch (UsernameNotFoundException ex) {
+                        log.warn("JWT rejected: user no longer exists ({})", username);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
 
-                if (jwtTokenHelper.validateToken(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    if (jwtTokenHelper.validateToken(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
+            } catch (Exception ex) {
+                log.warn("JWT validation failed: {}", ex.getMessage());
             }
         }
 

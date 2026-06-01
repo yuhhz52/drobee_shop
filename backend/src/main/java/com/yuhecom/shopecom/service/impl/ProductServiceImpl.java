@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Transactional
 public class ProductServiceImpl implements ProductService {
 
     ProductRepository productRepository;
@@ -60,15 +62,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDto getProductBySlug(String slug) {
-        Product product = productRepository.findBySlug(slug);
-        if (product == null) {
-            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found");
-        }
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,
+                        "Product not found with slug: " + slug));
+        initializeProductCollections(product);
         return productMapper.toDto(product);
     }
 
+    private void initializeProductCollections(Product product) {
+        if (product.getVariants() != null) {
+            product.getVariants().size();
+        }
+        if (product.getResources() != null) {
+            product.getResources().size();
+        }
+    }
+
     @Override
+    @Transactional(readOnly = true)
     public Page<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name, Boolean newArrival, int page, int size) {
         Specification<Product> spec = (root, query, cb) -> cb.conjunction();
 
@@ -91,11 +104,12 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage = productRepository.findAll(spec, pageable);
 
-        // Map entity → DTO và giữ nguyên thông tin phân trang
+        productPage.getContent().forEach(this::initializeProductCollections);
         return productPage.map(productMapper::toDto);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PagingResult<ProductDto> getProductsPage(UUID categoryId, List<UUID> typeIds, UUID typeId, String slug, String name,
                                                     Boolean newArrival, int page, int size) {
         if (StringUtils.isNotBlank(slug)) {
@@ -120,9 +134,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDto getProductById(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found"));
+        initializeProductCollections(product);
+        if (product.getCategoryType() != null && product.getCategoryType().getCategory() != null) {
+            product.getCategoryType().getCategory().getName();
+        }
+        if (product.getScooterSpec() != null) {
+            product.getScooterSpec().getMotorPowerW();
+        }
         return productMapper.toDto(product);
     }
 

@@ -16,6 +16,7 @@ import com.yuhecom.shopecom.reponsitory.OrderRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,6 +30,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class OrderService {
 
 
@@ -110,6 +112,7 @@ public class OrderService {
         payment.setPaymentMethod(order.getPaymentMethod());
         order.setPayment(payment);
         Order savedOrder = orderRepository.save(order);
+        log.info("Order created id={} paymentMethod={}", savedOrder.getId(), orderRequest.getPaymentMethod());
 
         OrderResponse orderResponse = OrderResponse.builder()
                 .paymentMethod(orderRequest.getPaymentMethod())
@@ -128,6 +131,7 @@ public class OrderService {
 
     public Map<String, String> updateStatus(String paymentIntentId, String status){
         try{
+            log.info("Stripe update status request paymentIntentId={} status={}", paymentIntentId, status);
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
             if (paymentIntent != null && "succeeded".equals(paymentIntent.getStatus())) {
                 String orderId = paymentIntent.getMetadata().get("orderId");
@@ -145,14 +149,18 @@ public class OrderService {
                 Order savedOrder = orderRepository.save(order);
                 Map<String,String> map = new HashMap<>();
                 map.put("orderId", String.valueOf(savedOrder.getId()));
+                map.put("amount", String.valueOf(savedOrder.getTotalAmount()));
+                log.info("Stripe payment confirmed orderId={}", savedOrder.getId());
                 return map;
             }
+            log.warn("Stripe payment not confirmed paymentIntentId={} status={}", paymentIntentId, paymentIntent == null ? "null" : paymentIntent.getStatus());
             throw new BusinessException(ErrorCode.PAYMENT_INTENT_INVALID, "PaymentIntent not found or invalid status");
         }
         catch (BusinessException e){
             throw e;
         }
         catch (Exception e){
+            log.error("Stripe update status failed paymentIntentId={}", paymentIntentId, e);
             throw new BusinessException(ErrorCode.PAYMENT_INTENT_INVALID, "PaymentIntent not found or missing metadata");
         }
     }
@@ -169,6 +177,7 @@ public class OrderService {
         try {
             String orderInfo = params.get("vnp_OrderInfo");
             orderId = extractOrderIdFromVnpOrderInfo(orderInfo);
+            log.info("VNPay return received valid={} responseCode={} orderId={}", valid, params.get("vnp_ResponseCode"), orderId);
 
             if (valid && "00".equals(params.get("vnp_ResponseCode"))) {
                 updateOrderStatusVnpay(orderId, true);
@@ -179,6 +188,7 @@ public class OrderService {
 
             return buildRedirectUrl(orderId, status, null);
         } catch (Exception e) {
+            log.error("VNPay return handling failed", e);
             return buildRedirectUrl(null, "fail", e.getMessage());
         }
     }
@@ -217,6 +227,9 @@ public class OrderService {
                 order.setOrderStatus(OrderStatus.CANCELLED);
             }
             orderRepository.save(order);
+            log.info("VNPay order status updated orderId={} success={}", orderId, success);
+        } else {
+            log.warn("VNPay order not found orderId={}", orderId);
         }
     }
 

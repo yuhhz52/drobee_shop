@@ -29,7 +29,8 @@ export const productService = {
 
   async getBySlug(slug) {
     try {
-      const { data } = await publicClient.get(`${ENDPOINTS.products}?slug=${slug}`);
+      const params = new URLSearchParams({ slug, page: '0', size: '1' });
+      const { data } = await publicClient.get(`${ENDPOINTS.products}?${params}`);
       const product = extractList(data)[0];
       return product || null;
     } catch (err) {

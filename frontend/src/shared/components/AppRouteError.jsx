@@ -9,7 +9,10 @@ const AppRouteError = () => {
   const status = isRouteError ? error.status : 500;
   const title = isRouteError ? error.statusText : 'Unexpected error';
   const detail = isRouteError
-    ? error.data?.message || error.data || 'The page you requested could not be found.'
+    ? (typeof error.data === 'string'
+        ? error.data
+        : error.data?.message || error.statusText)
+      || 'The page you requested could not be found.'
     : 'Please try again or return to the homepage.';
 
   return (

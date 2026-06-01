@@ -23,7 +23,7 @@ import NavDropdown from './NavDropdown';
 import { buildNavMenus, languages } from './navMenuData';
 import './Navigation.css';
 
-const topAnnouncement = '🎁 UP TO -330€ OFF | CODE: VEPACE 🔥';
+const topAnnouncement = '🎁 UP TO -330€ OFF | CODE: HUY 🔥';
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -224,8 +224,7 @@ const Navigation = () => {
                 </span>
               )
             )}
-            <span className="vepace-account__top">{isLoggedIn ? 'Welcome back' : 'Login / Signup'}</span>
-            <span className="vepace-account__main">My account</span>
+            <span className="vepace-account__top">{isLoggedIn ? '' : 'Login / Signup'}</span>
           </Link>
             <Link to="/cart-items" className="vepace-cart">
               <span className="vepace-cart__icon-wrap">

@@ -1,4 +1,4 @@
--- Create core schema before seeding data
+﻿-- Create core schema before seeding data
 
 CREATE TABLE IF NOT EXISTS categories (
     id BINARY(16) NOT NULL,
