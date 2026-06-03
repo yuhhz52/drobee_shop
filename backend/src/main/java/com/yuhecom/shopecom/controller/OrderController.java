@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/order")
+@RequestMapping("/api/orders")
 public class OrderController {
 
     @Autowired
@@ -46,13 +46,17 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(orderResponse).build());
     }
 
-    @PostMapping("/cancel/{id}")
-    public ResponseEntity<ApiResponse<Boolean>> cancelOrder(@PathVariable("id") UUID id, Principal principal) {
-        boolean result = orderService.cancelOrder(id, principal);
-        return ResponseEntity.ok(ApiResponse.<Boolean>builder().result(result).build());
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Boolean>> updateOrderStatus(@PathVariable("id") UUID id, @RequestBody Map<String, String> requestBody, Principal principal) {
+        String status = requestBody.get("status");
+        if ("CANCELLED".equalsIgnoreCase(status)) {
+            boolean result = orderService.cancelOrder(id, principal);
+            return ResponseEntity.ok(ApiResponse.<Boolean>builder().result(result).build());
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.<Boolean>builder().message("Unsupported status transition").result(false).build());
     }
 
-    @PostMapping("/update-payment")
+    @PatchMapping("/payments")
     public ResponseEntity<ApiResponse<Map<String,String>>> updatePaymentStatus(@RequestBody Map<String,String> request){
         String paymentIntentId = request.get("paymentIntentId");
         String status = request.get("status");
@@ -60,7 +64,7 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.<Map<String,String>>builder().result(response).build());
     }
 
-    @GetMapping("/user")
+    @GetMapping("/me")
     public ResponseEntity<ApiResponse<List<OrderDetails>>> getOrderByUser(Principal principal) {
         List<OrderDetails> orders = orderService.getOrdersByUser(principal.getName());
         return ResponseEntity.ok(ApiResponse.<List<OrderDetails>>builder().result(orders).build());

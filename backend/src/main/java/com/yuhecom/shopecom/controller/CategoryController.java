@@ -4,6 +4,7 @@ import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.CategoryDto;
 import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.Category;
+import com.yuhecom.shopecom.mapper.CategoryMapper;
 import com.yuhecom.shopecom.service.CategoryService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,37 +16,41 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/categories")
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private CategoryMapper categoryMapper;
+
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Category>> getCategoryById(@PathVariable("id") UUID categoryId){
+    public ResponseEntity<ApiResponse<CategoryDto>> getCategoryById(@PathVariable("id") UUID categoryId){
         Category category = categoryService.getCategory(categoryId);
-        return ResponseEntity.ok(ApiResponse.<Category>builder().result(category).build());
+        return ResponseEntity.ok(ApiResponse.<CategoryDto>builder().result(categoryMapper.toDto(category)).build());
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Category>>> getAllCategories(HttpServletResponse response){
+    public ResponseEntity<ApiResponse<List<CategoryDto>>> getAllCategories(HttpServletResponse response){
         PagingResult<Category> pageResult = categoryService.getCategoryPage();
         response.setHeader("Content-Range", pageResult.contentRange());
-        return ResponseEntity.ok(ApiResponse.<List<Category>>builder().result(pageResult.items()).build());
+        List<CategoryDto> dtos = categoryMapper.toDtoList(pageResult.items());
+        return ResponseEntity.ok(ApiResponse.<List<CategoryDto>>builder().result(dtos).build());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Category>> createCategory(@RequestBody CategoryDto categoryDto){
+    public ResponseEntity<ApiResponse<CategoryDto>> createCategory(@RequestBody CategoryDto categoryDto){
         Category category = categoryService.createCategory(categoryDto);
-        return ResponseEntity.status(201).body(ApiResponse.<Category>builder().result(category).build());
+        return ResponseEntity.status(201).body(ApiResponse.<CategoryDto>builder().result(categoryMapper.toDto(category)).build());
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Category>> updateCategory(@RequestBody CategoryDto categoryDto, @PathVariable("id") UUID categoryId){
+    public ResponseEntity<ApiResponse<CategoryDto>> updateCategory(@RequestBody CategoryDto categoryDto, @PathVariable("id") UUID categoryId){
         Category category = categoryService.updateCategory(categoryDto, categoryId);
-        return ResponseEntity.ok(ApiResponse.<Category>builder().result(category).build());
+        return ResponseEntity.ok(ApiResponse.<CategoryDto>builder().result(categoryMapper.toDto(category)).build());
     }
 
     @DeleteMapping("/{id}")

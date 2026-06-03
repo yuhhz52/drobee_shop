@@ -5,6 +5,7 @@ import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.ProductDto;
 import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.entity.Product;
+import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.service.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,12 @@ import java.util.UUID;
 public class ProductsController {
 
     private ProductService productService;
+    private ProductMapper productMapper;
 
     @Autowired
-    public ProductsController(ProductService productService){
+    public ProductsController(ProductService productService, ProductMapper productMapper){
         this.productService = productService;
+        this.productMapper = productMapper;
     }
 
     //Hien thi toan bo san pham
@@ -57,10 +60,10 @@ public class ProductsController {
     // Tao san pham
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Product>> createProduct(@RequestBody  ProductDto productDto){
+    public ResponseEntity<ApiResponse<ProductDto>> createProduct(@RequestBody  ProductDto productDto){
         Product product = productService.addProducts(productDto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.<Product>builder().result(product).build());
+                .body(ApiResponse.<ProductDto>builder().result(productMapper.toDto(product)).build());
 
     }
     // Xoa
@@ -74,9 +77,9 @@ public class ProductsController {
     // Cap nhat
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Product>> updateProduct(@RequestBody ProductDto productDto,@PathVariable UUID id){
+    public ResponseEntity<ApiResponse<ProductDto>> updateProduct(@RequestBody ProductDto productDto,@PathVariable UUID id){
         Product product = productService.updateProduct(productDto,id);
-        return ResponseEntity.ok(ApiResponse.<Product>builder().result(product).build());
+        return ResponseEntity.ok(ApiResponse.<ProductDto>builder().result(productMapper.toDto(product)).build());
     }
 
 }
