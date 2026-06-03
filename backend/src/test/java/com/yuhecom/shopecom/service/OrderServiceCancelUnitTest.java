@@ -42,6 +42,8 @@ public class OrderServiceCancelUnitTest {
     @Mock
     private com.yuhecom.shopecom.mapper.ProductVariantMapper productVariantMapper;
     @Mock
+    private com.yuhecom.shopecom.mapper.ProductMapper productMapper;
+    @Mock
     private com.yuhecom.shopecom.mapper.OrderMapper orderMapper;
     @Mock
     private com.yuhecom.shopecom.mapper.UsersMapper usersMapper;
@@ -59,6 +61,7 @@ public class OrderServiceCancelUnitTest {
                 (com.yuhecom.shopecom.service.StripeService) stripeService,
                 (com.yuhecom.shopecom.service.VnPayService) vnPayService,
                 (com.yuhecom.shopecom.mapper.ProductVariantMapper) productVariantMapper,
+                (com.yuhecom.shopecom.mapper.ProductMapper) productMapper,
                 (com.yuhecom.shopecom.mapper.OrderMapper) orderMapper,
                 (com.yuhecom.shopecom.mapper.UsersMapper) usersMapper,
                 (com.yuhecom.shopecom.config.AppProperties) appProperties
