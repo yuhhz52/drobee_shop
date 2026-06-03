@@ -64,9 +64,11 @@ public class Product extends BaseEntity {
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private ScooterSpec scooterSpec;
 
+    @org.hibernate.annotations.BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductVariant> variants;
 
+    @org.hibernate.annotations.BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductResource> resources;
 
@@ -74,6 +76,5 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_type_id", nullable = false)
     @JsonIgnore
     private CategoryType categoryType;
-
 
 }

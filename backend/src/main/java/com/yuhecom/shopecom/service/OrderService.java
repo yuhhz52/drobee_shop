@@ -10,6 +10,7 @@ import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.mapper.OrderMapper;
+import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.mapper.ProductVariantMapper;
 import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.reponsitory.OrderRepository;
@@ -49,6 +50,8 @@ public class OrderService {
     VnPayService vnPayService;
 
     ProductVariantMapper productVariantMapper;
+
+    ProductMapper productMapper;
 
     OrderMapper orderMapper;
 
@@ -129,6 +132,7 @@ public class OrderService {
         return orderResponse;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, String> updateStatus(String paymentIntentId, String status){
         try{
             log.info("Stripe update status request paymentIntentId={} status={}", paymentIntentId, status);
@@ -235,9 +239,9 @@ public class OrderService {
 
     public List<OrderDetails> getOrdersByUser(String name) {
         User user = (User) userDetailsService.loadUserByUsername(name);
-        List<Order> orders = orderRepository.findByUser(user);
+        List<Order> orders = orderRepository.findByUserWithItems(user);
 
-        return orders.stream().map(order ->{
+        return orders.stream().map(order -> {
             return OrderDetails.builder()
                     .id(order.getId())
                     .orderDate(order.getOrderDate())
@@ -257,7 +261,7 @@ public class OrderService {
 
     private List<OrderItemDetail> getItemDetails(List<OrderItem> orderItemList) {
         return orderItemList.stream().map(orderItem -> {
-            ProductDto productDto = productService.getProductById(orderItem.getProduct().getId());
+            ProductDto productDto = productMapper.toDto(orderItem.getProduct());
             ProductVariantDto productVariantDto = productVariantMapper.toDto(orderItem.getProductVariant());
 
             return OrderItemDetail.builder()

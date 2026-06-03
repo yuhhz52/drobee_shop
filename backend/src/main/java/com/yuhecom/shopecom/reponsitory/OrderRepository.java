@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -16,5 +19,12 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByUser(User user);
 
-
+    @Query("""
+           SELECT DISTINCT o FROM Order o
+           LEFT JOIN FETCH o.orderItemList items
+           LEFT JOIN FETCH items.product p
+           LEFT JOIN FETCH items.productVariant pv
+           WHERE o.user = :user
+           """)
+    List<Order> findByUserWithItems(@Param("user") User user);
 }
