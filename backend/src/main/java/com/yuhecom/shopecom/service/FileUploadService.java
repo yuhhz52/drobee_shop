@@ -20,23 +20,33 @@ public class FileUploadService {
 
     public UploadResult uploadFileResult(MultipartFile file, String fileName) {
         try {
-            File dir = new File(uploadDir);
-            log.info("File upload directory resolved: {}", dir.getAbsolutePath());
-            if (!dir.exists() && !dir.mkdirs()) {
-                log.error("Cannot create upload directory: {}", dir.getAbsolutePath());
-                return new UploadResult(false, null, "Cannot create upload directory");
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.matches("image/(png|jpeg|jpg|webp|gif)")) {
+                return new UploadResult(false, null, "Chỉ cho phép tải lên các tệp tin ảnh (PNG, JPG, WEBP, GIF)");
             }
-
-            File serverFile = new File(dir.getAbsolutePath() + File.separator + fileName);
-            log.info("Saving uploaded file to {}", serverFile.getAbsolutePath());
+            
+            // Lấy tên tệp tin trần (bỏ tất cả tiền tố thư mục dạng ../ hay C:\ để chống Path Traversal)
+            String safeFileName = new File(fileName).getName();
+            
+            // Loại bỏ các ký tự lạ chỉ giữ lại chữ, số, chấm, gạch ngang, gạch dưới
+            safeFileName = safeFileName.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+            
+            File dir = new File(uploadDir).getAbsoluteFile();
+            if (!dir.exists() && !dir.mkdirs()) {
+                return new UploadResult(false, null, "Không thể tạo thư mục lưu trữ");
+            }
+            
+            File serverFile = new File(dir, safeFileName);
+            // Xác minh lại đường dẫn chuẩn hóa để chắc chắn không bị ghi đè ngoài thư mục uploadDir
+            if (!serverFile.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+                throw new SecurityException("Phát hiện hành vi tấn công Directory Traversal!");
+            }
+            
             file.transferTo(serverFile);
-
-            log.info("File saved successfully: {}", serverFile.getAbsolutePath());
-            return new UploadResult(true, "/uploads/" + fileName, null);
+            return new UploadResult(true, "/uploads/" + safeFileName, null);
         } catch (Exception e) {
-            String message = e.getMessage() == null ? "Upload failed" : e.getMessage();
-            log.error("File upload failed for fileName={}. Reason={}", fileName, message, e);
-            return new UploadResult(false, null, message);
+            log.error("Tải file thất bại", e);
+            return new UploadResult(false, null, "Tải file thất bại: " + e.getMessage());
         }
     }
 }

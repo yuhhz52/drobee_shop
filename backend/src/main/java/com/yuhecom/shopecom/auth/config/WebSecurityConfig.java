@@ -32,6 +32,8 @@ import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -49,6 +51,9 @@ public class WebSecurityConfig {
     @Autowired
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
     @Value("${upload.dir:uploads}")
     private String uploadDir;
 
@@ -57,7 +62,7 @@ public class WebSecurityConfig {
             "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
             "/oauth2/success",
             "/uploads/**",
-            "/api/order/vnpay-return"
+            "/api/orders/vnpay-return"
     };
 
     @Bean
@@ -71,7 +76,7 @@ public class WebSecurityConfig {
                 )
                .authorizeHttpRequests(auth -> auth
                     .requestMatchers(PUBLIC_APIS).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/category/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
                     .anyRequest().authenticated()
                 )
 
@@ -82,7 +87,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(authenticationEntryPoint()) // 401 cho request ko có JWT
                 )
-                .addFilterBefore(new JWTAuthentication(jwtTokenHelper, userDetailsService),
+                .addFilterBefore(new JWTAuthentication(jwtTokenHelper, userDetailsService, tokenBlacklistService),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -119,7 +119,9 @@ public class VnPayService {
             data.setLength(data.length() - 1);
             String generatedHash = hmacSHA512(vnpHashSecret, data.toString());
 
-            return receivedHash != null && receivedHash.equals(generatedHash);
+            return receivedHash != null && java.security.MessageDigest.isEqual(
+                    receivedHash.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                    generatedHash.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         } catch (Exception e) {
             log.warn("VNPay return validation failed", e);
             return false;

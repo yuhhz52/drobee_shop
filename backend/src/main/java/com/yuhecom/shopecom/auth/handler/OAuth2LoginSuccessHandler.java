@@ -7,14 +7,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -27,6 +27,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Value("${app.oauth2.redirect-uri}")
     private String redirectUri;
+
+    @Value("${jwt.auth.expires_in}")
+    private int expiresIn;
+
+    @Value("${jwt.refresh.expires_in}")
+    private int refreshExpiresIn;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -50,12 +56,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtTokenHelper.generateToken(user);
         String refreshToken = jwtTokenHelper.generateRefreshToken(user);
 
-        // Encode token để tránh ký tự đặc biệt trong URL
-        String redirectUrl = redirectUri
-                + "?accessToken=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8)
-                + "&refreshToken=" + URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
+        // Thiết lập cookies HTTP-Only bảo mật 
+        addTokenCookie(request, response, "accessToken", accessToken, expiresIn);
+        addTokenCookie(request, response, "refreshToken", refreshToken, refreshExpiresIn);
 
-        response.sendRedirect(redirectUrl);
+        response.sendRedirect(redirectUri);
+    }
+
+    private void addTokenCookie(HttpServletRequest request, HttpServletResponse response, String name, String value, int maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(request.isSecure())
+                .path("/")
+                .maxAge(maxAge)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
 }

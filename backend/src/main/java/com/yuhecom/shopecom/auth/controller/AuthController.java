@@ -103,6 +103,11 @@ public class AuthController {
         }
 
         try {
+            // Kiểm tra xem refresh token đã bị đưa vào danh sách đen (blacklist) chưa
+            if (tokenBlacklistService.isRefreshTokenBlacklisted(refreshToken)) {
+                return new ResponseEntity<>("Refresh token has been blacklisted/logged out", HttpStatus.UNAUTHORIZED);
+            }
+
             String username = jwtTokenHelper.getUserNameFromToken(refreshToken);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
