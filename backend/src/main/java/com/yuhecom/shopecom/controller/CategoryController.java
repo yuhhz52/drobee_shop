@@ -7,6 +7,7 @@ import com.yuhecom.shopecom.entity.Category;
 import com.yuhecom.shopecom.mapper.CategoryMapper;
 import com.yuhecom.shopecom.service.CategoryService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,14 +42,14 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<CategoryDto>> createCategory(@RequestBody CategoryDto categoryDto){
+    public ResponseEntity<ApiResponse<CategoryDto>> createCategory(@Valid @RequestBody CategoryDto categoryDto){
         Category category = categoryService.createCategory(categoryDto);
         return ResponseEntity.status(201).body(ApiResponse.<CategoryDto>builder().result(categoryMapper.toDto(category)).build());
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<CategoryDto>> updateCategory(@RequestBody CategoryDto categoryDto, @PathVariable("id") UUID categoryId){
+    public ResponseEntity<ApiResponse<CategoryDto>> updateCategory(@Valid @RequestBody CategoryDto categoryDto, @PathVariable("id") UUID categoryId){
         Category category = categoryService.updateCategory(categoryDto, categoryId);
         return ResponseEntity.ok(ApiResponse.<CategoryDto>builder().result(categoryMapper.toDto(category)).build());
     }

@@ -1,7 +1,8 @@
 package com.yuhecom.shopecom.dto;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,9 +18,14 @@ import java.util.UUID;
 public class CategoryDto {
 
     private UUID id;
+    @NotBlank
+    @Size(max = 255)
     private String name;
+    @NotBlank
+    @Size(max = 100)
     private String code;
     private String description;
+    @Valid
     private List<CategoryTypeDto> categoryTypes;
 
 

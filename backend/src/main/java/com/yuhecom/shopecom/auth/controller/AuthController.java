@@ -9,6 +9,7 @@ import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.service.RegistrationService;
 import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +44,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<UserToken> login(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<UserToken> login(@Valid @RequestBody LoginRequest loginRequest){
         try{
             Authentication authentication= UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUserName(),
                     loginRequest.getPassword());
@@ -73,7 +74,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponse> register(@RequestBody RegistrationRequest request){
+    public ResponseEntity<RegistrationResponse> register(@Valid @RequestBody RegistrationRequest request){
         RegistrationResponse registrationResponse = registrationService.createUser(request);
 
         return new ResponseEntity<>(registrationResponse,

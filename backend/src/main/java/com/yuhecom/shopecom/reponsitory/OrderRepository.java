@@ -6,6 +6,7 @@ import com.yuhecom.shopecom.entity.Order;
 import com.yuhecom.shopecom.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,17 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByUser(User user);
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "user",
+            "address",
+            "payment",
+            "orderItemList",
+            "orderItemList.product",
+            "orderItemList.productVariant"
+    })
+    Page<Order> findAll(Pageable pageable);
 
     @Query("""
            SELECT DISTINCT o FROM Order o

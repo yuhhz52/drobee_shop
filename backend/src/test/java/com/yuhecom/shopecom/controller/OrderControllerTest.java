@@ -13,7 +13,7 @@ import java.security.Principal;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +48,8 @@ public class OrderControllerTest {
         UUID id = UUID.randomUUID();
         when(orderService.cancelOrder(eq(id), any(Principal.class))).thenReturn(true);
 
-        mockMvc.perform(post("/api/order/cancel/" + id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch("/api/orders/" + id).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"CANCELLED\"}")
                         .principal((Principal) () -> "test@example.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value(true));

@@ -186,4 +186,10 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, "ProductVariant not found"));
     }
 
+    @Override
+    public ProductVariant fetchProductVariantByIdForUpdate(UUID id) {
+        return productVariantRepository.findWithLockingById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, "ProductVariant not found"));
+    }
+
 }

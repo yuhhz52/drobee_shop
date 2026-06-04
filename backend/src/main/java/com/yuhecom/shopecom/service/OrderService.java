@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.Principal;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -74,38 +75,48 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found"));
 
+        List<OrderItem> orderItems = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
         Order order = Order.builder()
                 .user(user)
                 .address(address)
-                .totalAmount(orderRequest.getTotalAmount())
-                .orderDate(orderRequest.getOrderDate())
-                .discount(orderRequest.getDiscount())
-                .expectedDeliveryDate(orderRequest.getExpectedDeliveryDate())
+                .totalAmount(BigDecimal.ZERO)
+                .orderDate(new Date())
+                .discount(BigDecimal.ZERO)
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .orderStatus(OrderStatus.PENDING)
                 .orderDisplayCode(generateDisplayCode())
                 .build();
 
-        List<OrderItem> orderItems = (orderRequest.getOrderItemRequest() == null || orderRequest.getOrderItemRequest().isEmpty())
-            ? List.of()
-            : orderRequest.getOrderItemRequest().stream()
-                .map(orderItemRequest -> {
-                    try {
-                        Product product = productService.fetchProductById(orderItemRequest.getProductId());
-                        ProductVariant productVariant = productService.fetchProductVariantById(
-                                orderItemRequest.getProductVariantId());
-                        return OrderItem.builder()
-                                .product(product)
-                                .productVariant(productVariant)
-                                .quantity(orderItemRequest.getQuantity())
-                                .order(order)
-                                .build();
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to fetch product: " + e.getMessage(), e);
-                    }
-                }).toList();
+        for (OrderItemRequest orderItemRequest : orderRequest.getOrderItemRequest()) {
+            Product product = productService.fetchProductById(orderItemRequest.getProductId());
+            ProductVariant productVariant = productService.fetchProductVariantByIdForUpdate(orderItemRequest.getProductVariantId());
+
+            if (!productVariant.getProduct().getId().equals(product.getId())) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST, "Product variant does not belong to product");
+            }
+            if (productVariant.getStockQuantity() == null || productVariant.getStockQuantity() < orderItemRequest.getQuantity()) {
+                throw new BusinessException(ErrorCode.OUT_OF_STOCK, "Product variant is out of stock");
+            }
+            productVariant.setStockQuantity(productVariant.getStockQuantity() - orderItemRequest.getQuantity());
+
+            BigDecimal unitPrice = product.getSalePrice() != null ? product.getSalePrice() : product.getPrice();
+            BigDecimal additionalPrice = productVariant.getAdditionalPrice() == null ? BigDecimal.ZERO : productVariant.getAdditionalPrice();
+            BigDecimal itemPrice = unitPrice.add(additionalPrice);
+            totalAmount = totalAmount.add(itemPrice.multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+
+            orderItems.add(OrderItem.builder()
+                    .product(product)
+                    .productVariant(productVariant)
+                    .quantity(orderItemRequest.getQuantity())
+                    .itemPrice(itemPrice)
+                    .order(order)
+                    .build());
+        }
 
         order.setOrderItemList(orderItems);
+        order.setTotalAmount(totalAmount);
         
         Payment payment = new Payment();
         payment.setPaymentStatus(PaymentStatus.PENDING);

@@ -8,6 +8,7 @@ import com.yuhecom.shopecom.entity.Product;
 import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.service.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +61,7 @@ public class ProductsController {
     // Tao san pham
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<ProductDto>> createProduct(@RequestBody  ProductDto productDto){
+    public ResponseEntity<ApiResponse<ProductDto>> createProduct(@Valid @RequestBody ProductDto productDto){
         Product product = productService.addProducts(productDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<ProductDto>builder().result(productMapper.toDto(product)).build());
@@ -77,7 +78,7 @@ public class ProductsController {
     // Cap nhat
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<ProductDto>> updateProduct(@RequestBody ProductDto productDto,@PathVariable UUID id){
+    public ResponseEntity<ApiResponse<ProductDto>> updateProduct(@Valid @RequestBody ProductDto productDto,@PathVariable UUID id){
         Product product = productService.updateProduct(productDto,id);
         return ResponseEntity.ok(ApiResponse.<ProductDto>builder().result(productMapper.toDto(product)).build());
     }

@@ -32,23 +32,20 @@ public class JWTAuthentication extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-
-        if (path.startsWith("/api/products")
-                || path.startsWith("/api/categories")
-                || path.startsWith("/uploads/")
+        return path.startsWith("/uploads/")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/api/auth")
                 || path.startsWith("/oauth2/success")
-                || path.startsWith("/api/orders/vnpay-return")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+                || path.startsWith("/api/orders/vnpay-return");
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 

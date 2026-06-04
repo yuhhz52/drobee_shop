@@ -2,6 +2,12 @@ package com.yuhecom.shopecom.dto;
 
 import lombok.*;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -14,14 +20,24 @@ import java.util.UUID;
 public class ProductDto {
 
     private UUID id;
+    @NotBlank
+    @Size(max = 255)
     private String name;
     private String shortDescription;
     private String description;
+    @NotNull
+    @DecimalMin(value = "0.00")
     private BigDecimal price;
+    @DecimalMin(value = "0.00")
     private BigDecimal salePrice;
+    @NotBlank
+    @Size(max = 255)
     private String brand;
+    @NotNull
     private Boolean newArrival;
+    @DecimalMin(value = "0.0")
     private BigDecimal rating;
+    @Min(0)
     private Integer totalSold;
     private Boolean featured;
     private Boolean active;
@@ -59,11 +75,16 @@ public class ProductDto {
     private String certifications;
     private Integer warrantyMonths;
     private UUID categoryId;
+    @NotBlank
+    @Size(max = 255)
     private String slug;
     private String categoryName;
+    @NotNull
     private UUID categoryTypeId;
     private String categoryTypeName;
+    @Valid
     private List<ProductVariantDto> variants;
+    @Valid
     private List<ProductResourceDto> productResources;
 
 }

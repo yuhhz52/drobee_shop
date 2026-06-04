@@ -2,7 +2,9 @@ package com.yuhecom.shopecom.dto;
 
 import lombok.*;
 
-import java.util.Arrays;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -16,10 +18,19 @@ import java.math.BigDecimal;
 public class OrderRequest {
     private UUID userId;
     private Date orderDate;
+
+    @NotNull(message = "Address is required")
     private UUID addressId;
+
+    @Valid
+    @NotEmpty(message = "Order must contain at least one item")
     private List<OrderItemRequest> orderItemRequest;
+
     private BigDecimal totalAmount;
+
+    @NotNull(message = "Payment method is required")
     private String paymentMethod;
+
     private BigDecimal discount;
     private Date expectedDeliveryDate;
 

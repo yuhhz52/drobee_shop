@@ -31,5 +31,6 @@ public interface ProductService {
 
     public ProductVariant fetchProductVariantById(UUID id);
 
+    ProductVariant fetchProductVariantByIdForUpdate(UUID id);
 
 }

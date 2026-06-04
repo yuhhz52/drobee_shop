@@ -5,12 +5,14 @@ import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
 import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.service.OrderService;
+import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -41,7 +43,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
         OrderResponse orderResponse = orderService.createOrder(orderRequest,principal);
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(orderResponse).build());
     }
@@ -57,6 +59,7 @@ public class OrderController {
     }
 
     @PatchMapping("/payments")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Map<String,String>>> updatePaymentStatus(@RequestBody Map<String,String> request){
         String paymentIntentId = request.get("paymentIntentId");
         String status = request.get("status");
@@ -71,6 +74,7 @@ public class OrderController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<OrderDetails>>> getAllOrders(Pageable pageable) {
         PagingResult<OrderDetails> pageResult = orderService.getOrdersPage(pageable);
         HttpHeaders headers = new HttpHeaders();

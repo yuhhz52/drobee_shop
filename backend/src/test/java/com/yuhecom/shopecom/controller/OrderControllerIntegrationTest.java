@@ -4,6 +4,7 @@ import com.yuhecom.shopecom.auth.config.CustomAuthenticationEntryPoint;
 import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.config.WebSecurityConfig;
 import com.yuhecom.shopecom.auth.handler.OAuth2LoginSuccessHandler;
+import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
@@ -25,7 +26,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,6 +53,9 @@ class OrderControllerIntegrationTest {
     @MockBean
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
+    @MockBean
+    private TokenBlacklistService tokenBlacklistService;
+
     @Test
     @WithMockUser(username = "user@example.com")
     void cancelOrder_forbidden_returns403() throws Exception {
@@ -60,7 +64,9 @@ class OrderControllerIntegrationTest {
         when(orderService.cancelOrder(eq(id), any(Principal.class)))
                 .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Order does not belong to user"));
 
-        mockMvc.perform(post("/api/order/cancel/" + id))
+        mockMvc.perform(patch("/api/orders/" + id)
+                        .contentType("application/json")
+                        .content("{\"status\":\"CANCELLED\"}"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(ErrorCode.FORBIDDEN.getCode()))
                 .andExpect(jsonPath("$.errorCode").value(ErrorCode.FORBIDDEN.name()));
@@ -74,7 +80,9 @@ class OrderControllerIntegrationTest {
         when(orderService.cancelOrder(eq(id), any(Principal.class)))
                 .thenThrow(new BusinessException(ErrorCode.ORDER_NOT_FOUND, "Order not found with id " + id));
 
-        mockMvc.perform(post("/api/order/cancel/" + id))
+        mockMvc.perform(patch("/api/orders/" + id)
+                        .contentType("application/json")
+                        .content("{\"status\":\"CANCELLED\"}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(ErrorCode.ORDER_NOT_FOUND.getCode()))
                 .andExpect(jsonPath("$.errorCode").value(ErrorCode.ORDER_NOT_FOUND.name()));
