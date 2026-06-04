@@ -19,6 +19,8 @@ import java.security.Principal;
 import java.util.Optional;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -50,6 +52,9 @@ public class OrderServiceCancelUnitTest {
     @Mock
     private com.yuhecom.shopecom.config.AppProperties appProperties;
 
+    @Mock
+    private HttpServletRequest httpServletRequest;
+
     private OrderService orderService;
 
     @BeforeEach
@@ -64,7 +69,8 @@ public class OrderServiceCancelUnitTest {
                 (com.yuhecom.shopecom.mapper.ProductMapper) productMapper,
                 (com.yuhecom.shopecom.mapper.OrderMapper) orderMapper,
                 (com.yuhecom.shopecom.mapper.UsersMapper) usersMapper,
-                (com.yuhecom.shopecom.config.AppProperties) appProperties
+                (com.yuhecom.shopecom.config.AppProperties) appProperties,
+                httpServletRequest
         );
     }
 
