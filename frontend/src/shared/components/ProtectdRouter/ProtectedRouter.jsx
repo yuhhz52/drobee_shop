@@ -10,7 +10,10 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (requiredRole) {
     const user = getUserInfo();
-    if (!user?.roles.includes(requiredRole)) {
+    // Use optional chaining to prevent TypeError if roles is undefined
+    const hasRole = user?.roles?.includes(requiredRole) ||
+                    user?.roles?.some(role => role === 'ROLE_ADMIN' || role === 'ROLE_' + requiredRole.toUpperCase());
+    if (!hasRole) {
       return <Navigate to="/403" replace />;
     }
   }
