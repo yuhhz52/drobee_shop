@@ -3,16 +3,18 @@ package com.yuhecom.shopecom.auth.controller;
 import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.service.OAuth2Service;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -38,7 +40,35 @@ public class Oauth2Controller {
         response.sendRedirect("http://localhost:5175/oauth2/callback?token=" +token);
     }
 
+    /**
+     * Endpoint để đọc tokens từ HTTP-Only cookies
+     * Frontend gọi endpoint này sau khi redirect từ OAuth2
+     */
+    @GetMapping("/tokens")
+    public ResponseEntity<Map<String, String>> getTokensFromCookies(HttpServletRequest request) {
+        Map<String, String> tokens = new HashMap<>();
+        String accessToken = null;
+        String refreshToken = null;
 
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                } else if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                }
+            }
+        }
+
+        if (accessToken != null && refreshToken != null) {
+            tokens.put("accessToken", accessToken);
+            tokens.put("refreshToken", refreshToken);
+            return ResponseEntity.ok(tokens);
+        }
+
+        return ResponseEntity.notFound().build();
+    }
 }
 
 

@@ -56,18 +56,16 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtTokenHelper.generateToken(user);
         String refreshToken = jwtTokenHelper.generateRefreshToken(user);
 
-        // Thiết lập cookies (KHÔNG httpOnly để JS có thể đọc sau redirect)
+        // Thiết lập cookies HTTP-Only bảo mật
         addTokenCookie(request, response, "accessToken", accessToken, expiresIn);
         addTokenCookie(request, response, "refreshToken", refreshToken, refreshExpiresIn);
 
-        // Redirect với tokens trong URL để callback có thể đọc
-        String redirectUrl = redirectUri + "?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
-        response.sendRedirect(redirectUrl);
+        response.sendRedirect(redirectUri);
     }
 
     private void addTokenCookie(HttpServletRequest request, HttpServletResponse response, String name, String value, int maxAge) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
-                .httpOnly(false)
+                .httpOnly(true)
                 .secure(request.isSecure())
                 .path("/")
                 .maxAge(maxAge)

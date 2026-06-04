@@ -1,52 +1,33 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { saveTokens, isTokenValid } from '@shared/utils/jwt-helper';
+import { httpClient } from '@core/api/httpClient';
 
 /**
- * OAuth2 callback handler - reads tokens from URL params or cookies
+ * OAuth2 callback handler - reads tokens from HTTP-Only cookies via backend API
  * and saves them to localStorage for the app to use.
  */
 const OAuth2loginCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Try URL params first (set by backend in redirect URL)
-    const params = new URLSearchParams(window.location.search);
-    let accessToken = params.get("accessToken");
-    let refreshToken = params.get("refreshToken");
+    // Gọi backend endpoint để đọc tokens từ HTTP-Only cookies
+    httpClient.get('/oauth2/tokens')
+      .then(res => {
+        const { accessToken, refreshToken } = res.data;
 
-    // Fallback: read from cookies if URL params not available
-    if (!accessToken || !refreshToken) {
-      const getCookie = (name) => {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? match[2] : null;
-      };
-      accessToken = accessToken || getCookie('accessToken');
-      refreshToken = refreshToken || getCookie('refreshToken');
-    }
-
-    if (accessToken && refreshToken) {
-      // Validate tokens before saving to localStorage
-      if (isTokenValid(accessToken)) {
-        saveTokens(accessToken, refreshToken);
-
-        // Clear cookies after reading
-        document.cookie = 'accessToken=; Max-Age=0; path=/';
-        document.cookie = 'refreshToken=; Max-Age=0; path=/';
-
-        // Clear URL params
-        window.history.replaceState({}, '', window.location.pathname);
-
-        navigate('/');
-      } else {
-        console.warn('OAuth2 callback: access token expired');
+        if (accessToken && refreshToken && isTokenValid(accessToken)) {
+          saveTokens(accessToken, refreshToken);
+          navigate('/');
+        } else {
+          console.warn('OAuth2 callback: invalid or expired tokens');
+          navigate('/v1/login');
+        }
+      })
+      .catch(err => {
+        console.error('OAuth2 callback failed:', err);
         navigate('/v1/login');
-      }
-    } else {
-      // No tokens found
-      console.error('OAuth2 callback: no tokens received');
-      navigate('/v1/login');
-    }
+      });
   }, [navigate]);
 
   return (
