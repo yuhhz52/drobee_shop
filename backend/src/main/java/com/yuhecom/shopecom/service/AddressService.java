@@ -27,6 +27,7 @@ public class AddressService {
     UserDetailsService userDetailsService;
     AddressRepository addressRepository;
 
+    @Transactional
     public Address createAddress(AddressRequest addressRequest, Principal principal){
 
         User user = (User) userDetailsService.loadUserByUsername(principal.getName());

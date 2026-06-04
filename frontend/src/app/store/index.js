@@ -4,6 +4,7 @@ import cartReducer from './slices/cart.jsx';
 import categoryReducer from './slices/category.jsx';
 import commonReducer from './slices/common.jsx';
 import userReducer from './slices/user.jsx';
+import authReducer from './slices/authSlice.js';
 
 const rootReducer = combineReducers({
   productState: productReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   categoryState: categoryReducer,
   commonState: commonReducer,
   userState: userReducer,
+  authState: authReducer,
 });
 
 const store = configureStore({ reducer: rootReducer });

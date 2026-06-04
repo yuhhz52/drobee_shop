@@ -7,7 +7,6 @@ import com.yuhecom.shopecom.dto.PagingResult;
 import com.yuhecom.shopecom.service.OrderService;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -43,8 +42,8 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest orderRequest, Principal principal) throws Exception {
-        OrderResponse orderResponse = orderService.createOrder(orderRequest,principal);
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest orderRequest, Principal principal, HttpServletRequest request) throws Exception {
+        OrderResponse orderResponse = orderService.createOrder(orderRequest, principal, request);
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(orderResponse).build());
     }
 

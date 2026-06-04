@@ -8,8 +8,10 @@ import CategoryEdit from './Category/CategoryEdit';
 import { UserList } from './User/UserList.jsx';
 import { fileUploadAPI } from '@services/upload.service';
 import OrderList from "./Order/OrderList.jsx";
+import { env } from '@core/config/env.js';
 
-const BASE_URL = 'http://localhost:8080/api';
+// Use centralized API base URL from environment config
+const BASE_URL = env.apiBaseUrl || 'http://localhost:8080/api';
 
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
@@ -34,7 +36,7 @@ const refreshAccessToken = async () => {
     console.error("Refresh token error:", err);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    window.location.href = "/login";
+    window.location.href = "/v1/login";
     return null;
   }
 };

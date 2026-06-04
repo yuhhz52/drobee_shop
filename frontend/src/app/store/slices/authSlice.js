@@ -1,14 +1,14 @@
 
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { loginAPI, getProfileAPI } from "../../api/authencation";
+import { loginAPI, getProfileAPI } from "../../../services/auth.service";
 
 export const login = createAsyncThunk("auth/login", async (credentials) => {
   return await loginAPI(credentials);
 });
 
 export const fetchProfile = createAsyncThunk("auth/profile", async () => {
-  const res = await getProfileAPI();
-  return res.data;
+  // getProfileAPI already returns res.data, so don't use res.data again
+  return await getProfileAPI();
 });
 
 const authSlice = createSlice({

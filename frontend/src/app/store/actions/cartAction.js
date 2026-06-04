@@ -9,7 +9,7 @@ export const addItemToCartAction = (productItem) => {
 export const updateItemCartAction = (productItem) => {
   return (dispatch) => {
     dispatch(updateQuantity({
-      variantId: productItem?.variant_id,
+      variantId: productItem?.variantId || productItem?.variant?.id,
       quantity: productItem?.quantity
     }));
   };

@@ -10,6 +10,7 @@ import com.yuhecom.shopecom.auth.service.RegistrationService;
 import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import java.util.Map;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/auth")
+@Slf4j
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
@@ -45,8 +47,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserToken> login(@Valid @RequestBody LoginRequest loginRequest){
-        try{
-            Authentication authentication= UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUserName(),
+        try {
+            Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUserName(),
                     loginRequest.getPassword());
 
             Authentication authenticationResponse = this.authenticationManager.authenticate(authentication);
@@ -67,8 +69,8 @@ public class AuthController {
                 return new ResponseEntity<>(userToken,HttpStatus.OK);
 
             }
-        }catch (Exception e){
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.warn("Login failed for user: {}", loginRequest.getUserName(), e);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }

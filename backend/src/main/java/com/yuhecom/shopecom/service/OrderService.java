@@ -14,6 +14,7 @@ import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.mapper.ProductVariantMapper;
 import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.reponsitory.OrderRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -60,6 +61,8 @@ public class OrderService {
 
     AppProperties appProperties;
 
+    HttpServletRequest httpServletRequest;
+
 
 
     // Tao code don hang de hien thi ben ui
@@ -68,7 +71,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse createOrder(OrderRequest orderRequest, Principal principal) throws Exception {
+    public OrderResponse createOrder(OrderRequest orderRequest, Principal principal, HttpServletRequest request) throws Exception {
         User user = (User) userDetailsService.loadUserByUsername(principal.getName());
         Address address = user.getAddressList().stream()
                 .filter(address1 -> orderRequest.getAddressId().equals(address1.getId()))
@@ -136,7 +139,8 @@ public class OrderService {
             orderResponse.setCredentials(stripeService.createPaymentIntent(order));
         } else if (Objects.equals(orderRequest.getPaymentMethod(), "VNPAY")) {
             Map<String, String> credentials = new HashMap<>();
-            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order));
+            String clientIp = getClientIp();
+            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, clientIp));
             orderResponse.setCredentials(credentials);
         }
 
@@ -300,9 +304,18 @@ public class OrderService {
             return false;
         }
 
+        // Restore stock for each order item before cancelling
+        if (order.getOrderItemList() != null) {
+            for (OrderItem orderItem : order.getOrderItemList()) {
+                ProductVariant variant = orderItem.getProductVariant();
+                if (variant != null && variant.getStockQuantity() != null) {
+                    variant.setStockQuantity(variant.getStockQuantity() + orderItem.getQuantity());
+                }
+            }
+        }
+
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-
 
         return true;
     }
@@ -325,6 +338,18 @@ public class OrderService {
     public Page<OrderDetails> getAllOrders(Pageable pageable) {
         Page<Order> orders = orderRepository.findAll(pageable);
         return orders.map(orderMapper::toDto);
+    }
+
+    private String getClientIp() {
+        String xForwardedFor = httpServletRequest.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = httpServletRequest.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp;
+        }
+        return httpServletRequest.getRemoteAddr();
     }
 
 }

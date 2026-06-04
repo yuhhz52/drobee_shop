@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading } from '@app/store/slices/common.jsx';
 import { cancelOrderAPI, fetchOrderAPI } from '@services/user.service';
-import { loadOrders, selectAllOrders } from '@app/store/slices/user.jsx';
+import { loadOrders, selectAllOrders, cancelOrder as cancelOrderAction } from '@app/store/slices/user.jsx';
 import moment from 'moment';
 import { getStepCount } from '@shared/utils/order-util';
 import Timeline from '@shared/components/TimeLine/Timelines.jsx';
@@ -31,19 +31,6 @@ const Orders = () => {
       });
   }, [dispatch]);
 
-
-
-  useEffect(() => {
-    dispatch(setLoading(true));
-    fetchOrderAPI().then(res => {
-      dispatch(loadOrders(res));
-    }).catch(err => {
-
-      console.error('Fetch orders failed', err);
-    }).finally(() => {
-      dispatch(setLoading(false));
-    })
-  }, [dispatch]);
 
 
   useEffect(() => {
@@ -84,12 +71,13 @@ const Orders = () => {
     dispatch(setLoading(true));
     cancelOrderAPI(id)
       .then(() => {
+        // Update both local state and Redux store
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order.id === id ? { ...order, orderStatus: 'CANCELLED', status: 'CANCELLED' } : order
           )
         );
-        // Give user quick feedback
+        dispatch(cancelOrderAction(id));
         alert('Đã huỷ đơn hàng');
       })
       .catch(() => {

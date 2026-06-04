@@ -1,0 +1,21 @@
+{
+  "footer": {
+    "description": "Drobee Shop - Your trusted online store",
+    "contact": {
+      "email": "contact@drobee.com",
+      "phone": "+84 123 456 789",
+      "address": "Ho Chi Minh City, Vietnam"
+    },
+    "socialLinks": {
+      "facebook": "https://facebook.com/drobee",
+      "instagram": "https://instagram.com/drobee",
+      "twitter": "https://twitter.com/drobee"
+    },
+    "links": [
+      { "name": "About Us", "url": "/about" },
+      { "name": "Contact", "url": "/contact" },
+      { "name": "Privacy Policy", "url": "/privacy" },
+      { "name": "Terms of Service", "url": "/terms" }
+    ]
+  }
+}

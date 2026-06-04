@@ -28,8 +28,12 @@ public class StripeService {
         User user = order.getUser();
         Map<String, String> metaData = new HashMap<>();
         metaData.put("orderId",order.getId().toString());
+        
+        // Stripe expects amount in cents (smallest currency unit)
+        long amountInCents = order.getTotalAmount().multiply(java.math.BigDecimal.valueOf(100)).longValue();
+        
         PaymentIntentCreateParams paymentIntentCreateParams = PaymentIntentCreateParams.builder()
-                .setAmount(order.getTotalAmount().longValue())
+                .setAmount(amountInCents)
                 .setCurrency("usd")
                 .putAllMetadata(metaData)
                 .addPaymentMethodType("card")

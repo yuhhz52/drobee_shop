@@ -32,7 +32,7 @@ public class VnPayService {
     @Value("${vnpay.returnUrl}")
     String vnpReturnUrl;
 
-    public String createPaymentUrl(Order order) {
+    public String createPaymentUrl(Order order, String clientIp) {
         try {
             String vnpVersion = "2.1.0";
             String vnpCommand = "pay";
@@ -40,7 +40,7 @@ public class VnPayService {
             long amount = order.getTotalAmount().longValue() * 100; // VNPay dùng đơn vị nhỏ nhất
 
             String vnpTxnRef = getRandomNumber(8);
-            String vnpIpAddr = "127.0.0.1"; // có thể lấy từ request nếu cần
+            String vnpIpAddr = (clientIp != null && !clientIp.isBlank()) ? clientIp : "127.0.0.1";
 
             Map<String, String> vnpParams = new HashMap<>();
             vnpParams.put("vnp_Version", vnpVersion);

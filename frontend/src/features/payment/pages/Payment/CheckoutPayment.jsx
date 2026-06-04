@@ -25,7 +25,7 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
         elements,
         clientSecret,
         confirmParams: {
-          return_url: 'http://localhost:5175/payment/stripe-success',
+          return_url: `${window.location.origin}/payment/stripe-success`,
         },
       });
 
