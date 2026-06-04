@@ -1,6 +1,6 @@
 export const ENDPOINTS = {
-  categories: '/api/category',
-  categoryById: (id) => `/api/category/${id}`,
+  categories: '/api/categories',
+  categoryById: (id) => `/api/categories/${id}`,
   products: '/api/products',
   productById: (id) => `/api/products/${id}`,
   auth: {
@@ -18,9 +18,9 @@ export const ENDPOINTS = {
   },
   address: '/api/address',
   addressById: (id) => `/api/address/${id}`,
-  order: '/api/order',
-  orderByUser: '/api/order/user',
-  orderCancel: (id) => `/api/order/cancel/${id}`,
-  orderUpdatePayment: '/api/order/update-payment',
+  order: '/api/orders',
+  orderByUser: '/api/orders/me',
+  orderCancel: (id) => `/api/orders/${id}`,
+  orderUpdatePayment: '/api/orders/payments',
   fileUpload: '/api/file',
 };
