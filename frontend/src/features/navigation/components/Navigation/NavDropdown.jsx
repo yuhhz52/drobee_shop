@@ -28,7 +28,7 @@ const NavDropdown = ({ menu, onNavigate }) => {
     >
       <div className="vepace-dropdown__inner">
         {menu.columns.map((column, colIndex) => (
-          <div key={column.title || colIndex} className="vepace-dropdown__col">
+          <div key={column.key || column.title || colIndex} className="vepace-dropdown__col">
             {column.title && (
               <Link
                 to={column.to || menu.to}
@@ -40,7 +40,7 @@ const NavDropdown = ({ menu, onNavigate }) => {
             )}
             <ul>
               {column.links?.map((link) => (
-                <li key={link.label}>
+                <li key={link.key || link.label}>
                   <Link to={link.to} onClick={onNavigate}>
                     {link.label}
                   </Link>

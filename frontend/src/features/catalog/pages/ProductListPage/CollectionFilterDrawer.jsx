@@ -3,7 +3,17 @@ import { Link, useLocation } from 'react-router-dom'
 import Categories from '@shared/components/Filters/Categories.jsx'
 import PriceFilter from '@shared/components/Filters/PriceFilter.jsx'
 import ColorFilter from '@shared/components/Filters/ColorFilter.jsx'
+import ScooterSpecFilter from '@shared/components/Filters/ScooterSpecFilter.jsx'
 import './CollectionFilterDrawer.css'
+
+const PRODUCT_COLLECTION_CODES = new Set([
+  'electric',
+  'kukirin',
+  'dualtron',
+  'teverun',
+  'rovoron',
+  'kuickwheel',
+])
 
 const FilterAccordion = ({ title, children, defaultOpen = true }) => (
   <details className="kalles-facet" open={defaultOpen}>
@@ -34,6 +44,10 @@ const CollectionFilterDrawer = ({
   availability,
   onAvailabilityChange,
   productCounts = {},
+  priceRange,
+  priceMax,
+  specFilters,
+  onSpecFilterChange,
 }) => {
   const location = useLocation()
   const currentPath = `${location.pathname}${location.search || ''}`
@@ -42,10 +56,12 @@ const CollectionFilterDrawer = ({
     { label: 'All', path: '/products' },
     { label: 'New Arrivals', path: '/new-arrivals' },
     { label: 'Hot Products', path: '/sale' },
-    ...categories.map((c) => ({
-      label: c.name,
-      path: `/products?categoryId=${c.id}`,
-    })),
+    ...categories
+      .filter((c) => PRODUCT_COLLECTION_CODES.has(c?.code) && c?.code !== 'electric')
+      .map((c) => ({
+        label: c.name,
+        path: `/products?categoryId=${c.id}`,
+      })),
   ]
 
   return (
@@ -92,6 +108,15 @@ const CollectionFilterDrawer = ({
             </FilterAccordion>
           )}
 
+          <FilterAccordion title="Specs xe tay ga">
+            <ScooterSpecFilter
+              specFilters={specFilters}
+              onSpecFilterChange={onSpecFilterChange}
+              activeTab={specFilters?.activeTab || 'maxSpeed'}
+              onTabChange={(tab) => onSpecFilterChange({ ...specFilters, activeTab: tab })}
+            />
+          </FilterAccordion>
+
           <FilterAccordion title="Availability">
             <ul className="kalles-check-list">
               <li>
@@ -136,7 +161,11 @@ const CollectionFilterDrawer = ({
           )}
 
           <FilterAccordion title="Price">
-            <PriceFilter onChange={onPriceChange} />
+            <PriceFilter
+              onChange={onPriceChange}
+              initialRange={priceRange}
+              max={priceMax}
+            />
           </FilterAccordion>
         </div>
       </aside>

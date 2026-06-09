@@ -1,10 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 import './PriceFilter.css';
 
-const PriceFilter = ({ onChange }) => {
-  const [range, setRange] = useState({ min: 0, max: 1000000 });
+const PriceFilter = ({ onChange, min = 0, max = 100000000, initialRange }) => {
+  const [range, setRange] = useState(initialRange || { min, max });
+
+  useEffect(() => {
+    if (initialRange) {
+      setRange(initialRange);
+    }
+  }, [initialRange]);
+
   const handleChange = (values) => {
     const newRange = { min: values[0], max: values[1] };
     setRange(newRange);
@@ -16,9 +23,9 @@ const PriceFilter = ({ onChange }) => {
         <div className='px-2'>
           <RangeSlider 
             className={'custom-range-slider'} 
-            min={0} 
-            max={1000000} 
-            defaultValue={[range.min,range.max]} 
+            min={min}
+            max={max}
+            value={[range.min,range.max]}
             onInput = {handleChange}
           />
         </div>
@@ -30,8 +37,8 @@ const PriceFilter = ({ onChange }) => {
                 type='number' 
                 value={range?.min} 
                 className='outline-none px-2 text-gray-600 text-sm flex-1' 
-                min={0} 
-                max="999999" 
+                min={min}
+                max={max - 1}
                 disabled 
                 placeholder='min'
               />
@@ -42,8 +49,8 @@ const PriceFilter = ({ onChange }) => {
                 type='number' 
                 value={range?.max} 
                 className='outline-none px-2 text-gray-600 text-sm flex-1' 
-                min={0} 
-                max="1000000" 
+                min={min}
+                max={max}
                 disabled 
                 placeholder='max'
               />

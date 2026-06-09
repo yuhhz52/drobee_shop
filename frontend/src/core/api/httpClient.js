@@ -10,6 +10,7 @@ import {
 export const httpClient = axios.create({
   baseURL: env.apiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 httpClient.interceptors.request.use((config) => {
@@ -41,7 +42,8 @@ httpClient.interceptors.response.use(
       try {
         const refreshResponse = await axios.post(
           `${env.apiBaseUrl}/api/auth/refresh`,
-          { refreshToken }
+          { refreshToken },
+          { withCredentials: true }
         );
         const { token, refreshToken: newRefreshToken } = refreshResponse.data;
         saveTokens(token, newRefreshToken);

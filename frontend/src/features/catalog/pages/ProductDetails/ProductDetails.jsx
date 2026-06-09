@@ -5,12 +5,139 @@ import { FiMinus, FiPlus } from 'react-icons/fi';
 import _ from 'lodash';
 import { getAllProducts } from '@services/product.service';
 import { addItemToCartAction } from '@app/store/actions/cartAction';
-import { formatPriceEUR } from '@shared/utils/price-format';
+import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
 import { colorSelector } from '@shared/components/Filters/ColorFilter';
 import VepaceProductCard from '@features/home/pages/HomeScooter/VepaceProductCard';
 import './ProductDetails.css';
+
+const SPEC_TABS = [
+  { key: 'overview', label: 'Tổng quan' },
+  { key: 'battery', label: 'Pin & Sạc' },
+  { key: 'chassis', label: 'Khung & Phanh' },
+  { key: 'dimensions', label: 'Kích thước' },
+  { key: 'extra', label: 'Khác' },
+];
+
+const SPEC_GROUPS = {
+  overview: [
+    { key: 'maxSpeedKmh', label: 'Tốc độ tối đa', unit: 'km/h' },
+    { key: 'rangeKm', label: 'Quãng đường', unit: 'km' },
+    { key: 'motorPowerW', label: 'Công suất', unit: 'W' },
+    { key: 'peakPowerW', label: 'Công suất đỉnh', unit: 'W' },
+    { key: 'weightKg', label: 'Trọng lượng', unit: 'kg' },
+    { key: 'maxLoadKg', label: 'Tải trọng tối đa', unit: 'kg' },
+    { key: 'maxInclinePercent', label: 'Độ dốc tối đa', unit: '%' },
+  ],
+  battery: [
+    { key: 'batteryCapacityAh', label: 'Dung lượng pin', unit: 'Ah' },
+    { key: 'batteryVoltageV', label: 'Điện áp pin', unit: 'V' },
+    { key: 'batteryType', label: 'Loại pin', unit: '' },
+    { key: 'chargingTimeHours', label: 'Thời gian sạc', unit: 'h' },
+    { key: 'removableBattery', label: 'Pin rời', unit: '' },
+  ],
+  chassis: [
+    { key: 'frameMaterial', label: 'Chất liệu khung', unit: '' },
+    { key: 'wheelSizeInch', label: 'Kích thước bánh', unit: 'inch' },
+    { key: 'tireType', label: 'Loại lốp', unit: '' },
+    { key: 'brakeFront', label: 'Phanh trước', unit: '' },
+    { key: 'brakeRear', label: 'Phanh sau', unit: '' },
+    { key: 'suspensionFront', label: 'Giảm xóc trước', unit: '' },
+    { key: 'suspensionRear', label: 'Giảm xóc sau', unit: '' },
+  ],
+  dimensions: [
+    { key: 'lengthCm', label: 'Dài', unit: 'cm' },
+    { key: 'widthCm', label: 'Rộng', unit: 'cm' },
+    { key: 'heightCm', label: 'Cao', unit: 'cm' },
+    { key: 'foldedLengthCm', label: 'Dài (gấp)', unit: 'cm' },
+    { key: 'foldedWidthCm', label: 'Rộng (gấp)', unit: 'cm' },
+    { key: 'foldedHeightCm', label: 'Cao (gấp)', unit: 'cm' },
+  ],
+  extra: [
+    { key: 'maxSpeedUnlockedKmh', label: 'Tốc độ mở khóa', unit: 'km/h' },
+    { key: 'lights', label: 'Đèn', unit: '' },
+    { key: 'displayType', label: 'Màn hình', unit: '' },
+    { key: 'connectivity', label: 'Kết nối', unit: '' },
+    { key: 'waterResistanceRating', label: 'Chống nước', unit: '' },
+    { key: 'warrantyMonths', label: 'Bảo hành', unit: 'tháng' },
+    { key: 'certifications', label: 'Chứng nhận', unit: '' },
+  ],
+};
+
+const fmt = (val, unit) => {
+  if (val == null) return null;
+  const n = Number(val);
+  if (isNaN(n)) return null;
+  if (unit === 'Ah' || unit === 'V') return `${n}`;
+  if (unit === 'h') return `${n.toFixed(1)}h`;
+  if (unit === 'inch') return `${n.toFixed(1)}"`;
+  if (['km/h', 'km', 'W', 'kg', '%', 'tháng'].includes(unit)) return `${n}`;
+  if (unit === 'cm') return `${n}`;
+  return val;
+};
+
+const boolLabel = (v) => {
+  if (v === true) return 'Có';
+  if (v === false) return 'Không';
+  return null;
+};
+
+const SpecsSection = ({ product }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const hasSpecs = SPEC_TABS.some((t) =>
+    SPEC_GROUPS[t.key].some((s) => product[s.key] != null)
+  );
+
+  if (!hasSpecs) return null;
+
+  const fields = SPEC_GROUPS[activeTab] || [];
+
+  return (
+    <section className="vepace-pdp__specs vepace-pdp__container">
+      <h2>Thông số kỹ thuật</h2>
+      <div className="vepace-pdp__specs-tabs">
+        {SPEC_TABS.map((tab) => {
+          const hasData = SPEC_GROUPS[tab.key].some(
+            (s) => product[s.key] != null
+          );
+          if (!hasData) return null;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={`vepace-pdp__specs-tab ${activeTab === tab.key ? 'is-active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="vepace-pdp__specs-table">
+        <div className="vepace-pdp__specs-table-inner">
+          {fields.map((field) => {
+            let raw = product[field.key];
+            if (field.unit === '' && field.key === 'removableBattery') {
+              raw = boolLabel(raw);
+            }
+            const val = fmt(raw, field.unit);
+            if (val == null) return null;
+            return (
+              <div key={field.key} className="vepace-pdp__specs-row">
+                <span className="vepace-pdp__specs-label">{field.label}</span>
+                <span className="vepace-pdp__specs-value">
+                  {val}{field.unit && val != null ? ` ${field.unit}` : ''}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const ProductModal = ({ title, open, onClose, children }) => {
   if (!open) return null;
@@ -66,36 +193,81 @@ const ProductDetails = () => {
   const discountPercent = hasSale && basePrice > 0
     ? Math.round(((basePrice - salePrice) / basePrice) * 100)
     : 0;
-  const discountAmount = hasSale ? formatPriceEUR(basePrice - salePrice) : null;
+  const discountAmount = hasSale ? formatPriceVND(basePrice - salePrice) : null;
 
   const brand = inferBrandFromProduct(product);
 
-  const colors = useMemo(
-    () => _.uniq((product?.variants || []).map((v) => v.color).filter(Boolean)),
-    [product]
-  );
+  // All variants
+  const allVariants = product?.variants || [];
 
-  const variantNames = useMemo(() => {
-    const pool = selectedColor
-      ? (product?.variants || []).filter((v) => v.color === selectedColor)
-      : product?.variants || [];
-    return _.uniq(pool.map((v) => v.variantName).filter(Boolean));
-  }, [product, selectedColor]);
+  // All unique versions (variantNames)
+  const allVersions = useMemo(() => {
+    return _.uniq(allVariants.map((v) => v.variantName).filter(Boolean));
+  }, [allVariants]);
 
+  const hasVersions = allVersions.length > 0;
+
+  // Available colors based on selected version (only show colors that belong to selected version)
+  const availableColors = useMemo(() => {
+    if (!selectedVariantName) {
+      // If no version selected, show all colors
+      return _.uniq(allVariants.map((v) => v.color).filter(Boolean));
+    }
+    // Only show colors that belong to the selected version
+    return _.uniq(
+      allVariants
+        .filter((v) => v.variantName === selectedVariantName)
+        .map((v) => v.color)
+        .filter(Boolean)
+    );
+  }, [allVariants, selectedVariantName]);
+
+  // Available versions based on selected color (only show versions that have this color)
+  const availableVersions = useMemo(() => {
+    if (!selectedColor) {
+      return allVersions;
+    }
+    return _.uniq(
+      allVariants
+        .filter((v) => v.color === selectedColor)
+        .map((v) => v.variantName)
+        .filter(Boolean)
+    );
+  }, [allVariants, selectedColor, allVersions]);
+
+  // Find matching variant based on selections
   const selectedVariant = useMemo(() => {
-    if (!product?.variants?.length) return null;
-    return product.variants.find((v) => {
-      const colorOk = !colors.length || v.color === selectedColor;
-      const variantOk = !variantNames.length || v.variantName === selectedVariantName;
-      return colorOk && variantOk;
-    });
-  }, [product, colors, variantNames, selectedColor, selectedVariantName]);
+    if (!allVariants.length) return null;
+    if (!selectedColor && !selectedVariantName) return null;
+    return allVariants.find((v) => {
+      if (selectedColor && v.color !== selectedColor) return false;
+      if (selectedVariantName && v.variantName !== selectedVariantName) return false;
+      return true;
+    }) || null;
+  }, [allVariants, selectedColor, selectedVariantName]);
+
+  // Auto-select first version and its first color on load
+  useEffect(() => {
+    if (allVariants.length > 0 && !selectedVariantName && !selectedColor) {
+      if (hasVersions) {
+        const firstVersion = allVersions[0];
+        setSelectedVariantName(firstVersion);
+        // Auto-select first color of this version
+        const firstColor = allVariants.find((v) => v.variantName === firstVersion)?.color;
+        if (firstColor) {
+          setSelectedColor(firstColor);
+        }
+      }
+    }
+  }, [allVariants.length]);
 
   const inStock = selectedVariant
     ? (selectedVariant.stockQuantity ?? 1) > 0
-    : (product?.variants || []).some((v) => (v.stockQuantity ?? 1) > 0);
+    : allVariants.some((v) => (v.stockQuantity ?? 1) > 0);
 
-  const variantLabel = variantNames.length > 0 ? 'Version' : colors.length > 0 ? 'Option' : '';
+  const variantLabel = 'Version';
+
+  const activeImage = images[activeImageIndex] || primaryImage;
 
   useEffect(() => {
     if (!product?.id) return;
@@ -110,6 +282,7 @@ const ProductDetails = () => {
       .catch(() => setSimilarProducts([]));
   }, [product]);
 
+  // Reset selections when product changes
   useEffect(() => {
     setActiveImageIndex(0);
     setSelectedVariantName('');
@@ -118,20 +291,32 @@ const ProductDetails = () => {
     setError('');
   }, [product?.id]);
 
+  // Auto-select defaults when variants load
   useEffect(() => {
-    if (selectedVariantName || selectedColor) setError('');
-  }, [selectedVariantName, selectedColor]);
+    if (allVariants.length > 0 && !selectedVariantName && !selectedColor) {
+      if (hasVersions) {
+        const firstVersion = allVersions[0];
+        setSelectedVariantName(firstVersion);
+        const firstColor = allVariants.find((v) => v.variantName === firstVersion)?.color;
+        if (firstColor) {
+          setSelectedColor(firstColor);
+        }
+      }
+    }
+  }, [allVariants.length, hasVersions, allVersions]);
 
   const addItemToCart = useCallback(() => {
-    if (variantNames.length && !selectedVariantName) {
+    // Require version selection if product has versions
+    if (hasVersions && !selectedVariantName) {
       setError('Please select a version');
       return;
     }
-    if (colors.length && !selectedColor) {
+    // Require color selection if available colors exist
+    if (availableColors.length > 0 && !selectedColor) {
       setError('Please select an option');
       return;
     }
-    if (!selectedVariant && product?.variants?.length) {
+    if (!selectedVariant && allVariants.length) {
       setError('Please select product options');
       return;
     }
@@ -157,17 +342,18 @@ const ProductDetails = () => {
     selectedVariant,
     selectedVariantName,
     selectedColor,
-    variantNames,
-    colors,
+    hasVersions,
+    availableColors,
+    allVariants,
     quantity,
     displayPrice,
+    activeImage,
+    primaryImage,
   ]);
 
   if (!product) {
     return <div className="vepace-pdp__empty">Product not found.</div>;
   }
-
-  const activeImage = images[activeImageIndex] || primaryImage;
 
   return (
     <div className="vepace-pdp">
@@ -227,20 +413,30 @@ const ProductDetails = () => {
 
           <div className="vepace-pdp__rating">★★★★★ 24 reviews</div>
 
-          {variantNames.length > 0 && (
+          {hasVersions && (
             <div className="vepace-pdp__variant">
               <p className="vepace-pdp__variant-label">
-                {variantLabel}: {selectedVariantName || variantNames[0]}
+                {variantLabel}
               </p>
               <div className="vepace-pdp__variant-btns">
-                {variantNames.map((variant) => (
+                {allVersions.map((variant) => (
                   <button
                     key={variant}
                     type="button"
                     className={selectedVariantName === variant ? 'is-active' : ''}
-                    onClick={() =>
-                      setSelectedVariantName(selectedVariantName === variant ? '' : variant)
-                    }
+                    onClick={() => {
+                      setSelectedVariantName(selectedVariantName === variant ? '' : variant);
+                      // Auto-select first color for this version
+                      const colorsForVariant = _.uniq(
+                        allVariants
+                          .filter((v) => v.variantName === variant)
+                          .map((v) => v.color)
+                          .filter(Boolean)
+                      );
+                      if (colorsForVariant.length > 0) {
+                        setSelectedColor(colorsForVariant[0]);
+                      }
+                    }}
                   >
                     {variant}
                   </button>
@@ -249,13 +445,13 @@ const ProductDetails = () => {
             </div>
           )}
 
-          {colors.length > 0 && (
+          {availableColors.length > 0 && (
             <div className="vepace-pdp__variant">
               <p className="vepace-pdp__variant-label">
                 Color{selectedColor ? `: ${selectedColor}` : ''}
               </p>
               <div className="vepace-pdp__colors">
-                {colors.map((color) => (
+                {availableColors.map((color) => (
                   <button
                     key={color}
                     type="button"
@@ -263,10 +459,7 @@ const ProductDetails = () => {
                     style={{ background: colorSelector[color] || color }}
                     title={color}
                     aria-label={color}
-                    onClick={() => {
-                      setSelectedColor(selectedColor === color ? '' : color);
-                      setSelectedVariantName('');
-                    }}
+                    onClick={() => setSelectedColor(selectedColor === color ? '' : color)}
                   />
                 ))}
               </div>
@@ -275,9 +468,9 @@ const ProductDetails = () => {
 
           <div className="vepace-pdp__price">
             <span className="label">Price:</span>
-            <span className="sale">{formatPriceEUR(displayPrice)}</span>
+            <span className="sale">{formatPriceVND(displayPrice)}</span>
             {hasSale && (
-              <span className="regular">{formatPriceEUR(basePrice)}</span>
+              <span className="regular">{formatPriceVND(basePrice)}</span>
             )}
           </div>
 
@@ -355,6 +548,8 @@ const ProductDetails = () => {
           <div className="vepace-pdp__description-body">{product.description}</div>
         </section>
       )}
+
+      <SpecsSection product={product} />
 
       <section className="vepace-pdp__trust">
         <div className="vepace-pdp__container vepace-pdp__trust-grid">

@@ -4,6 +4,28 @@
   padding: 2rem 15px 3rem;
 }
 
+.vepace-account-auth-gate {
+  text-align: center;
+  padding: 3rem 1.25rem;
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.vepace-account-auth-gate h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--kalles-dark);
+}
+
+.vepace-account-auth-gate p {
+  margin: 0 0 1.25rem;
+  color: var(--kalles-muted);
+  font-size: 0.95rem;
+}
+
 .vepace-account-admin-link {
   display: inline-flex;
   justify-content: flex-end;

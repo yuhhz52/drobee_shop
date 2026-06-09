@@ -1,4 +1,6 @@
 export const ENDPOINTS = {
+  collections: '/api/collections',
+  collectionBySlug: (slug) => `/api/collections/${slug}`,
   categories: '/api/categories',
   categoryById: (id) => `/api/categories/${id}`,
   products: '/api/products',

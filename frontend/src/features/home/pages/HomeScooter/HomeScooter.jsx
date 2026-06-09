@@ -9,7 +9,7 @@ import {
   FiMessageCircle,
 } from 'react-icons/fi';
 import { getAllProducts } from '@services/product.service';
-import { formatPriceEUR } from '@shared/utils/price-format';
+import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrand } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
 import VepaceProductCard from './VepaceProductCard';
@@ -352,7 +352,7 @@ const HomeScooter = () => {
                 <span className="badge badge--green">DGT</span>
                 <span className="badge badge--blue">Bestseller</span>
                 <span className="badge badge--blue">NEW</span>
-                <span className="badge badge--red">- €100,00</span>
+                <span className="badge badge--red">- {formatPriceVND(featuredProduct?.price ? 589 - featuredProduct.price : 0)}</span>
               </div>
               <p className="vepace-featured__brand">
                 {inferBrand(featuredProduct?.name) || 'KUKIRIN'}
@@ -368,9 +368,9 @@ const HomeScooter = () => {
               <div className="vepace-featured__price">
                 <span className="label">Price:</span>
                 <span className="sale">
-                  {formatPriceEUR(featuredProduct?.price ?? 489)}
+                  {formatPriceVND(featuredProduct?.price ?? 489)}
                 </span>
-                <span className="regular">{formatPriceEUR(589)}</span>
+                <span className="regular">{formatPriceVND(589)}</span>
               </div>
               <div className="vepace-featured__qty">
                 <span>Quantity:</span>

@@ -7,7 +7,7 @@ import {
   delteItemFromCartAction,
   updateItemCartAction,
 } from '@app/store/actions/cartAction';
-import { formatPriceEUR } from '@shared/utils/price-format';
+import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import EmptyCart from '@assets/images/empty-cart.png';
 import './Cart.css';
@@ -159,7 +159,7 @@ const Cart = () => {
                         )}
                       </p>
                       <p className="vepace-cart-item__unit">
-                        {formatPriceEUR(item.price)} each
+                        {formatPriceVND(item.price)} each
                       </p>
                     </div>
                   </div>
@@ -188,7 +188,7 @@ const Cart = () => {
                   </div>
 
                   <div className="vepace-cart-item__total">
-                    {formatPriceEUR(item.subTotal)}
+                    {formatPriceVND(item.subTotal)}
                   </div>
                 </li>
               ))}
@@ -219,7 +219,7 @@ const Cart = () => {
             <h2>Order summary</h2>
             <div className="vepace-cart-summary__row">
               <span>Subtotal</span>
-              <strong>{formatPriceEUR(subTotal)}</strong>
+              <strong>{formatPriceVND(subTotal)}</strong>
             </div>
             <div className="vepace-cart-summary__row">
               <span>Shipping</span>
@@ -227,7 +227,7 @@ const Cart = () => {
             </div>
             <div className="vepace-cart-summary__total">
               <span>Total</span>
-              <span>{formatPriceEUR(subTotal)}</span>
+              <span>{formatPriceVND(subTotal)}</span>
             </div>
             <p className="vepace-cart-summary__note">
               Taxes included. Free helmet offer applied at checkout when eligible.

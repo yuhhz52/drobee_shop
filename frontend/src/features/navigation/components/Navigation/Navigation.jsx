@@ -23,7 +23,7 @@ import NavDropdown from './NavDropdown';
 import { buildNavMenus, languages } from './navMenuData';
 import './Navigation.css';
 
-const topAnnouncement = '🎁 UP TO -330€ OFF | CODE: HUY 🔥';
+const topAnnouncement = 'MIỄN PHÍ VẬN CHUYỂN TOÀN QUỐC | MÃ: DROBEE 🔥';
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -245,7 +245,7 @@ const Navigation = () => {
 
             return (
               <div
-                key={menu.label}
+                key={menu.key || menu.label}
                 className={`vepace-nav-item ${isOpen ? 'is-open' : ''} ${
                   menu.label === 'Contact' ? 'vepace-nav-item--right' : ''
                 }`}
@@ -317,7 +317,7 @@ const Navigation = () => {
                 const expanded = mobileExpanded === menu.label;
 
                 return (
-                  <div key={menu.label} className="kalles-mobile-section">
+                  <div key={menu.key || menu.label} className="kalles-mobile-section">
                     <div className="kalles-mobile-section__row">
                       <Link
                         to={menu.to}
@@ -352,7 +352,7 @@ const Navigation = () => {
                             )}
                             {column.links?.map((link) => (
                               <Link
-                                key={link.label}
+                                key={link.key || link.label}
                                 to={link.to}
                                 onClick={() => setMenuOpen(false)}
                               >

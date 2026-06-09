@@ -1,0 +1,81 @@
+.scooter-spec-filter {
+  padding: 4px 0 12px;
+}
+
+.scooter-spec-filter__tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.scooter-spec-tab {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scooter-spec-tab:hover {
+  border-color: var(--vepace-red, #e63946);
+  color: var(--vepace-red, #e63946);
+}
+
+.scooter-spec-tab.is-active {
+  background: var(--vepace-red, #e63946);
+  border-color: var(--vepace-red, #e63946);
+  color: #fff;
+}
+
+.scooter-spec-filter__hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
+.scooter-spec-filter__presets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scooter-spec-preset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.scooter-spec-preset:hover {
+  border-color: var(--vepace-red, #e63946);
+  background: #fff5f5;
+}
+
+.scooter-spec-preset.is-selected {
+  border-color: var(--vepace-red, #e63946);
+  background: var(--vepace-red, #e63946);
+  color: #fff;
+}
+
+.scooter-spec-preset__label {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 130px;
+}
+
+.scooter-spec-preset__desc {
+  font-size: 11px;
+  opacity: 0.8;
+}

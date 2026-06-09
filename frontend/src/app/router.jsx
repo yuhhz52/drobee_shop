@@ -30,28 +30,40 @@ export const router = createBrowserRouter([
     children: [
       { path: '', element: <App /> },
       {
-        path: 'men',
-        element: <ProductListPage categoryType="nam" />,
+        path: 'collections/:collectionSlug',
+        element: <ProductListPage />,
       },
       {
-        path: 'women',
-        element: <ProductListPage categoryType="nu" />,
+        path: 'kukirin',
+        element: <Navigate to="/collections/kukirin-electric-scooters" replace />,
       },
       {
-        path: 'accessories',
-        element: <ProductListPage categoryType="phukien" />,
+        path: 'dualtron',
+        element: <Navigate to="/collections/dualtron-electric-scooters" replace />,
+      },
+      {
+        path: 'teverun',
+        element: <Navigate to="/collections/teverun-electric-scooters" replace />,
+      },
+      {
+        path: 'rovoron',
+        element: <Navigate to="/collections/rovoron-electric-scooters" replace />,
+      },
+      {
+        path: 'kuickwheel',
+        element: <Navigate to="/collections/kuickwheel-electric-scooters" replace />,
       },
       {
         path: 'new-arrivals',
-        element: <ProductListPage categoryType={null} showNewArrivals />,
+        element: <Navigate to="/collections/new-arrivals" replace />,
       },
       {
         path: 'products',
-        element: <ProductListPage showAllProducts title="All" />,
+        element: <Navigate to="/collections/electric-scooters" replace />,
       },
       {
         path: 'sale',
-        element: <ProductListPage showSale title="Sale" />,
+        element: <Navigate to="/collections/sale" replace />,
       },
       {
         path: 'product/:productSlug',

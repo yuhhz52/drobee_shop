@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import VepaceProductCard from '@features/home/pages/HomeScooter/VepaceProductCard'
 import { inferBrandFromProduct } from '@shared/utils/product-brand'
+import { useCollection } from '@hooks/api/useCollection'
 import CollectionFilterDrawer from './CollectionFilterDrawer.jsx'
 import { getAllProducts } from '@services/product.service'
 import { fetchCategories } from '@services/category.service'
@@ -22,6 +23,23 @@ const SORT_OPTIONS = [
   { value: 'date-desc', label: 'Date, new to old' },
   { value: 'date-asc', label: 'Date, old to new' },
 ]
+
+const PRICE_FILTER_MAX = 100000000
+const DEFAULT_PRICE_RANGE = { min: 0, max: PRICE_FILTER_MAX }
+
+const PRODUCT_CATEGORY_CODES = new Set([
+  'kukirin',
+  'dualtron',
+  'teverun',
+  'rovoron',
+  'kuickwheel',
+  'electric',
+])
+
+const getProductBackedTypes = (category) => {
+  if (!PRODUCT_CATEGORY_CODES.has(category?.code)) return []
+  return (category?.categoryTypes || category?.types || []).filter((type) => type?.code !== 'all')
+}
 
 const isProductInStock = (product) => {
   if (!product?.variants?.length) return true
@@ -48,23 +66,56 @@ const ProductListPage = ({
   showNewArrivals,
   showSale,
   showAllProducts,
-  bannerImage,
   title,
 }) => {
+  const { collectionSlug } = useParams()
   const dispatch = useDispatch()
   const categoryData = useSelector((state) => state.categoryState.categories)
   const [searchParams] = useSearchParams()
   const sortRef = useRef(null)
 
+  // Backend-driven slug resolution via API
+  const { collection } = useCollection(collectionSlug)
+
+  // Fallback: resolve slug locally from categoryData when API returns null
+  const localCollectionConfig = useMemo(() => {
+    if (collection) return collection
+    if (!collectionSlug) return null
+
+    const cleanSlug = collectionSlug.toLowerCase().trim()
+
+    // 1. Check if slug matches a Category (brand) - e.g. "kukirin", "dualtron"
+    for (const category of (categoryData || [])) {
+      if (category?.code && category.code.toLowerCase() === cleanSlug) {
+        return { categoryId: category.id, title: category.name }
+      }
+    }
+
+    // 2. Check if slug matches a CategoryType (product line) - e.g. "kukirin-g2-pro"
+    for (const category of (categoryData || [])) {
+      const types = category?.categoryTypes || category?.types || []
+      for (const type of types) {
+        if (type?.code && type.code.toLowerCase() === cleanSlug) {
+          return { categoryTypeId: type.id, categoryId: category.id, title: type.name }
+        }
+      }
+    }
+
+    return null
+  }, [collection, collectionSlug, categoryData])
+
+  const collectionConfig = collection || localCollectionConfig
+
   const [products, setProducts] = useState([])
   const [selectedTypes, setSelectedTypes] = useState([])
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 })
+  const [priceRange, setPriceRange] = useState(DEFAULT_PRICE_RANGE)
   const [selectedColor, setSelectedColor] = useState('')
   const [availability, setAvailability] = useState([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [gridColumns, setGridColumns] = useState(4) // 3 | 4 | 5 columns
   const [sortBy, setSortBy] = useState('best-selling')
   const [sortOpen, setSortOpen] = useState(false)
+  const [specFilters, setSpecFilters] = useState({ activeTab: 'maxSpeed' })
 
   const [page, setPage] = useState(1)
   const [size] = useState(12)
@@ -73,20 +124,55 @@ const ProductListPage = ({
   const categoryIdFromQuery = searchParams.get('categoryId')
   const typeIdFromQuery = searchParams.get('typeId')
   const searchTermFromQuery = (searchParams.get('name') || '').trim()
+  
+  // Resolve filters from collection config (backend or legacy)
+  const resolvedCategoryId = collectionConfig?.categoryId || null
+  const resolvedCategoryTypeId = collectionConfig?.categoryTypeId || null
+  const resolvedShowNewArrivals = collectionConfig?.isNewArrivals ?? showNewArrivals
+  const resolvedShowSale = collectionConfig?.isSale ?? showSale
+  const resolvedShowAllProducts = collectionConfig?.isAllProducts ?? showAllProducts
+  // Resolve category from ID (from backend collection) or fallback to code lookup
   const category = useMemo(
-    () =>
-      categoryIdFromQuery
-        ? categoryData?.find((c) => String(c.id) === String(categoryIdFromQuery))
-        : categoryData?.find((c) => c.code === categoryType),
-    [categoryData, categoryType, categoryIdFromQuery]
+    () => {
+      if (categoryIdFromQuery) {
+        return categoryData?.find((c) => String(c.id) === String(categoryIdFromQuery))
+      }
+
+      if (resolvedCategoryId) {
+        return categoryData?.find((c) => String(c.id) === String(resolvedCategoryId))
+      }
+
+      if (categoryType) {
+        return categoryData?.find((c) => c.code === categoryType)
+      }
+
+      return null
+    },
+    [categoryData, categoryIdFromQuery, resolvedCategoryId, categoryType]
   )
 
-  const pageTitle = title || (showSale ? 'Sale' : showNewArrivals ? 'New arrivals' : showAllProducts ? 'All' : category?.name || 'Products')
+  // Resolve typeId for API filter (from backend collection or query param)
+  const typeIdToFilter = resolvedCategoryTypeId || (typeIdFromQuery ? String(typeIdFromQuery) : null)
+
+  const pageTitle =
+    title ||
+    collectionConfig?.title ||
+    (resolvedShowSale
+      ? 'Sale'
+      : resolvedShowNewArrivals
+        ? 'New arrivals'
+        : resolvedShowAllProducts
+          ? 'All'
+          : category?.name || 'Products')
+
+  const shouldRequestAllProducts =
+    resolvedShowAllProducts ||
+    resolvedShowSale ||
+    (!resolvedShowNewArrivals && !searchTermFromQuery && !resolvedCategoryId && !categoryIdFromQuery && !typeIdToFilter)
 
   const allCategoryTypes = useMemo(() => {
-    if (category?.categoryTypes?.length) return category.categoryTypes
-    if (category?.types?.length) return category.types
-    return categoryData?.flatMap((c) => c.categoryTypes || c.types || []) || []
+    if (category?.id && category.code !== 'electric') return getProductBackedTypes(category)
+    return categoryData?.flatMap(getProductBackedTypes) || []
   }, [category, categoryData])
 
   const handleFilterToggle = useCallback(() => setIsFilterOpen((prev) => !prev), [])
@@ -104,11 +190,30 @@ const ProductListPage = ({
     )
   }, [])
 
+  const handleSpecFilterChange = useCallback((filters) => {
+    setSpecFilters(filters)
+  }, [])
+
   useEffect(() => {
-    if (!typeIdFromQuery) return
-    setSelectedTypes([String(typeIdFromQuery)])
+    setSelectedTypes(
+      typeIdToFilter
+        ? [String(typeIdToFilter)]
+        : []
+    )
+    setPriceRange(DEFAULT_PRICE_RANGE)
+    setSelectedColor('')
+    setAvailability([])
+    setSpecFilters({ activeTab: 'maxSpeed' })
     setPage(1)
-  }, [typeIdFromQuery])
+  }, [
+    typeIdToFilter,
+    categoryIdFromQuery,
+    resolvedCategoryId,
+    resolvedShowAllProducts,
+    resolvedShowNewArrivals,
+    resolvedShowSale,
+    searchTermFromQuery,
+  ])
 
   const handlePageChange = (_event, value) => {
     setPage(value)
@@ -124,30 +229,82 @@ const ProductListPage = ({
   }, [categoryData?.length, dispatch])
 
   useEffect(() => {
-    if (
-      !showAllProducts &&
-      !category?.id &&
-      !showNewArrivals &&
-      !showSale &&
-      !searchTermFromQuery &&
-      (categoryType || categoryIdFromQuery)
-    ) return
-
     dispatch(setLoading(true))
     const fetchProducts = async () => {
       try {
         let res
-        if (showNewArrivals) {
-          res = await getAllProducts({ newArrival: true, page: page - 1, size, name: searchTermFromQuery || undefined })
-        } else if (showSale || showAllProducts) {
-          res = await getAllProducts({ page: page - 1, size, name: searchTermFromQuery || undefined })
-        } else {
+        if (resolvedShowNewArrivals) {
+          res = await getAllProducts({
+            typeIds: selectedTypes,
+            newArrival: true,
+            page: page - 1,
+            size,
+            name: searchTermFromQuery || undefined,
+            minMaxSpeed: specFilters?.minMaxSpeed,
+            minRange: specFilters?.minRange,
+            maxMotorPower: specFilters?.maxMotorPower,
+            maxWeight: specFilters?.maxWeight,
+            minBatteryCapacity: specFilters?.minBatteryCapacity,
+            minBatteryVoltage: specFilters?.minBatteryVoltage,
+            removableBattery: specFilters?.removableBattery,
+            maxWheelSize: specFilters?.maxWheelSize,
+            minMaxLoad: specFilters?.minMaxLoad,
+            minMaxIncline: specFilters?.minMaxIncline,
+          })
+        } else if (typeIdToFilter || selectedTypes.length > 0) {
+          // Filter by typeId(s) - used by collection pages and drawer filter
           res = await getAllProducts({
             categoryId: category?.id,
             typeIds: selectedTypes,
             page: page - 1,
             size,
             name: searchTermFromQuery || undefined,
+            minMaxSpeed: specFilters?.minMaxSpeed,
+            minRange: specFilters?.minRange,
+            maxMotorPower: specFilters?.maxMotorPower,
+            maxWeight: specFilters?.maxWeight,
+            minBatteryCapacity: specFilters?.minBatteryCapacity,
+            minBatteryVoltage: specFilters?.minBatteryVoltage,
+            removableBattery: specFilters?.removableBattery,
+            maxWheelSize: specFilters?.maxWheelSize,
+            minMaxLoad: specFilters?.minMaxLoad,
+            minMaxIncline: specFilters?.minMaxIncline,
+          })
+        } else if (category?.id) {
+          // Filter by category only
+          res = await getAllProducts({
+            categoryId: category.id,
+            typeIds: selectedTypes,
+            page: page - 1,
+            size,
+            name: searchTermFromQuery || undefined,
+            minMaxSpeed: specFilters?.minMaxSpeed,
+            minRange: specFilters?.minRange,
+            maxMotorPower: specFilters?.maxMotorPower,
+            maxWeight: specFilters?.maxWeight,
+            minBatteryCapacity: specFilters?.minBatteryCapacity,
+            minBatteryVoltage: specFilters?.minBatteryVoltage,
+            removableBattery: specFilters?.removableBattery,
+            maxWheelSize: specFilters?.maxWheelSize,
+            minMaxLoad: specFilters?.minMaxLoad,
+            minMaxIncline: specFilters?.minMaxIncline,
+          })
+        } else {
+          // Get all products
+          res = await getAllProducts({
+            page: page - 1,
+            size,
+            name: searchTermFromQuery || undefined,
+            minMaxSpeed: specFilters?.minMaxSpeed,
+            minRange: specFilters?.minRange,
+            maxMotorPower: specFilters?.maxMotorPower,
+            maxWeight: specFilters?.maxWeight,
+            minBatteryCapacity: specFilters?.minBatteryCapacity,
+            minBatteryVoltage: specFilters?.minBatteryVoltage,
+            removableBattery: specFilters?.removableBattery,
+            maxWheelSize: specFilters?.maxWheelSize,
+            minMaxLoad: specFilters?.minMaxLoad,
+            minMaxIncline: specFilters?.minMaxIncline,
           })
         }
         setProducts(res.products || [])
@@ -161,15 +318,15 @@ const ProductListPage = ({
     }
 
     fetchProducts()
-  }, [category?.id, showNewArrivals, showSale, showAllProducts, categoryType, categoryIdFromQuery, selectedTypes, page, size, dispatch, searchTermFromQuery])
+  }, [category?.id, categoryData, resolvedShowNewArrivals, resolvedShowSale, resolvedShowAllProducts, shouldRequestAllProducts, selectedTypes, page, size, searchTermFromQuery, dispatch, typeIdToFilter, specFilters])
 
   useEffect(() => {
     setPage(1)
-  }, [selectedTypes, category?.id, showNewArrivals, showSale, searchTermFromQuery])
+  }, [selectedTypes, category?.id, resolvedShowNewArrivals, resolvedShowSale, searchTermFromQuery, specFilters])
 
   useEffect(() => {
     handleCloseFilter()
-  }, [categoryType, categoryIdFromQuery, showNewArrivals, showSale, showAllProducts, handleCloseFilter])
+  }, [resolvedCategoryId, categoryIdFromQuery, resolvedShowNewArrivals, resolvedShowSale, resolvedShowAllProducts, handleCloseFilter])
 
   useEffect(() => {
     document.body.style.overflow = isFilterOpen ? 'hidden' : ''
@@ -279,6 +436,22 @@ const ProductListPage = ({
     return list
   }, [products, priceRange, selectedTypes, selectedColor, availability, sortBy])
 
+  const hasClientFilters =
+    priceRange.min !== DEFAULT_PRICE_RANGE.min ||
+    priceRange.max !== DEFAULT_PRICE_RANGE.max ||
+    Boolean(selectedColor) ||
+    availability.length > 0 ||
+    Boolean(specFilters?.minMaxSpeed) ||
+    Boolean(specFilters?.minRange) ||
+    Boolean(specFilters?.maxMotorPower) ||
+    Boolean(specFilters?.maxWeight) ||
+    Boolean(specFilters?.minBatteryCapacity) ||
+    Boolean(specFilters?.minBatteryVoltage) ||
+    Boolean(specFilters?.removableBattery) ||
+    Boolean(specFilters?.maxWheelSize) ||
+    Boolean(specFilters?.minMaxLoad) ||
+    Boolean(specFilters?.minMaxIncline)
+  const displayedProductCount = hasClientFilters ? filteredProducts.length : totalElements
   const totalPages = Math.ceil(totalElements / size)
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Sort'
 
@@ -293,7 +466,7 @@ const ProductListPage = ({
           </nav>
           <h1>{pageTitle}</h1>
           <p className="vepace-plp__count">
-            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+            {displayedProductCount} product{displayedProductCount !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
@@ -416,6 +589,10 @@ const ProductListPage = ({
         availability={availability}
         onAvailabilityChange={handleAvailabilityChange}
         productCounts={productCounts}
+        priceRange={priceRange}
+        priceMax={PRICE_FILTER_MAX}
+        specFilters={specFilters}
+        onSpecFilterChange={handleSpecFilterChange}
       />
     </div>
   )
