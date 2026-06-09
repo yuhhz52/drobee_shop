@@ -8,8 +8,8 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,8 +23,7 @@ import java.util.UUID;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String firstName;
@@ -36,9 +35,9 @@ public class User implements UserDetails {
 
     private String email;
 
-    private Date createdOn;
+    private LocalDateTime createdOn;
 
-    private Date updatedOn;
+    private LocalDateTime updatedOn;
 
     private String provider;
 

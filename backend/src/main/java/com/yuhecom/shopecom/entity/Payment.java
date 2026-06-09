@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.math.BigDecimal;
 
@@ -17,8 +17,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class Payment extends BaseEntity {
     @Id
-    @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -27,9 +26,8 @@ public class Payment extends BaseEntity {
     @ToString.Exclude
     private Order order;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date paymentDate;
+    private LocalDateTime paymentDate;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;

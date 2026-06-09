@@ -5,7 +5,7 @@ import lombok.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @Builder
 public class OrderRequest {
     private UUID userId;
-    private Date orderDate;
+    private LocalDateTime orderDate;
 
     @NotNull(message = "Address is required")
     private UUID addressId;
@@ -32,7 +32,7 @@ public class OrderRequest {
     private String paymentMethod;
 
     private BigDecimal discount;
-    private Date expectedDeliveryDate;
+    private LocalDateTime expectedDeliveryDate;
 
 
 }

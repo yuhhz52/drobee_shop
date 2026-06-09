@@ -5,13 +5,17 @@ import jakarta.persistence.*;
 import com.yuhecom.shopecom.auth.entity.User;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name="orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_orders_user_id", columnList = "user_id"),
+    @Index(name = "idx_orders_order_status", columnList = "order_status"),
+    @Index(name = "idx_orders_order_date", columnList = "order_date")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,15 +23,13 @@ import java.math.BigDecimal;
 @Builder
 public class Order extends BaseEntity {
     @Id
-    @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "order_display_code", unique = true, nullable = false)
     private String orderDisplayCode;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date orderDate;
+    private LocalDateTime orderDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
@@ -54,8 +56,7 @@ public class Order extends BaseEntity {
     private String shipmentTrackingNumber;
 
     @Column(nullable = true)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expectedDeliveryDate;
+    private LocalDateTime expectedDeliveryDate;
 
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "order",cascade = CascadeType.ALL)
     @ToString.Exclude

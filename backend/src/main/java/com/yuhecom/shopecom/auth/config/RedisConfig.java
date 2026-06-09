@@ -11,9 +11,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.SslOptions;
-
 @Configuration
 public class RedisConfig {
 
@@ -42,9 +39,7 @@ public class RedisConfig {
             LettuceClientConfiguration.builder();
 
         if (tls) {
-            builder.clientOptions(ClientOptions.builder()
-                .sslOptions(SslOptions.create())
-                .build());
+            builder.useSsl();
         }
 
         return new LettuceConnectionFactory(config, builder.build());

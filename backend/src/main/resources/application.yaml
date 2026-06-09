@@ -3,30 +3,40 @@ spring:
     name: shopecom
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/shopecom?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?prepareThreshold=0&preparedStatementCacheQueries=0
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      auto-commit: false
 
   jpa:
-    database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          prepare_threshold: 0
+    open-in-view: false
   flyway:
     enabled: true
     baseline-on-migrate: true
+    baseline-version: '0'
     locations: classpath:db/migration
+    clean-disabled: false
+    connect-retries: 3
+    init-sql: "-- Flyway init"
+    validate-on-migrate: false
 
   redis:
     host: ${REDIS_HOST}
-    port: ${REDIS_PORT}
+    port: ${REDIS_PORT:6379}
     password: ${REDIS_PASSWORD}
     tls: ${REDIS_TLS:false}
+    ssl:
+      enabled: ${REDIS_TLS:false}
 
   mail:
     host: smtp.gmail.com

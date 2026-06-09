@@ -6,7 +6,7 @@ import com.yuhecom.shopecom.entity.Address;
 import com.yuhecom.shopecom.entity.OrderStatus;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
@@ -20,12 +20,12 @@ public class OrderDetails {
 
     private UUID id;
     private String orderDisplayCode;
-    private Date orderDate;
+    private LocalDateTime orderDate;
     private Address address;
     private BigDecimal totalAmount;
     private OrderStatus orderStatus;
     private String shipmentNumber;
-    private Date expectedDeliveryDate;
+    private LocalDateTime expectedDeliveryDate;
     private List<OrderItemDetail> orderItemList;
     private String paymentMethod;
     private UsersDto user;

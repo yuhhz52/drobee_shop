@@ -8,7 +8,10 @@ import java.util.UUID;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name="order_items")
+@Table(name = "order_items", indexes = {
+    @Index(name = "idx_order_items_order_id", columnList = "order_id"),
+    @Index(name = "idx_order_items_product_id", columnList = "product_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,8 +19,7 @@ import java.math.BigDecimal;
 @Builder
 public class OrderItem extends BaseEntity {
     @Id
-    @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
