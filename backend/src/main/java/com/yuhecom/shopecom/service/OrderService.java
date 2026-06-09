@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.Principal;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -85,7 +86,7 @@ public class OrderService {
                 .user(user)
                 .address(address)
                 .totalAmount(BigDecimal.ZERO)
-                .orderDate(new Date())
+                .orderDate(LocalDateTime.now())
                 .discount(BigDecimal.ZERO)
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .orderStatus(OrderStatus.PENDING)
@@ -123,7 +124,7 @@ public class OrderService {
         
         Payment payment = new Payment();
         payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setPaymentDate(new Date());
+        payment.setPaymentDate(LocalDateTime.now());
         payment.setOrder(order);
         payment.setAmount(order.getTotalAmount());
         payment.setPaymentMethod(order.getPaymentMethod());
