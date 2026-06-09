@@ -36,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryId == null) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "Category ID must not be null");
         }
-        return categoryRepository.findById(categoryId)
+        return categoryRepository.findByIdWithCategoryTypes(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,
                         "Category not found with id " + categoryId));
     }
@@ -54,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> getAllCategory() {
-        return categoryRepository.findAll();
+        return categoryRepository.findAllWithCategoryTypes();
     }
 
     @Override
@@ -67,7 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "Category ID must not be null");
         }
 
-        Category category = categoryRepository.findById(categoryId)
+        Category category = categoryRepository.findByIdWithCategoryTypes(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,
                         "Category not found with id " + categoryId));
 

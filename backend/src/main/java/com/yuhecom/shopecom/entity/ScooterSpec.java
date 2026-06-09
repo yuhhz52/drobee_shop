@@ -16,8 +16,7 @@ import java.util.UUID;
 @Builder
 public class ScooterSpec extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -25,99 +24,99 @@ public class ScooterSpec extends BaseEntity {
     @JsonIgnore
     private Product product;
 
-    @Column
+    @Column(name = "motor_power_w")
     private Integer motorPowerW;
 
-    @Column
+    @Column(name = "peak_power_w")
     private Integer peakPowerW;
 
-    @Column
+    @Column(name = "max_speed_kmh")
     private Integer maxSpeedKmh;
 
-    @Column
+    @Column(name = "max_speed_unlocked_kmh")
     private Integer maxSpeedUnlockedKmh;
 
-    @Column
+    @Column(name = "range_km")
     private Integer rangeKm;
 
-    @Column
+    @Column(name = "max_incline_percent")
     private Integer maxInclinePercent;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "battery_capacity_ah", precision = 10, scale = 2)
     private BigDecimal batteryCapacityAh;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "battery_voltage_v", precision = 10, scale = 2)
     private BigDecimal batteryVoltageV;
 
-    @Column
+    @Column(name = "battery_type")
     private String batteryType;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "charging_time_hours", precision = 10, scale = 2)
     private BigDecimal chargingTimeHours;
 
-    @Column
+    @Column(name = "removable_battery")
     private Boolean removableBattery;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "weight_kg", precision = 10, scale = 2)
     private BigDecimal weightKg;
 
-    @Column
+    @Column(name = "max_load_kg")
     private Integer maxLoadKg;
 
-    @Column
+    @Column(name = "frame_material")
     private String frameMaterial;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "wheel_size_inch", precision = 10, scale = 2)
     private BigDecimal wheelSizeInch;
 
-    @Column
+    @Column(name = "tire_type")
     private String tireType;
 
-    @Column
+    @Column(name = "brake_front")
     private String brakeFront;
 
-    @Column
+    @Column(name = "brake_rear")
     private String brakeRear;
 
-    @Column
+    @Column(name = "suspension_front")
     private String suspensionFront;
 
-    @Column
+    @Column(name = "suspension_rear")
     private String suspensionRear;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "length_cm", precision = 10, scale = 2)
     private BigDecimal lengthCm;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "width_cm", precision = 10, scale = 2)
     private BigDecimal widthCm;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "height_cm", precision = 10, scale = 2)
     private BigDecimal heightCm;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "folded_length_cm", precision = 10, scale = 2)
     private BigDecimal foldedLengthCm;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "folded_width_cm", precision = 10, scale = 2)
     private BigDecimal foldedWidthCm;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "folded_height_cm", precision = 10, scale = 2)
     private BigDecimal foldedHeightCm;
 
-    @Column
+    @Column(name = "water_resistance_rating")
     private String waterResistanceRating;
 
-    @Column
+    @Column(name = "lights")
     private String lights;
 
-    @Column
+    @Column(name = "display_type")
     private String displayType;
 
-    @Column
+    @Column(name = "connectivity")
     private String connectivity;
 
-    @Column
+    @Column(name = "warranty_months")
     private Integer warrantyMonths;
 
-    @Column
+    @Column(name = "certifications")
     private String certifications;
 }

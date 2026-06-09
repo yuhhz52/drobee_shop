@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,11 +41,25 @@ public class ProductsController {
             @RequestParam(required = false) String slug,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean newArrival,
+            @RequestParam(required = false) Integer minMaxSpeed,
+            @RequestParam(required = false) Integer minRange,
+            @RequestParam(required = false) Integer maxMotorPower,
+            @RequestParam(required = false) BigDecimal maxWeight,
+            @RequestParam(required = false) BigDecimal minBatteryCapacity,
+            @RequestParam(required = false) BigDecimal minBatteryVoltage,
+            @RequestParam(required = false) Boolean removableBattery,
+            @RequestParam(required = false) BigDecimal maxWheelSize,
+            @RequestParam(required = false) Integer minMaxLoad,
+            @RequestParam(required = false) Integer minMaxIncline,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             HttpServletResponse response
     ) {
-        PagingResult<ProductDto> pageResult = productService.getProductsPage(categoryId, typeIds, typeId, slug, name, newArrival, page, size);
+        PagingResult<ProductDto> pageResult = productService.getProductsPage(
+                categoryId, typeIds, typeId, slug, name, newArrival,
+                minMaxSpeed, minRange, maxMotorPower, maxWeight,
+                minBatteryCapacity, minBatteryVoltage, removableBattery,
+                maxWheelSize, minMaxLoad, minMaxIncline, page, size);
         response.setHeader("Content-Range", pageResult.contentRange());
         response.setHeader("Access-Control-Expose-Headers", "Content-Range");
 

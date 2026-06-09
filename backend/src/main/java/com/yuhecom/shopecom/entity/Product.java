@@ -9,7 +9,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name="products")
+@Table(name = "products", indexes = {
+    @Index(name = "idx_products_category_type_id", columnList = "category_type_id"),
+    @Index(name = "idx_products_brand", columnList = "brand"),
+    @Index(name = "idx_products_active", columnList = "active"),
+    @Index(name = "idx_products_new_arrival", columnList = "new_arrival"),
+    @Index(name = "idx_products_featured", columnList = "featured"),
+    @Index(name = "idx_products_slug", columnList = "slug")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,8 +25,7 @@ import java.util.UUID;
 public class Product extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, length = 255)
@@ -34,7 +40,7 @@ public class Product extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String shortDescription;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false, precision = 12, scale = 2)

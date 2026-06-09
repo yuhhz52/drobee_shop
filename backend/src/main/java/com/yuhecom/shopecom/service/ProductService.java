@@ -7,6 +7,7 @@ import com.yuhecom.shopecom.entity.ProductVariant;
 import org.springframework.data.domain.Page;
 
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,10 +19,19 @@ public interface ProductService {
 
     ProductDto getProductBySlug(String slug);
 
-    public Page<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name, Boolean newArrival, int page, int size);
+    public Page<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name, Boolean newArrival,
+                                          Integer minMaxSpeed, Integer minRange, Integer maxMotorPower,
+                                          BigDecimal maxWeight, BigDecimal minBatteryCapacity,
+                                          BigDecimal minBatteryVoltage, Boolean removableBattery,
+                                          BigDecimal maxWheelSize, Integer minMaxLoad, Integer minMaxIncline,
+                                          int page, int size);
 
     PagingResult<ProductDto> getProductsPage(UUID categoryId, List<UUID> typeIds, UUID typeId, String slug, String name,
-                                      Boolean newArrival, int page, int size);
+                                      Boolean newArrival, Integer minMaxSpeed, Integer minRange,
+                                      Integer maxMotorPower, BigDecimal maxWeight, BigDecimal minBatteryCapacity,
+                                      BigDecimal minBatteryVoltage, Boolean removableBattery,
+                                      BigDecimal maxWheelSize, Integer minMaxLoad, Integer minMaxIncline,
+                                      int page, int size);
 
     ProductDto getProductById(UUID id);
 

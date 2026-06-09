@@ -8,7 +8,9 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "product_resources")
+@Table(name = "product_resources", indexes = {
+    @Index(name = "idx_product_resources_product_id", columnList = "product_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,8 +18,7 @@ import java.util.UUID;
 @Builder
 public class ProductResource extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)

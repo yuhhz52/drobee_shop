@@ -33,4 +33,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
             WHERE p.slug = :slug
             """)
     Optional<Product> findBySlug(@Param("slug") String slug);
+
+    Optional<Product> findBySku(String sku);
 }
