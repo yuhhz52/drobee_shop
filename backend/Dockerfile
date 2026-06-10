@@ -34,8 +34,5 @@ RUN mkdir -p /app/uploads
 # Expose port Spring Boot
 EXPOSE 8080
 
-# Mount volume để lưu uploads
-VOLUME /app/uploads
-
 # Run app với timezone VN
 ENTRYPOINT ["java", "-Duser.timezone=Asia/Ho_Chi_Minh", "-jar", "app.jar"]
