@@ -10,7 +10,8 @@ COPY . .
 RUN chmod +x mvnw
 
 # Build project using Maven Wrapper
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -DskipTests \
+    && mv target/*.jar app.jar
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine
@@ -26,7 +27,7 @@ RUN apk add --no-cache tzdata \
 ENV TZ=Asia/Ho_Chi_Minh
 
 # Copy jar từ stage build
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/app.jar app.jar
 
 # Tạo thư mục uploads trong container
 RUN mkdir -p /app/uploads
