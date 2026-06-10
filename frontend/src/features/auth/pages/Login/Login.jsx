@@ -58,7 +58,7 @@ const Login = () => {
   return (
     <>
       {showToast && (
-        <div className="vepace-auth-toast" role="status">
+        <div className="horizon-auth-toast" role="status">
           <div>
             <strong>Account verified</strong>
             Your email has been confirmed. You can sign in now.
@@ -66,14 +66,14 @@ const Login = () => {
         </div>
       )}
 
-      <div className="vepace-auth-card">
-        <div className="vepace-auth-card__head">
+      <div className="horizon-auth-card">
+        <div className="horizon-auth-card__head">
           <h1>Login / Signup</h1>
-          <p>Welcome back. Sign in to continue shopping at VEPACE.</p>
+          <p>Welcome back. Sign in to continue shopping at Horizon.</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="vepace-auth-field">
+          <div className="horizon-auth-field">
             <label htmlFor="email">Email</label>
             <input
               id="email"
@@ -89,11 +89,11 @@ const Login = () => {
               })}
             />
             {errors.userName && (
-              <p className="vepace-auth-error">{errors.userName.message}</p>
+              <p className="horizon-auth-error">{errors.userName.message}</p>
             )}
           </div>
 
-          <div className="vepace-auth-field">
+          <div className="horizon-auth-field">
             <Controller
               name="password"
               control={control}
@@ -114,19 +114,19 @@ const Login = () => {
             />
           </div>
 
-          <button type="button" className="vepace-auth-forgot">
+          <button type="button" className="horizon-auth-forgot">
             Forgot password?
           </button>
 
-          <button type="submit" className="vepace-auth-submit">
+          <button type="submit" className="horizon-auth-submit">
             Sign in
           </button>
         </form>
 
-        <div className="vepace-auth-divider">or</div>
+        <div className="horizon-auth-divider">or</div>
         <GoogleSignIn />
 
-        <p className="vepace-auth-footer">
+        <p className="horizon-auth-footer">
           Don&apos;t have an account?{' '}
           <NavLink to="/v1/register">Create account</NavLink>
         </p>

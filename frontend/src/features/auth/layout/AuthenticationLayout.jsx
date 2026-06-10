@@ -8,9 +8,9 @@ const AutheticationWrapper = () => {
   const isLoading = useSelector((state) => state.commonState.isLoading);
 
   return (
-    <div className="vepace-auth-layout">
-      <aside className="vepace-auth-brand">
-        <div className="vepace-auth-brand__logo">VEPACE</div>
+    <div className="horizon-auth-layout">
+      <aside className="horizon-auth-brand">
+        <div className="horizon-auth-brand__logo">HORIZON</div>
         <h2>Your Ride, Our Priority</h2>
         <p>
           Sign in to track orders, manage your account, and shop premium electric
@@ -29,9 +29,9 @@ const AutheticationWrapper = () => {
         </p>
       </aside>
 
-      <div className="vepace-auth-panel">
+      <div className="horizon-auth-panel">
         <div style={{ width: '100%', maxWidth: 420 }}>
-          <div className="vepace-auth-mobile-logo">VEPACE</div>
+          <div className="horizon-auth-mobile-logo">HORIZON</div>
           <Outlet />
         </div>
       </div>

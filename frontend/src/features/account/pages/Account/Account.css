@@ -1,10 +1,10 @@
-.vepace-account-page {
+.horizon-account-page {
   max-width: var(--kalles-container);
   margin: 0 auto;
   padding: 2rem 15px 3rem;
 }
 
-.vepace-account-auth-gate {
+.horizon-account-auth-gate {
   text-align: center;
   padding: 3rem 1.25rem;
   border: 1px solid var(--kalles-border);
@@ -13,20 +13,20 @@
   margin: 0 auto;
 }
 
-.vepace-account-auth-gate h2 {
+.horizon-account-auth-gate h2 {
   margin: 0 0 0.75rem;
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--kalles-dark);
 }
 
-.vepace-account-auth-gate p {
+.horizon-account-auth-gate p {
   margin: 0 0 1.25rem;
   color: var(--kalles-muted);
   font-size: 0.95rem;
 }
 
-.vepace-account-admin-link {
+.horizon-account-admin-link {
   display: inline-flex;
   justify-content: flex-end;
   width: 100%;
@@ -36,19 +36,19 @@
   color: #1a4fd6;
 }
 
-.vepace-account-shell {
+.horizon-account-shell {
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
   gap: 1.25rem;
 }
 
-.vepace-account-sidebar {
+.horizon-account-sidebar {
   background: #fff;
   border: 1px solid var(--kalles-border);
   padding: 0.75rem;
 }
 
-.vepace-account-nav {
+.horizon-account-nav {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -57,7 +57,7 @@
   gap: 0.55rem;
 }
 
-.vepace-account-nav a {
+.horizon-account-nav a {
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -71,34 +71,34 @@
   transition: all 0.2s ease;
 }
 
-.vepace-account-nav a svg {
+.horizon-account-nav a svg {
   width: 16px;
   height: 16px;
   color: var(--kalles-muted);
 }
 
-.vepace-account-nav a:hover {
+.horizon-account-nav a:hover {
   border-color: #cfcfcf;
   background: #f8f8f8;
 }
 
-.vepace-account-nav a.active {
+.horizon-account-nav a.active {
   background: #111;
   color: #fff;
   border-color: #111;
 }
 
-.vepace-account-nav a.active svg {
+.horizon-account-nav a.active svg {
   color: #fff;
 }
 
-.vepace-account-content {
+.horizon-account-content {
   background: #fff;
   border: 1px solid var(--kalles-border);
   min-height: 420px;
 }
 
-.vepace-account-loading {
+.horizon-account-loading {
   margin-top: 0.75rem;
   border: 1px solid var(--kalles-border);
   background: #fff;
@@ -106,35 +106,35 @@
   text-align: center;
 }
 
-.vepace-account-loading p {
+.horizon-account-loading p {
   margin: 0.35rem 0;
 }
 
-.vepace-profile-panel {
+.horizon-profile-panel {
   padding: 1.25rem;
 }
 
-.vepace-profile-title {
+.horizon-profile-title {
   margin: 0 0 1.25rem;
   font-size: 1.4rem;
   font-weight: 700;
 }
 
-.vepace-profile-card {
+.horizon-profile-card {
   border: 1px solid var(--kalles-border);
   background: #fff;
   padding: 1rem;
   margin-bottom: 1.25rem;
 }
 
-.vepace-profile-avatar-wrap {
+.horizon-profile-avatar-wrap {
   display: flex;
   align-items: center;
   gap: 0.9rem;
   margin-bottom: 0.8rem;
 }
 
-.vepace-profile-avatar {
+.horizon-profile-avatar {
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -142,7 +142,7 @@
   border: 1px solid var(--kalles-border);
 }
 
-.vepace-profile-avatar--placeholder {
+.horizon-profile-avatar--placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,25 +151,25 @@
   font-weight: 700;
 }
 
-.vepace-avatar-upload-btn {
+.horizon-avatar-upload-btn {
   position: relative;
   overflow: hidden;
 }
 
-.vepace-avatar-input {
+.horizon-avatar-input {
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
 }
 
-.vepace-avatar-hint {
+.horizon-avatar-hint {
   margin: 0.35rem 0 0;
   font-size: 0.78rem;
   color: var(--kalles-muted);
 }
 
-.vepace-profile-row {
+.horizon-profile-row {
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr);
   gap: 0.65rem;
@@ -177,11 +177,11 @@
   font-size: 0.92rem;
 }
 
-.vepace-profile-row strong {
+.horizon-profile-row strong {
   font-weight: 600;
 }
 
-.vepace-address-head {
+.horizon-address-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -189,42 +189,42 @@
   margin-bottom: 0.9rem;
 }
 
-.vepace-address-head h3 {
+.horizon-address-head h3 {
   margin: 0;
   font-size: 1.08rem;
   font-weight: 700;
 }
 
-.vepace-address-grid {
+.horizon-address-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
-.vepace-address-card {
+.horizon-address-card {
   border: 1px solid var(--kalles-border);
   background: #fff;
   padding: 0.95rem;
 }
 
-.vepace-address-card p {
+.horizon-address-card p {
   margin: 0.3rem 0;
   font-size: 0.9rem;
 }
 
-.vepace-address-card p:first-child {
+.horizon-address-card p:first-child {
   margin-top: 0;
   font-weight: 600;
 }
 
-.vepace-address-actions {
+.horizon-address-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 0.7rem;
 }
 
-.vepace-address-actions button {
+.horizon-address-actions button {
   background: none;
   border: none;
   padding: 0;
@@ -232,15 +232,15 @@
   cursor: pointer;
 }
 
-.vepace-address-actions button:first-child {
+.horizon-address-actions button:first-child {
   color: #1a4fd6;
 }
 
-.vepace-address-actions button:last-child {
+.horizon-address-actions button:last-child {
   color: #dc2626;
 }
 
-.vepace-address-empty {
+.horizon-address-empty {
   border: 1px dashed #d3d3d3;
   background: #fafafa;
   padding: 1rem;
@@ -248,29 +248,29 @@
   color: var(--kalles-muted);
 }
 
-.vepace-address-form {
+.horizon-address-form {
   border: 1px solid var(--kalles-border);
   background: #fff;
   padding: 1rem;
 }
 
-.vepace-address-form h2 {
+.horizon-address-form h2 {
   margin: 0 0 0.85rem;
   font-size: 1.15rem;
 }
 
-.vepace-form-field {
+.horizon-form-field {
   margin-bottom: 0.75rem;
 }
 
-.vepace-form-field label {
+.horizon-form-field label {
   display: block;
   margin-bottom: 0.3rem;
   font-size: 0.85rem;
   font-weight: 500;
 }
 
-.vepace-form-field input {
+.horizon-form-field input {
   width: 100%;
   height: 38px;
   border: 1px solid var(--kalles-border);
@@ -279,26 +279,26 @@
   font-family: inherit;
 }
 
-.vepace-form-row {
+.horizon-form-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.vepace-form-error {
+.horizon-form-error {
   margin: 0.4rem 0;
   font-size: 0.85rem;
   color: #dc2626;
 }
 
-.vepace-form-actions {
+.horizon-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.6rem;
   margin-top: 0.75rem;
 }
 
-.vepace-btn {
+.horizon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -310,49 +310,49 @@
   cursor: pointer;
 }
 
-.vepace-btn--outline {
+.horizon-btn--outline {
   border-color: #111;
   background: #fff;
   color: #111;
 }
 
-.vepace-btn--outline:hover {
+.horizon-btn--outline:hover {
   background: #111;
   color: #fff;
 }
 
-.vepace-btn--dark {
+.horizon-btn--dark {
   border-color: #111;
   background: #111;
   color: #fff;
 }
 
-.vepace-btn--dark:hover {
+.horizon-btn--dark:hover {
   background: #333;
   border-color: #333;
 }
 
 @media (max-width: 980px) {
-  .vepace-account-shell {
+  .horizon-account-shell {
     grid-template-columns: 1fr;
   }
 
-  .vepace-account-content {
+  .horizon-account-content {
     min-height: unset;
   }
 }
 
 @media (max-width: 720px) {
-  .vepace-address-grid {
+  .horizon-address-grid {
     grid-template-columns: 1fr;
   }
 
-  .vepace-profile-row {
+  .horizon-profile-row {
     grid-template-columns: 1fr;
     gap: 0.25rem;
   }
 
-  .vepace-form-row {
+  .horizon-form-row {
     grid-template-columns: 1fr;
   }
 }

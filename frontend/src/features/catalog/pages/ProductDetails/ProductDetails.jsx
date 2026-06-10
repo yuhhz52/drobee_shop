@@ -9,7 +9,7 @@ import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
 import { colorSelector } from '@shared/components/Filters/ColorFilter';
-import VepaceProductCard from '@features/home/pages/HomeScooter/VepaceProductCard';
+import HorizonProductCard from '@features/home/pages/HomeScooter/HorizonProductCard';
 import './ProductDetails.css';
 
 const SPEC_TABS = [
@@ -95,9 +95,9 @@ const SpecsSection = ({ product }) => {
   const fields = SPEC_GROUPS[activeTab] || [];
 
   return (
-    <section className="vepace-pdp__specs vepace-pdp__container">
+    <section className="horizon-pdp__specs horizon-pdp__container">
       <h2>Thông số kỹ thuật</h2>
-      <div className="vepace-pdp__specs-tabs">
+      <div className="horizon-pdp__specs-tabs">
         {SPEC_TABS.map((tab) => {
           const hasData = SPEC_GROUPS[tab.key].some(
             (s) => product[s.key] != null
@@ -107,7 +107,7 @@ const SpecsSection = ({ product }) => {
             <button
               key={tab.key}
               type="button"
-              className={`vepace-pdp__specs-tab ${activeTab === tab.key ? 'is-active' : ''}`}
+              className={`horizon-pdp__specs-tab ${activeTab === tab.key ? 'is-active' : ''}`}
               onClick={() => setActiveTab(tab.key)}
             >
               {tab.label}
@@ -115,8 +115,8 @@ const SpecsSection = ({ product }) => {
           );
         })}
       </div>
-      <div className="vepace-pdp__specs-table">
-        <div className="vepace-pdp__specs-table-inner">
+      <div className="horizon-pdp__specs-table">
+        <div className="horizon-pdp__specs-table-inner">
           {fields.map((field) => {
             let raw = product[field.key];
             if (field.unit === '' && field.key === 'removableBattery') {
@@ -125,9 +125,9 @@ const SpecsSection = ({ product }) => {
             const val = fmt(raw, field.unit);
             if (val == null) return null;
             return (
-              <div key={field.key} className="vepace-pdp__specs-row">
-                <span className="vepace-pdp__specs-label">{field.label}</span>
-                <span className="vepace-pdp__specs-value">
+              <div key={field.key} className="horizon-pdp__specs-row">
+                <span className="horizon-pdp__specs-label">{field.label}</span>
+                <span className="horizon-pdp__specs-value">
                   {val}{field.unit && val != null ? ` ${field.unit}` : ''}
                 </span>
               </div>
@@ -145,23 +145,23 @@ const ProductModal = ({ title, open, onClose, children }) => {
     <>
       <button
         type="button"
-        className="vepace-pdp__modal-backdrop"
+        className="horizon-pdp__modal-backdrop"
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="vepace-pdp__modal" role="dialog" aria-modal="true">
-        <div className="vepace-pdp__modal-header">
+      <div className="horizon-pdp__modal" role="dialog" aria-modal="true">
+        <div className="horizon-pdp__modal-header">
           <h3>{title}</h3>
           <button
             type="button"
-            className="vepace-pdp__modal-close"
+            className="horizon-pdp__modal-close"
             onClick={onClose}
             aria-label="Close"
           >
             ×
           </button>
         </div>
-        <div className="vepace-pdp__modal-body">{children}</div>
+        <div className="horizon-pdp__modal-body">{children}</div>
       </div>
     </>
   );
@@ -352,14 +352,14 @@ const ProductDetails = () => {
   ]);
 
   if (!product) {
-    return <div className="vepace-pdp__empty">Product not found.</div>;
+    return <div className="horizon-pdp__empty">Product not found.</div>;
   }
 
   return (
-    <div className="vepace-pdp">
-      <div className="vepace-pdp__breadcrumb-wrap">
-        <div className="vepace-pdp__container">
-          <nav className="vepace-pdp__breadcrumb" aria-label="Breadcrumb">
+    <div className="horizon-pdp">
+      <div className="horizon-pdp__breadcrumb-wrap">
+        <div className="horizon-pdp__container">
+          <nav className="horizon-pdp__breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
             <span>/</span>
             <Link to="/products">Electric Scooters</Link>
@@ -369,10 +369,10 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      <div className="vepace-pdp__main vepace-pdp__container">
-        <div className="vepace-pdp__gallery">
+      <div className="horizon-pdp__main horizon-pdp__container">
+        <div className="horizon-pdp__gallery">
           {images.length > 1 && (
-            <div className="vepace-pdp__thumbs">
+            <div className="horizon-pdp__thumbs">
               {images.map((url, index) => (
                 <button
                   key={url + index}
@@ -385,16 +385,16 @@ const ProductDetails = () => {
               ))}
             </div>
           )}
-          <div className="vepace-pdp__main-image">
+          <div className="horizon-pdp__main-image">
             {activeImage && <img src={activeImage} alt={product.name} />}
-            <p className="vepace-pdp__zoom-hint">Roll over image to zoom in</p>
+            <p className="horizon-pdp__zoom-hint">Roll over image to zoom in</p>
           </div>
         </div>
 
-        <div className="vepace-pdp__info">
+        <div className="horizon-pdp__info">
           <h1>{product.name}</h1>
 
-          <div className="vepace-pdp__badges">
+          <div className="horizon-pdp__badges">
             {product.newArrival && <span className="badge badge--blue">NEW</span>}
             {product.featured && (
               <span className="badge badge--blue">Featured</span>
@@ -409,16 +409,16 @@ const ProductDetails = () => {
             )}
           </div>
 
-          {brand && <p className="vepace-pdp__brand">{brand}</p>}
+          {brand && <p className="horizon-pdp__brand">{brand}</p>}
 
-          <div className="vepace-pdp__rating">★★★★★ 24 reviews</div>
+          <div className="horizon-pdp__rating">★★★★★ 24 reviews</div>
 
           {hasVersions && (
-            <div className="vepace-pdp__variant">
-              <p className="vepace-pdp__variant-label">
+            <div className="horizon-pdp__variant">
+              <p className="horizon-pdp__variant-label">
                 {variantLabel}
               </p>
-              <div className="vepace-pdp__variant-btns">
+              <div className="horizon-pdp__variant-btns">
                 {allVersions.map((variant) => (
                   <button
                     key={variant}
@@ -446,11 +446,11 @@ const ProductDetails = () => {
           )}
 
           {availableColors.length > 0 && (
-            <div className="vepace-pdp__variant">
-              <p className="vepace-pdp__variant-label">
+            <div className="horizon-pdp__variant">
+              <p className="horizon-pdp__variant-label">
                 Color{selectedColor ? `: ${selectedColor}` : ''}
               </p>
-              <div className="vepace-pdp__colors">
+              <div className="horizon-pdp__colors">
                 {availableColors.map((color) => (
                   <button
                     key={color}
@@ -466,7 +466,7 @@ const ProductDetails = () => {
             </div>
           )}
 
-          <div className="vepace-pdp__price">
+          <div className="horizon-pdp__price">
             <span className="label">Price:</span>
             <span className="sale">{formatPriceVND(displayPrice)}</span>
             {hasSale && (
@@ -474,11 +474,11 @@ const ProductDetails = () => {
             )}
           </div>
 
-          {error && <p className="vepace-pdp__error">{error}</p>}
+          {error && <p className="horizon-pdp__error">{error}</p>}
 
-          <div className="vepace-pdp__qty-row">
+          <div className="horizon-pdp__qty-row">
             <span>Quantity:</span>
-            <div className="vepace-pdp__qty">
+            <div className="horizon-pdp__qty">
               <button
                 type="button"
                 aria-label="Decrease"
@@ -499,26 +499,26 @@ const ProductDetails = () => {
 
           <button
             type="button"
-            className="vepace-pdp__atc"
+            className="horizon-pdp__atc"
             onClick={addItemToCart}
             disabled={!inStock}
           >
             {inStock ? 'Add to cart' : 'Sold out'}
           </button>
 
-          <button type="button" className="vepace-pdp__paypal">
+          <button type="button" className="horizon-pdp__paypal">
             Pay with PayPal
           </button>
 
           <button
             type="button"
-            className="vepace-pdp__more-pay"
+            className="horizon-pdp__more-pay"
             onClick={() => setDeliveryOpen(true)}
           >
             More payment options
           </button>
 
-          <div className="vepace-pdp__meta">
+          <div className="horizon-pdp__meta">
             <p>
               Availability:{' '}
               <span className={inStock ? 'in-stock' : 'out-stock'}>
@@ -534,7 +534,7 @@ const ProductDetails = () => {
 
           <button
             type="button"
-            className="vepace-pdp__shipping-link"
+            className="horizon-pdp__shipping-link"
             onClick={() => setDeliveryOpen(true)}
           >
             Delivery &amp; Return
@@ -543,16 +543,16 @@ const ProductDetails = () => {
       </div>
 
       {product.description && (
-        <section className="vepace-pdp__description vepace-pdp__container">
+        <section className="horizon-pdp__description horizon-pdp__container">
           <h2>Description</h2>
-          <div className="vepace-pdp__description-body">{product.description}</div>
+          <div className="horizon-pdp__description-body">{product.description}</div>
         </section>
       )}
 
       <SpecsSection product={product} />
 
-      <section className="vepace-pdp__trust">
-        <div className="vepace-pdp__container vepace-pdp__trust-grid">
+      <section className="horizon-pdp__trust">
+        <div className="horizon-pdp__container horizon-pdp__trust-grid">
           <div>
             <strong>EU shipping</strong>
             <p>All Europe 3 - 7 working days</p>
@@ -573,17 +573,17 @@ const ProductDetails = () => {
       </section>
 
       {similarProducts.length > 0 && (
-        <section className="vepace-pdp__related">
-          <div className="vepace-pdp__container">
-            <div className="vepace-pdp__related-head">
+        <section className="horizon-pdp__related">
+          <div className="horizon-pdp__container">
+            <div className="horizon-pdp__related-head">
               <h2>You may also like</h2>
-              <Link to="/products" className="vepace-pdp__view-all">
+              <Link to="/products" className="horizon-pdp__view-all">
                 View all
               </Link>
             </div>
-            <div className="vepace-pdp__related-grid">
+            <div className="horizon-pdp__related-grid">
               {similarProducts.map((item) => (
-                <VepaceProductCard
+                <HorizonProductCard
                   key={item.id}
                   {...item}
                   brand={inferBrandFromProduct(item)}

@@ -24,7 +24,7 @@ export const formatDisplayPrice = (price) => {
   return formatPriceVNDSimple(price);
 };
 
-/** EUR format matching vepace.com product cards */
+/** EUR format matching horizon.com product cards */
 export const formatPriceEUR = (price) => {
   if (!price && price !== 0) return '€0,00';
 

@@ -4,9 +4,9 @@ import './BrandLogo.css';
 
 const BrandLogo = ({ className = '', linkClassName = '', asLink = true }) => {
   const logo = (
-    <span className={`vepace-logo-mark ${className}`.trim()} aria-label="VEPACE">
-      <span className="vepace-logo-mark__v">V</span>
-      <span className="vepace-logo-mark__text">EPACE</span>
+    <span className={`horizon-logo-mark ${className}`.trim()} aria-label="Horizon">
+      <span className="horizon-logo-mark__v">H</span>
+      <span className="horizon-logo-mark__text">ORIZON</span>
     </span>
   );
 
@@ -16,7 +16,7 @@ const BrandLogo = ({ className = '', linkClassName = '', asLink = true }) => {
     <Link
       to="/"
       className={`zentro-logo-link ${linkClassName}`.trim()}
-      aria-label="VEPACE - Home"
+      aria-label="Horizon - Home"
     >
       {logo}
     </Link>

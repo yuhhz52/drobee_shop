@@ -1,10 +1,10 @@
-.vepace-product-card {
+.horizon-product-card {
   background: #fff;
   border: 1px solid var(--kalles-border);
   text-align: left;
 }
 
-.vepace-product-card__media {
+.horizon-product-card__media {
   display: block;
   position: relative;
   background: #fff;
@@ -12,7 +12,7 @@
   overflow: hidden;
 }
 
-.vepace-product-card__media img {
+.horizon-product-card__media img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -20,11 +20,11 @@
   transition: transform 0.35s ease;
 }
 
-.vepace-product-card:hover .vepace-product-card__media img {
+.horizon-product-card:hover .horizon-product-card__media img {
   transform: scale(1.04);
 }
 
-.vepace-product-card__badges {
+.horizon-product-card__badges {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -35,7 +35,7 @@
   gap: 4px;
 }
 
-.vepace-product-card__badge {
+.horizon-product-card__badge {
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -45,23 +45,23 @@
   line-height: 1.3;
 }
 
-.vepace-product-card__badge--new {
+.horizon-product-card__badge--new {
   background: #1a4fd6;
 }
 
-.vepace-product-card__badge--bestseller {
+.horizon-product-card__badge--bestseller {
   background: #1a4fd6;
 }
 
-.vepace-product-card__badge--sale {
-  background: var(--vepace-red);
+.horizon-product-card__badge--sale {
+  background: var(--horizon-red);
 }
 
-.vepace-product-card__body {
+.horizon-product-card__body {
   padding: 0.85rem 0.9rem 1rem;
 }
 
-.vepace-product-card__brand {
+.horizon-product-card__brand {
   margin: 0 0 0.25rem;
   font-size: 0.7rem;
   font-weight: 500;
@@ -70,7 +70,7 @@
   color: var(--kalles-muted);
 }
 
-.vepace-product-card__title {
+.horizon-product-card__title {
   display: block;
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
@@ -79,37 +79,37 @@
   color: var(--kalles-dark);
 }
 
-.vepace-product-card__title:hover {
-  color: var(--vepace-red);
+.horizon-product-card__title:hover {
+  color: var(--horizon-red);
 }
 
-.vepace-product-card__price {
+.horizon-product-card__price {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.45rem;
 }
 
-.vepace-product-card__sale {
-  color: var(--vepace-red);
+.horizon-product-card__sale {
+  color: var(--horizon-red);
   font-weight: 700;
   font-size: 0.95rem;
 }
 
-.vepace-product-card__regular {
+.horizon-product-card__regular {
   color: var(--kalles-muted);
   font-size: 0.8rem;
   text-decoration: line-through;
 }
 
-.vepace-product-card__specs {
+.horizon-product-card__specs {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
   margin: 0.4rem 0 0.5rem;
 }
 
-.vepace-product-card__spec-badge {
+.horizon-product-card__spec-badge {
   display: inline-flex;
   align-items: baseline;
   gap: 1px;
@@ -122,12 +122,12 @@
   white-space: nowrap;
 }
 
-.vepace-product-card__spec-badge-value {
+.horizon-product-card__spec-badge-value {
   font-weight: 700;
   color: #222;
 }
 
-.vepace-product-card__spec-badge-unit {
+.horizon-product-card__spec-badge-unit {
   font-weight: 400;
   color: #888;
   font-size: 0.65rem;

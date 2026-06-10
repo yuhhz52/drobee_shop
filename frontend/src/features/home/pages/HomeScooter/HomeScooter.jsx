@@ -12,7 +12,7 @@ import { getAllProducts } from '@services/product.service';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrand } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
-import VepaceProductCard from './VepaceProductCard';
+import HorizonProductCard from './HorizonProductCard';
 import ig1 from '@assets/images/ig1.jpg';
 import ig2 from '@assets/images/ig2.jpg';
 import ig3 from '@assets/images/ig3.jpg';
@@ -20,7 +20,7 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './HomeScooter.css';
 
-const CDN = 'https://vepace.com/cdn/shop/files';
+const CDN = 'https://horizon.com/cdn/shop/files';
 const CDN_FALLBACK =
   'https://0i1kw6o8mm0dwce9-70714851584.shopifypreview.com/cdn/shop/files';
 
@@ -119,7 +119,7 @@ const blogItems = [
 
 const valueProps = [
   { title: 'EU shipping', text: 'All Europe 3 - 7 working days' },
-  { title: 'Free helmet', text: 'VEPACE protects his Riders' },
+  { title: 'Free helmet', text: 'Horizon protects its riders' },
   { title: '7/7 Support', text: 'Any Question contact us !' },
   { title: 'Secure payments', text: '100% secure checkout' },
 ];
@@ -190,12 +190,12 @@ const HomeScooter = () => {
   const mainImage = featuredThumbs[activeThumb] || featuredThumbs[0];
 
   return (
-    <div className="vepace-home">
-      <section className="vepace-hero">
+    <div className="horizon-home">
+      <section className="horizon-hero">
         <Slider {...heroSettings}>
           {heroSlides.map((slide, index) => (
             <div key={slide.link + index}>
-              <Link to={slide.link} className="vepace-hero__slide">
+              <Link to={slide.link} className="horizon-hero__slide">
                 <img src={slide.image} alt={slide.alt} loading={index === 0 ? 'eager' : 'lazy'} />
               </Link>
             </div>
@@ -203,18 +203,18 @@ const HomeScooter = () => {
         </Slider>
       </section>
 
-      <section className="vepace-collections-band">
-        <div className="vepace-container">
-          <div className="vepace-section-head">
+      <section className="horizon-collections-band">
+        <div className="horizon-container">
+          <div className="horizon-section-head">
             <h2>Our collections</h2>
-            <Link to="/products" className="vepace-link-red">
+            <Link to="/products" className="horizon-link-red">
               View all
             </Link>
           </div>
-          <div className="vepace-collections">
+          <div className="horizon-collections">
             {collections.map((item) => (
-              <Link key={item.label} to={item.link} className="vepace-collections__item">
-                <div className="vepace-collections__circle">
+              <Link key={item.label} to={item.link} className="horizon-collections__item">
+                <div className="horizon-collections__circle">
                   <img
                     src={item.image}
                     alt=""
@@ -231,17 +231,17 @@ const HomeScooter = () => {
         </div>
       </section>
 
-      <section className="vepace-section">
-        <div className="vepace-container">
-          <div className="vepace-section-head">
+      <section className="horizon-section">
+        <div className="horizon-container">
+          <div className="horizon-section-head">
             <h2>Best Sellers</h2>
-            <Link to="/products" className="vepace-link-red">
+            <Link to="/products" className="horizon-link-red">
               View all
             </Link>
           </div>
-          <div className="vepace-product-grid">
+          <div className="horizon-product-grid">
             {bestSellers.map((item) => (
-              <VepaceProductCard
+              <HorizonProductCard
                 key={item.id}
                 {...item}
                 brand={inferBrand(item.name)}
@@ -251,12 +251,12 @@ const HomeScooter = () => {
         </div>
       </section>
 
-      <section className="vepace-priority">
-        <div className="vepace-container vepace-priority__inner">
-          <div className="vepace-priority__media">
-            <span className="vepace-priority__tag">FREE</span>
+      <section className="horizon-priority">
+        <div className="horizon-container horizon-priority__inner">
+          <div className="horizon-priority__media">
+            <span className="horizon-priority__tag">FREE</span>
             <img
-              src={`${CDN}/free-helmet-vepace-store.jpg?v=1&width=900`}
+              src={`${CDN}/free-helmet-horizon-store.jpg?v=1&width=900`}
               alt="Free helmet with every scooter"
               onError={(e) => {
                 e.target.onerror = null;
@@ -264,32 +264,32 @@ const HomeScooter = () => {
               }}
             />
           </div>
-          <div className="vepace-priority__content">
+          <div className="horizon-priority__content">
             <h2>Your Ride, Our Priority.</h2>
             <p>
-              At Vepace, your safety comes first. That&apos;s why we offer a{' '}
+              At Horizon, your safety comes first. That&apos;s why we offer a{' '}
               <strong>free helmet with every electric scooter purchase</strong> — because
               we&apos;re committed to protecting our riders and supporting every journey with
               care and confidence.
             </p>
-            <Link to="/products" className="vepace-btn vepace-btn--black">
+            <Link to="/products" className="horizon-btn horizon-btn--black">
               Explore Our Scooters
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="vepace-section">
-        <div className="vepace-container">
-          <div className="vepace-section-head">
+      <section className="horizon-section">
+        <div className="horizon-container">
+          <div className="horizon-section-head">
             <h2>Powerful Electric Scooters</h2>
-            <Link to="/products" className="vepace-link-red">
+            <Link to="/products" className="horizon-link-red">
               View all
             </Link>
           </div>
-          <div className="vepace-product-grid">
+          <div className="horizon-product-grid">
             {powerfulProducts.map((item) => (
-              <VepaceProductCard
+              <HorizonProductCard
                 key={item.id}
                 {...item}
                 brand={inferBrand(item.name)}
@@ -299,35 +299,35 @@ const HomeScooter = () => {
         </div>
       </section>
 
-      <section className="vepace-promo-strip">
-        <div className="vepace-promo-strip__block vepace-promo-strip__block--dark">
+      <section className="horizon-promo-strip">
+        <div className="horizon-promo-strip__block horizon-promo-strip__block--dark">
           <p>1-2 year warranty &amp; after-sales service available 7/7</p>
-          <Link to="/contact" className="vepace-promo-strip__btn vepace-promo-strip__btn--red">
+          <Link to="/contact" className="horizon-promo-strip__btn horizon-promo-strip__btn--red">
             Warranty 🛠
           </Link>
         </div>
-        <div className="vepace-promo-strip__block vepace-promo-strip__block--red">
+        <div className="horizon-promo-strip__block horizon-promo-strip__block--red">
           <p>Delivery to all EU countries, 3-7 working days</p>
-          <Link to="/contact" className="vepace-promo-strip__btn vepace-promo-strip__btn--dark">
+          <Link to="/contact" className="horizon-promo-strip__btn horizon-promo-strip__btn--dark">
             Shipping ✈
           </Link>
         </div>
       </section>
 
-      <section className="vepace-section vepace-section--featured">
-        <div className="vepace-container">
-          <div className="vepace-section-head">
+      <section className="horizon-section horizon-section--featured">
+        <div className="horizon-container">
+          <div className="horizon-section-head">
             <h2>Featured Electric Scooter</h2>
             <Link
               to={featuredProduct ? `/product/${featuredProduct.slug}` : '/products'}
-              className="vepace-link-red"
+              className="horizon-link-red"
             >
               View details
             </Link>
           </div>
-          <div className="vepace-featured">
-            <div className="vepace-featured__gallery">
-              <div className="vepace-featured__thumbs">
+          <div className="horizon-featured">
+            <div className="horizon-featured__gallery">
+              <div className="horizon-featured__thumbs">
                 {featuredThumbs.slice(0, 5).map((src, index) => (
                   <button
                     key={src + index}
@@ -339,42 +339,42 @@ const HomeScooter = () => {
                   </button>
                 ))}
               </div>
-              <div className="vepace-featured__main">
+              <div className="horizon-featured__main">
                 <img src={mainImage} alt={featuredProduct?.name || 'Featured scooter'} />
-                <p className="vepace-featured__zoom-hint">
+                <p className="horizon-featured__zoom-hint">
                   Roll over image to zoom in
                 </p>
               </div>
             </div>
-            <div className="vepace-featured__info">
+            <div className="horizon-featured__info">
               <h3>{featuredProduct?.name || 'Kukirin G2 Electric Scooter 2026'}</h3>
-              <div className="vepace-featured__badges">
+              <div className="horizon-featured__badges">
                 <span className="badge badge--green">DGT</span>
                 <span className="badge badge--blue">Bestseller</span>
                 <span className="badge badge--blue">NEW</span>
                 <span className="badge badge--red">- {formatPriceVND(featuredProduct?.price ? 589 - featuredProduct.price : 0)}</span>
               </div>
-              <p className="vepace-featured__brand">
+              <p className="horizon-featured__brand">
                 {inferBrand(featuredProduct?.name) || 'KUKIRIN'}
               </p>
-              <div className="vepace-featured__rating">★★★★★ 24 reviews</div>
-              <p className="vepace-featured__variant-label">Version: G2</p>
-              <div className="vepace-featured__variants">
+              <div className="horizon-featured__rating">★★★★★ 24 reviews</div>
+              <p className="horizon-featured__variant-label">Version: G2</p>
+              <div className="horizon-featured__variants">
                 <button type="button" className="is-active">
                   G2
                 </button>
                 <button type="button">G2 VMP (DGT)</button>
               </div>
-              <div className="vepace-featured__price">
+              <div className="horizon-featured__price">
                 <span className="label">Price:</span>
                 <span className="sale">
                   {formatPriceVND(featuredProduct?.price ?? 489)}
                 </span>
                 <span className="regular">{formatPriceVND(589)}</span>
               </div>
-              <div className="vepace-featured__qty">
+              <div className="horizon-featured__qty">
                 <span>Quantity:</span>
-                <div className="vepace-qty">
+                <div className="horizon-qty">
                   <button
                     type="button"
                     aria-label="Decrease"
@@ -394,14 +394,14 @@ const HomeScooter = () => {
               </div>
               <Link
                 to={featuredProduct ? `/product/${featuredProduct.slug}` : '/products'}
-                className="vepace-btn vepace-btn--black vepace-btn--full"
+                className="horizon-btn horizon-btn--black horizon-btn--full"
               >
                 Add to cart
               </Link>
-              <button type="button" className="vepace-btn vepace-btn--paypal vepace-btn--full">
+              <button type="button" className="horizon-btn horizon-btn--paypal horizon-btn--full">
                 Pay with PayPal
               </button>
-              <button type="button" className="vepace-featured__more-pay">
+              <button type="button" className="horizon-featured__more-pay">
                 More payment options
               </button>
             </div>
@@ -409,41 +409,41 @@ const HomeScooter = () => {
         </div>
       </section>
 
-      <section className="vepace-section vepace-section--experts">
-        <div className="vepace-container">
-          <div className="vepace-section-head vepace-section-head--center">
+      <section className="horizon-section horizon-section--experts">
+        <div className="horizon-container">
+          <div className="horizon-section-head horizon-section-head--center">
             <div>
               <h2>Tested by Experts</h2>
-              <p className="vepace-section-sub">
+              <p className="horizon-section-sub">
                 Watch honest reviews from YouTube creators and tech reviewers before
                 choosing your ride.
               </p>
             </div>
           </div>
-          <div className="vepace-experts">
+          <div className="horizon-experts">
             <button
               type="button"
-              className="vepace-experts__arrow"
+              className="horizon-experts__arrow"
               aria-label="Previous"
               onClick={() => setExpertSlide((s) => Math.max(0, s - 1))}
             >
               <FiChevronLeft />
             </button>
-            <div className="vepace-experts__track">
+            <div className="horizon-experts__track">
               {expertReviews.map((review, index) => (
                 <a
                   key={review.title}
                   href={`https://www.youtube.com/watch?v=${review.videoId}`}
                   target="_blank"
                   rel="noreferrer"
-                  className={`vepace-experts__card ${index === expertSlide ? 'is-focus' : ''}`}
+                  className={`horizon-experts__card ${index === expertSlide ? 'is-focus' : ''}`}
                 >
-                  <div className="vepace-experts__thumb">
+                  <div className="horizon-experts__thumb">
                     <img
                       src={`https://img.youtube.com/vi/${review.videoId}/hqdefault.jpg`}
                       alt=""
                     />
-                    <span className="vepace-experts__play" aria-hidden />
+                    <span className="horizon-experts__play" aria-hidden />
                   </div>
                   <h3>{review.title}</h3>
                 </a>
@@ -451,7 +451,7 @@ const HomeScooter = () => {
             </div>
             <button
               type="button"
-              className="vepace-experts__arrow"
+              className="horizon-experts__arrow"
               aria-label="Next"
               onClick={() =>
                 setExpertSlide((s) => Math.min(expertReviews.length - 1, s + 1))
@@ -460,7 +460,7 @@ const HomeScooter = () => {
               <FiChevronRight />
             </button>
           </div>
-          <div className="vepace-experts__dots">
+          <div className="horizon-experts__dots">
             {expertReviews.map((_, i) => (
               <button
                 key={i}
@@ -474,8 +474,8 @@ const HomeScooter = () => {
         </div>
       </section>
 
-      <section className="vepace-spare">
-        <div className="vepace-container vepace-spare__inner">
+      <section className="horizon-spare">
+        <div className="horizon-container horizon-spare__inner">
           <div>
             <h2>Need Spare Parts?</h2>
             <p>
@@ -484,27 +484,27 @@ const HomeScooter = () => {
               for your electric scooter.
             </p>
           </div>
-          <Link to="/products" className="vepace-btn vepace-btn--outline">
+          <Link to="/products" className="horizon-btn horizon-btn--outline">
             View Parts
           </Link>
         </div>
       </section>
 
-      <section className="vepace-mid-newsletter">
-        <div className="vepace-container vepace-mid-newsletter__inner">
+      <section className="horizon-mid-newsletter">
+        <div className="horizon-container horizon-mid-newsletter__inner">
           <h2>Newsletter</h2>
-          <p>Join the Vepace Rider Family &amp; Stay Informed</p>
+          <p>Join the Horizon Rider Family &amp; Stay Informed</p>
           <form onSubmit={(e) => e.preventDefault()}>
             <input type="email" placeholder="Your email" aria-label="Email" />
-            <button type="submit" className="vepace-btn vepace-btn--red">
+            <button type="submit" className="horizon-btn horizon-btn--red">
               Subscribe
             </button>
           </form>
         </div>
       </section>
 
-      <section className="vepace-value-strip">
-        <div className="vepace-container vepace-value-strip__grid">
+      <section className="horizon-value-strip">
+        <div className="horizon-container horizon-value-strip__grid">
           {valueProps.map((prop) => (
             <div key={prop.title}>
               <h4>{prop.title}</h4>
@@ -514,36 +514,36 @@ const HomeScooter = () => {
         </div>
       </section>
 
-      <section className="vepace-section">
-        <div className="vepace-container">
-          <div className="vepace-section-head">
+      <section className="horizon-section">
+        <div className="horizon-container">
+          <div className="horizon-section-head">
             <h2>Blog posts</h2>
-            <Link to="/products" className="vepace-link-red">
+            <Link to="/products" className="horizon-link-red">
               View all
             </Link>
           </div>
-          <div className="vepace-blog-grid">
+          <div className="horizon-blog-grid">
             {blogItems.map((post) => (
-              <article key={post.title} className="vepace-blog-card">
+              <article key={post.title} className="horizon-blog-card">
                 <img src={post.image} alt="" />
                 <h3>{post.title}</h3>
-                <p className="vepace-blog-card__meta">{post.meta}</p>
+                <p className="horizon-blog-card__meta">{post.meta}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <div className="vepace-chat-widget">
+      <div className="horizon-chat-widget">
         {chatOpen && (
-          <div className="vepace-chat-widget__bubble">
+          <div className="horizon-chat-widget__bubble">
             <span>👋 Hi! Need any help?</span>
             <button type="button" onClick={() => setChatOpen(false)} aria-label="Close">
               ×
             </button>
           </div>
         )}
-        <button type="button" className="vepace-chat-widget__btn" aria-label="Chat">
+        <button type="button" className="horizon-chat-widget__btn" aria-label="Chat">
           <FiMessageCircle size={22} />
         </button>
       </div>

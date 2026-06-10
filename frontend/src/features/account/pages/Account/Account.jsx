@@ -33,11 +33,11 @@ const Account = () => {
 
     if (!isLoggedIn) {
         return (
-            <div className='vepace-account-page'>
-                <div className="vepace-account-auth-gate">
+            <div className='horizon-account-page'>
+                <div className="horizon-account-auth-gate">
                     <h2>Đăng nhập để xem tài khoản</h2>
                     <p>Bạn cần đăng nhập để truy cập trang này.</p>
-                    <Link to="/v1/login" className="vepace-btn vepace-btn--dark">
+                    <Link to="/v1/login" className="horizon-btn horizon-btn--dark">
                         Đăng nhập
                     </Link>
                 </div>
@@ -46,15 +46,15 @@ const Account = () => {
     }
 
     return (
-        <div className='vepace-account-page'>
+        <div className='horizon-account-page'>
             {isUserAdmin && (
-                <Link to={"/admin"} className="vepace-account-admin-link">
+                <Link to={"/admin"} className="horizon-account-admin-link">
                     Manage Admin
                 </Link>
             )}
-            <div className="vepace-account-shell">
-                <aside className="vepace-account-sidebar">
-                    <ul className="vepace-account-nav">
+            <div className="horizon-account-shell">
+                <aside className="horizon-account-sidebar">
+                    <ul className="horizon-account-nav">
                         <li>
                             <NavLink to="/account-details/profile">
                                 <svg
@@ -99,7 +99,7 @@ const Account = () => {
                         </li>
                     </ul>
                 </aside>
-                <div className="vepace-account-content">
+                <div className="horizon-account-content">
                     <Outlet />
                 </div>
             </div>

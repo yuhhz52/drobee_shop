@@ -22,13 +22,13 @@
 }
 
 .scooter-spec-tab:hover {
-  border-color: var(--vepace-red, #e63946);
-  color: var(--vepace-red, #e63946);
+  border-color: var(--horizon-red, #e63946);
+  color: var(--horizon-red, #e63946);
 }
 
 .scooter-spec-tab.is-active {
-  background: var(--vepace-red, #e63946);
-  border-color: var(--vepace-red, #e63946);
+  background: var(--horizon-red, #e63946);
+  border-color: var(--horizon-red, #e63946);
   color: #fff;
 }
 
@@ -59,13 +59,13 @@
 }
 
 .scooter-spec-preset:hover {
-  border-color: var(--vepace-red, #e63946);
+  border-color: var(--horizon-red, #e63946);
   background: #fff5f5;
 }
 
 .scooter-spec-preset.is-selected {
-  border-color: var(--vepace-red, #e63946);
-  background: var(--vepace-red, #e63946);
+  border-color: var(--horizon-red, #e63946);
+  background: var(--horizon-red, #e63946);
   color: #fff;
 }
 

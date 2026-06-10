@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import VepaceProductCard from '@features/home/pages/HomeScooter/VepaceProductCard'
+import HorizonProductCard from '@features/home/pages/HomeScooter/HorizonProductCard'
 import { inferBrandFromProduct } from '@shared/utils/product-brand'
 import { useCollection } from '@hooks/api/useCollection'
 import CollectionFilterDrawer from './CollectionFilterDrawer.jsx'
@@ -49,11 +49,11 @@ const isProductInStock = (product) => {
 const GridIcon = ({ cols, active, onClick }) => (
   <button
     type="button"
-    className={`vepace-grid-btn ${active ? 'is-active' : ''}`}
+    className={`horizon-grid-btn ${active ? 'is-active' : ''}`}
     onClick={onClick}
     aria-label={`${cols} column grid`}
   >
-    <span className={`vepace-grid-icon vepace-grid-icon--${cols}`}>
+    <span className={`horizon-grid-icon horizon-grid-icon--${cols}`}>
       {Array.from({ length: cols }).map((_, i) => (
         <span key={i} />
       ))}
@@ -456,24 +456,24 @@ const ProductListPage = ({
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Sort'
 
   return (
-    <div className="vepace-plp">
-      <div className="vepace-plp__header">
-        <div className="vepace-plp__container">
-          <nav className="vepace-plp__breadcrumb" aria-label="Breadcrumb">
+    <div className="horizon-plp">
+      <div className="horizon-plp__header">
+        <div className="horizon-plp__container">
+          <nav className="horizon-plp__breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
-            <span className="vepace-plp__breadcrumb-sep">/</span>
+            <span className="horizon-plp__breadcrumb-sep">/</span>
             <span>{pageTitle}</span>
           </nav>
           <h1>{pageTitle}</h1>
-          <p className="vepace-plp__count">
+          <p className="horizon-plp__count">
             {displayedProductCount} product{displayedProductCount !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
 
-      <div className="vepace-plp__container">
-        <div className="vepace-plp__toolbar">
-          <button type="button" className="vepace-plp__filter-btn" onClick={handleFilterToggle}>
+      <div className="horizon-plp__container">
+        <div className="horizon-plp__toolbar">
+          <button type="button" className="horizon-plp__filter-btn" onClick={handleFilterToggle}>
             <svg width="16" height="16" viewBox="0 0 512 512" aria-hidden="true">
               <path
                 fill="currentColor"
@@ -483,23 +483,23 @@ const ProductListPage = ({
             <span>Filter</span>
           </button>
 
-          <div className="vepace-plp__layout">
+          <div className="horizon-plp__layout">
             <GridIcon cols={3} active={gridColumns === 3} onClick={() => setGridColumns(3)} />
             <GridIcon cols={4} active={gridColumns === 4} onClick={() => setGridColumns(4)} />
             <GridIcon cols={5} active={gridColumns === 5} onClick={() => setGridColumns(5)} />
           </div>
 
-          <div className="vepace-plp__sort" ref={sortRef}>
+          <div className="horizon-plp__sort" ref={sortRef}>
             <button
               type="button"
-              className="vepace-plp__sort-btn"
+              className="horizon-plp__sort-btn"
               onClick={(e) => {
                 e.stopPropagation()
                 setSortOpen((o) => !o)
               }}
             >
-              <span className="vepace-plp__sort-label">{sortLabel}</span>
-              <span className="vepace-plp__sort-label-mobile">Sort</span>
+              <span className="horizon-plp__sort-label">{sortLabel}</span>
+              <span className="horizon-plp__sort-label-mobile">Sort</span>
               <svg width="10" height="10" viewBox="0 0 19 12" aria-hidden="true">
                 <polyline
                   fill="none"
@@ -510,7 +510,7 @@ const ProductListPage = ({
               </svg>
             </button>
             {sortOpen && (
-              <ul className="vepace-plp__sort-menu" role="listbox">
+              <ul className="horizon-plp__sort-menu" role="listbox">
                 {SORT_OPTIONS.map((opt) => (
                   <li key={opt.value}>
                     <button
@@ -533,9 +533,9 @@ const ProductListPage = ({
         </div>
 
         {filteredProducts.length > 0 ? (
-          <div className={`vepace-plp__grid vepace-plp__grid--${gridColumns}`}>
+          <div className={`horizon-plp__grid horizon-plp__grid--${gridColumns}`}>
             {filteredProducts.map((item) => (
-              <VepaceProductCard
+              <HorizonProductCard
                 key={item.id}
                 {...item}
                 brand={inferBrandFromProduct(item)}
@@ -543,7 +543,7 @@ const ProductListPage = ({
             ))}
           </div>
         ) : (
-          <div className="vepace-plp__empty">
+          <div className="horizon-plp__empty">
             <p>
               {products.length === 0
                 ? 'No products found in this collection.'
@@ -553,7 +553,7 @@ const ProductListPage = ({
         )}
 
         {totalPages > 1 && (
-          <div className="vepace-plp__pagination">
+          <div className="horizon-plp__pagination">
             <Stack spacing={2}>
               <Pagination
                 count={totalPages}
@@ -565,7 +565,7 @@ const ProductListPage = ({
                     fontFamily: 'var(--font-body)',
                   },
                   '& .Mui-selected': {
-                    backgroundColor: 'var(--vepace-red) !important',
+                    backgroundColor: 'var(--horizon-red) !important',
                     color: '#fff',
                   },
                 }}

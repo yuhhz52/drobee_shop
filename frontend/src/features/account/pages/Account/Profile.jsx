@@ -65,45 +65,45 @@ const Profile = () => {
 
 
   return (
-    <div className="vepace-profile-panel">
-        <h1 className="vepace-profile-title">Tài khoản của tôi</h1>
+    <div className="horizon-profile-panel">
+        <h1 className="horizon-profile-title">Tài khoản của tôi</h1>
         {!addAddress && (
           <div>
-            <div className="vepace-profile-card">
-              <div className="vepace-profile-avatar-wrap">
+            <div className="horizon-profile-card">
+              <div className="horizon-profile-avatar-wrap">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="vepace-profile-avatar" />
+                  <img src={avatarUrl} alt="Avatar" className="horizon-profile-avatar" />
                 ) : (
-                  <div className="vepace-profile-avatar vepace-profile-avatar--placeholder">
+                  <div className="horizon-profile-avatar horizon-profile-avatar--placeholder">
                     {buildUserInitial(userInfo)}
                   </div>
                 )}
                 <div>
-                  <label className="vepace-btn vepace-btn--outline vepace-avatar-upload-btn">
+                  <label className="horizon-btn horizon-btn--outline horizon-avatar-upload-btn">
                     Đổi avatar
                     <input
                       type="file"
                       accept="image/*"
                       onChange={onUploadAvatar}
-                      className="vepace-avatar-input"
+                      className="horizon-avatar-input"
                     />
                   </label>
-                  <p className="vepace-avatar-hint">Ảnh sẽ tự crop vuông 512x512 (tối đa 5MB).</p>
-                  {avatarError && <p className="vepace-form-error">{avatarError}</p>}
+                  <p className="horizon-avatar-hint">Ảnh sẽ tự crop vuông 512x512 (tối đa 5MB).</p>
+                  {avatarError && <p className="horizon-form-error">{avatarError}</p>}
                 </div>
               </div>
               <div>
-                <div className="vepace-profile-row">
+                <div className="horizon-profile-row">
                   <strong>Họ tên:</strong>
                   <span>{userInfo?.firstName || ''} {userInfo?.lastName || ''}</span>
                 </div>
 
-                <div className="vepace-profile-row">
+                <div className="horizon-profile-row">
                   <strong>Số điện thoại:</strong>
                   <span>{userInfo?.phoneNumber || 'Chưa cập nhật'}</span>
                 </div>
 
-                <div className="vepace-profile-row">
+                <div className="horizon-profile-row">
                   <strong>Email:</strong>
                   <span>{userInfo?.email || 'Chưa cập nhật'}</span>
                 </div>
@@ -111,11 +111,11 @@ const Profile = () => {
             </div>
 
             <div>
-              <div className="vepace-address-head">
+              <div className="horizon-address-head">
                 <h3>Địa chỉ giao hàng</h3>
                 <button
                   type="button"
-                  className="vepace-btn vepace-btn--dark"
+                  className="horizon-btn horizon-btn--dark"
                   onClick={() => setAddAddress(true)}
                 >
                   Thêm địa chỉ
@@ -123,11 +123,11 @@ const Profile = () => {
               </div>
 
               {userInfo?.addressList?.length ? (
-                <div className="vepace-address-grid">
+                <div className="horizon-address-grid">
                   {userInfo?.addressList?.map((address, index) => (
                     <div
                       key={index}
-                      className="vepace-address-card"
+                      className="horizon-address-card"
                     >
                       <p>{address?.name}</p>
                       <p>{address?.phoneNumber}</p>
@@ -136,7 +136,7 @@ const Profile = () => {
                       </p>
                       <p>{address?.zipCode}</p>
 
-                      <div className="vepace-address-actions">
+                      <div className="horizon-address-actions">
                         <button
                           type="button"
                           onClick={() => console.log('Edit address')}
@@ -155,7 +155,7 @@ const Profile = () => {
                   ))}
                 </div>
               ) : (
-                <div className="vepace-address-empty">
+                <div className="horizon-address-empty">
                   Bạn chưa có địa chỉ giao hàng nào. Hãy thêm địa chỉ để tiện thanh toán.
                 </div>
               )}

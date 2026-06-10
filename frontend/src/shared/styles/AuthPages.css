@@ -1,5 +1,5 @@
-/* Vepace auth pages – login / register / logout */
-.vepace-auth-layout {
+/* Horizon auth pages – login / register / logout */
+.horizon-auth-layout {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr;
@@ -7,12 +7,12 @@
 }
 
 @media (min-width: 1024px) {
-  .vepace-auth-layout {
+  .horizon-auth-layout {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-.vepace-auth-brand {
+.horizon-auth-brand {
   display: none;
   background: #111;
   color: #fff;
@@ -22,39 +22,39 @@
 }
 
 @media (min-width: 1024px) {
-  .vepace-auth-brand {
+  .horizon-auth-brand {
     display: flex;
   }
 }
 
-.vepace-auth-brand__logo {
+.horizon-auth-brand__logo {
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   margin-bottom: 2rem;
 }
 
-.vepace-auth-brand h2 {
+.horizon-auth-brand h2 {
   margin: 0 0 1rem;
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.vepace-auth-brand p {
+.horizon-auth-brand p {
   margin: 0 0 2rem;
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.6;
   max-width: 400px;
 }
 
-.vepace-auth-brand ul {
+.horizon-auth-brand ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.vepace-auth-brand li {
+.horizon-auth-brand li {
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -63,13 +63,13 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.vepace-auth-brand li::before {
+.horizon-auth-brand li::before {
   content: '✓';
-  color: var(--vepace-red);
+  color: var(--horizon-red);
   font-weight: 700;
 }
 
-.vepace-auth-panel {
+.horizon-auth-panel {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,7 +77,7 @@
   background: var(--kalles-soft);
 }
 
-.vepace-auth-card {
+.horizon-auth-card {
   width: 100%;
   max-width: 420px;
   background: #fff;
@@ -85,30 +85,30 @@
   padding: 2rem clamp(1.25rem, 4vw, 2rem);
 }
 
-.vepace-auth-card__head {
+.horizon-auth-card__head {
   text-align: center;
   margin-bottom: 1.75rem;
 }
 
-.vepace-auth-card__head h1 {
+.horizon-auth-card__head h1 {
   margin: 0 0 0.5rem;
   font-size: 1.65rem;
   font-weight: 700;
   color: var(--kalles-dark);
 }
 
-.vepace-auth-card__head p {
+.horizon-auth-card__head p {
   margin: 0;
   font-size: 0.9rem;
   color: var(--kalles-muted);
   line-height: 1.5;
 }
 
-.vepace-auth-field {
+.horizon-auth-field {
   margin-bottom: 1.1rem;
 }
 
-.vepace-auth-field label {
+.horizon-auth-field label {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
@@ -116,7 +116,7 @@
   color: var(--kalles-dark);
 }
 
-.vepace-auth-field input {
+.horizon-auth-field input {
   width: 100%;
   height: 44px;
   padding: 0 0.85rem;
@@ -127,21 +127,21 @@
   transition: border-color 0.2s;
 }
 
-.vepace-auth-field input:focus {
+.horizon-auth-field input:focus {
   border-color: #111;
 }
 
-.vepace-auth-field input.is-error {
-  border-color: var(--vepace-red);
+.horizon-auth-field input.is-error {
+  border-color: var(--horizon-red);
 }
 
-.vepace-auth-error {
-  color: var(--vepace-red);
+.horizon-auth-error {
+  color: var(--horizon-red);
   font-size: 0.8rem;
   margin-top: 0.35rem;
 }
 
-.vepace-auth-forgot {
+.horizon-auth-forgot {
   display: block;
   text-align: right;
   font-size: 0.85rem;
@@ -155,11 +155,11 @@
   width: 100%;
 }
 
-.vepace-auth-forgot:hover {
-  color: var(--vepace-red);
+.horizon-auth-forgot:hover {
+  color: var(--horizon-red);
 }
 
-.vepace-auth-submit {
+.horizon-auth-submit {
   width: 100%;
   height: 48px;
   background: #111;
@@ -172,29 +172,29 @@
   transition: background 0.2s;
 }
 
-.vepace-auth-submit:hover {
+.horizon-auth-submit:hover {
   background: #333;
 }
 
-.vepace-auth-submit--red {
-  background: var(--vepace-red);
+.horizon-auth-submit--red {
+  background: var(--horizon-red);
 }
 
-.vepace-auth-submit--red:hover {
-  background: var(--vepace-red-hover);
+.horizon-auth-submit--red:hover {
+  background: var(--horizon-red-hover);
 }
 
-.vepace-auth-submit--outline {
+.horizon-auth-submit--outline {
   background: #fff;
   color: #111;
   border: 1px solid #111;
 }
 
-.vepace-auth-submit--outline:hover {
+.horizon-auth-submit--outline:hover {
   background: var(--kalles-soft);
 }
 
-.vepace-auth-divider {
+.horizon-auth-divider {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -203,31 +203,31 @@
   font-size: 0.8rem;
 }
 
-.vepace-auth-divider::before,
-.vepace-auth-divider::after {
+.horizon-auth-divider::before,
+.horizon-auth-divider::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--kalles-border);
 }
 
-.vepace-auth-footer {
+.horizon-auth-footer {
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.9rem;
   color: var(--kalles-muted);
 }
 
-.vepace-auth-footer a {
-  color: var(--vepace-red);
+.horizon-auth-footer a {
+  color: var(--horizon-red);
   font-weight: 600;
 }
 
-.vepace-auth-footer a:hover {
+.horizon-auth-footer a:hover {
   text-decoration: underline;
 }
 
-.vepace-auth-toast {
+.horizon-auth-toast {
   position: fixed;
   top: 1rem;
   right: 1rem;
@@ -243,19 +243,19 @@
   font-size: 0.85rem;
 }
 
-.vepace-auth-toast strong {
+.horizon-auth-toast strong {
   display: block;
   margin-bottom: 0.25rem;
 }
 
-.vepace-auth-actions {
+.horizon-auth-actions {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
   margin-top: 1.5rem;
 }
 
-.vepace-auth-mobile-logo {
+.horizon-auth-mobile-logo {
   display: block;
   text-align: center;
   font-weight: 800;
@@ -266,25 +266,25 @@
 }
 
 @media (min-width: 1024px) {
-  .vepace-auth-mobile-logo {
+  .horizon-auth-mobile-logo {
     display: none;
   }
 }
 
 /* PasswordInput inside auth card */
-.vepace-auth-card .flex.flex-col label {
+.horizon-auth-card .flex.flex-col label {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--kalles-dark);
 }
 
-.vepace-auth-card .flex.flex-col input {
+.horizon-auth-card .flex.flex-col input {
   height: 44px;
   border: 1px solid var(--kalles-border);
   border-radius: 0;
 }
 
-.vepace-auth-card .flex.flex-col input:focus {
+.horizon-auth-card .flex.flex-col input:focus {
   border-color: #111;
   outline: none;
 }

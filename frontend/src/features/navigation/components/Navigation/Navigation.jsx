@@ -121,22 +121,22 @@ const Navigation = () => {
 
   return (
     <div className="kalles-site-header">
-      <div className="vepace-topbar">
-        <div className="vepace-header__container vepace-topbar__inner">
-          <span className="vepace-topbar__promo">{topAnnouncement}</span>
-          <button type="button" className="vepace-topbar__btn">
+      <div className="horizon-topbar">
+        <div className="horizon-header__container horizon-topbar__inner">
+          <span className="horizon-topbar__promo">{topAnnouncement}</span>
+          <button type="button" className="horizon-topbar__btn">
             <FiMail size={12} aria-hidden />
             Subscribe
           </button>
         </div>
       </div>
 
-      <header className="vepace-header">
-        <div className="vepace-header__container vepace-header__row">
-          <BrandLogo linkClassName="vepace-logo" />
+      <header className="horizon-header">
+        <div className="horizon-header__container horizon-header__row">
+          <BrandLogo linkClassName="horizon-logo" />
 
           <form
-            className="vepace-search"
+            className="horizon-search"
             onSubmit={(e) => {
               e.preventDefault();
               if (searchTerm.trim()) {
@@ -151,20 +151,20 @@ const Navigation = () => {
               onChange={(event) => setSearchTerm(event.target.value)}
               aria-label="Search products"
             />
-            <button type="submit" className="vepace-search__submit" aria-label="Search">
+            <button type="submit" className="horizon-search__submit" aria-label="Search">
               <FiSearch size={18} />
             </button>
             {searchTerm && (
-              <div className="vepace-search__results">
+              <div className="horizon-search__results">
                 {loadingSearch ? (
-                  <div className="vepace-search__empty">Searching...</div>
+                  <div className="horizon-search__empty">Searching...</div>
                 ) : searchResults.length > 0 ? (
                   searchResults.slice(0, 5).map((product) => {
                     const imageUrl = getPrimaryResourceUrl(product?.productResources);
                     return (
                       <button
                         key={product.id}
-                        className="vepace-search__item"
+                        className="horizon-search__item"
                         type="button"
                         onClick={() => handleSelectProduct(product.slug)}
                       >
@@ -183,26 +183,26 @@ const Navigation = () => {
                     );
                   })
                 ) : (
-                  <div className="vepace-search__empty">No matching products</div>
+                  <div className="horizon-search__empty">No matching products</div>
                 )}
               </div>
             )}
           </form>
 
-          <div className="vepace-actions">
+          <div className="horizon-actions">
             <div
-              className="vepace-language-wrap"
+              className="horizon-language-wrap"
               onMouseEnter={() => setLangOpen(true)}
               onMouseLeave={() => setLangOpen(false)}
             >
-              <button type="button" className="vepace-language">
-                <span className="vepace-language__label">Language</span>
-                <span className="vepace-language__value">
+              <button type="button" className="horizon-language">
+                <span className="horizon-language__label">Language</span>
+                <span className="horizon-language__value">
                   English <FiChevronDown size={12} />
                 </span>
               </button>
               {langOpen && (
-                <ul className="vepace-lang-dropdown">
+                <ul className="horizon-lang-dropdown">
                   {languages.map((lang) => (
                     <li key={lang}>
                       <button type="button">{lang}</button>
@@ -213,23 +213,23 @@ const Navigation = () => {
             </div>
           <Link
             to={isLoggedIn ? '/account-details/profile' : '/v1/login'}
-            className="vepace-account"
+            className="horizon-account"
           >
             {isLoggedIn && (
               avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="vepace-account__avatar" />
+                <img src={avatarUrl} alt="Avatar" className="horizon-account__avatar" />
               ) : (
-                <span className="vepace-account__avatar vepace-account__avatar--placeholder">
+                <span className="horizon-account__avatar horizon-account__avatar--placeholder">
                   {accountInitial}
                 </span>
               )
             )}
-            <span className="vepace-account__top">{isLoggedIn ? '' : 'Login / Signup'}</span>
+            <span className="horizon-account__top">{isLoggedIn ? '' : 'Login / Signup'}</span>
           </Link>
-            <Link to="/cart-items" className="vepace-cart">
-              <span className="vepace-cart__icon-wrap">
+            <Link to="/cart-items" className="horizon-cart">
+              <span className="horizon-cart__icon-wrap">
                 <FiShoppingCart size={20} />
-                <span className="vepace-cart__badge">{cartLength}</span>
+                <span className="horizon-cart__badge">{cartLength}</span>
               </span>
               <span>Cart</span>
             </Link>
@@ -237,8 +237,8 @@ const Navigation = () => {
         </div>
       </header>
 
-      <nav className="vepace-category-nav" aria-label="Categories">
-        <div className="vepace-header__container vepace-category-nav__inner">
+      <nav className="horizon-category-nav" aria-label="Categories">
+        <div className="horizon-header__container horizon-category-nav__inner">
           {navMenus.map((menu) => {
             const hasDropdown = Boolean(menu.columns?.length);
             const isOpen = openDropdown === menu.label;
@@ -246,19 +246,19 @@ const Navigation = () => {
             return (
               <div
                 key={menu.key || menu.label}
-                className={`vepace-nav-item ${isOpen ? 'is-open' : ''} ${
-                  menu.label === 'Contact' ? 'vepace-nav-item--right' : ''
+                className={`horizon-nav-item ${isOpen ? 'is-open' : ''} ${
+                  menu.label === 'Contact' ? 'horizon-nav-item--right' : ''
                 }`}
                 onMouseEnter={() => hasDropdown && openDropdownNow(menu.label)}
                 onMouseLeave={() => hasDropdown && closeDropdownSoon()}
               >
                 <Link
                   to={menu.to}
-                  className={`vepace-category__item ${isOpen ? 'is-active' : ''}`}
+                  className={`horizon-category__item ${isOpen ? 'is-active' : ''}`}
                 >
                   {menu.label}
                   {hasDropdown && (
-                    <FiChevronDown size={12} className="vepace-category__chevron" />
+                    <FiChevronDown size={12} className="horizon-category__chevron" />
                   )}
                 </Link>
                 {hasDropdown && isOpen && (
@@ -274,7 +274,7 @@ const Navigation = () => {
       </nav>
 
       <div className="kalles-mobile-bar">
-        <div className="vepace-header__container kalles-mobile-bar__inner">
+        <div className="horizon-header__container kalles-mobile-bar__inner">
           <div className="kalles-mobile-bar__left">
             <button
               className="kalles-nav__icon"

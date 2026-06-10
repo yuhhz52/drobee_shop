@@ -13,7 +13,7 @@ import EmptyCart from '@assets/images/empty-cart.png';
 import './Cart.css';
 
 const CartQty = ({ quantity, onChange, onRemove }) => (
-  <div className="vepace-cart-qty">
+  <div className="horizon-cart-qty">
     <button
       type="button"
       onClick={() => (quantity <= 1 ? onRemove() : onChange(quantity - 1))}
@@ -74,10 +74,10 @@ const Cart = () => {
 
   if (!cartItems?.length) {
     return (
-      <div className="vepace-cart-page">
-        <div className="vepace-cart-page__header">
-          <div className="vepace-cart-page__container">
-            <nav className="vepace-cart-breadcrumb" aria-label="Breadcrumb">
+      <div className="horizon-cart-page">
+        <div className="horizon-cart-page__header">
+          <div className="horizon-cart-page__container">
+            <nav className="horizon-cart-breadcrumb" aria-label="Breadcrumb">
               <Link to="/">Home</Link>
               <span>/</span>
               <span>Cart</span>
@@ -85,12 +85,12 @@ const Cart = () => {
             <h1>Your cart</h1>
           </div>
         </div>
-        <div className="vepace-cart-page__container">
-          <div className="vepace-cart-empty">
+        <div className="horizon-cart-page__container">
+          <div className="horizon-cart-empty">
             <img src={EmptyCart} alt="" />
             <h2>Your cart is empty</h2>
             <p>Shop our electric scooters and add your favourite ride.</p>
-            <Link to="/products" className="vepace-cart-btn vepace-cart-btn--primary">
+            <Link to="/products" className="horizon-cart-btn horizon-cart-btn--primary">
               Explore Our Scooters
             </Link>
           </div>
@@ -100,48 +100,48 @@ const Cart = () => {
   }
 
   return (
-    <div className="vepace-cart-page">
-      <div className="vepace-cart-page__header">
-        <div className="vepace-cart-page__container">
-          <nav className="vepace-cart-breadcrumb" aria-label="Breadcrumb">
+    <div className="horizon-cart-page">
+      <div className="horizon-cart-page__header">
+        <div className="horizon-cart-page__container">
+          <nav className="horizon-cart-breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
             <span>/</span>
             <span>Cart</span>
           </nav>
           <h1>
             Your cart
-            <span className="vepace-cart-page__count">
+            <span className="horizon-cart-page__count">
               ({itemCount} {itemCount === 1 ? 'item' : 'items'})
             </span>
           </h1>
         </div>
       </div>
 
-      <div className="vepace-cart-page__container">
-        <div className="vepace-cart-layout">
-          <div className="vepace-cart-main">
-            <div className="vepace-cart-table-head">
+      <div className="horizon-cart-page__container">
+        <div className="horizon-cart-layout">
+          <div className="horizon-cart-main">
+            <div className="horizon-cart-table-head">
               <span>Product</span>
               <span>Quantity</span>
               <span>Total</span>
             </div>
 
-            <ul className="vepace-cart-items">
+            <ul className="horizon-cart-items">
               {cartItems.map((item, index) => (
                 <li
                   key={`${item.productId}-${item.variant?.id || index}`}
-                  className="vepace-cart-item"
+                  className="horizon-cart-item"
                 >
-                  <div className="vepace-cart-item__product">
+                  <div className="horizon-cart-item__product">
                     <Link
                       to={`/product/${item.slug || item.productId}`}
-                      className="vepace-cart-item__image"
+                      className="horizon-cart-item__image"
                     >
                       <img src={item.thumbnail} alt="" />
                     </Link>
                     <div>
                       {inferBrandFromProduct(item) && (
-                        <p className="vepace-cart-item__brand">
+                        <p className="horizon-cart-item__brand">
                           {inferBrandFromProduct(item)}
                         </p>
                       )}
@@ -150,7 +150,7 @@ const Cart = () => {
                           {item.name}
                         </Link>
                       </h3>
-                      <p className="vepace-cart-item__meta">
+                      <p className="horizon-cart-item__meta">
                         {item.variant?.variantName && (
                           <span>Version: {item.variant.variantName}</span>
                         )}
@@ -158,13 +158,13 @@ const Cart = () => {
                           <span> · {item.variant.color}</span>
                         )}
                       </p>
-                      <p className="vepace-cart-item__unit">
+                      <p className="horizon-cart-item__unit">
                         {formatPriceVND(item.price)} each
                       </p>
                     </div>
                   </div>
 
-                  <div className="vepace-cart-item__qty-col">
+                  <div className="horizon-cart-item__qty-col">
                     <CartQty
                       quantity={item.quantity}
                       onChange={(v) =>
@@ -176,7 +176,7 @@ const Cart = () => {
                     />
                     <button
                       type="button"
-                      className="vepace-cart-item__remove"
+                      className="horizon-cart-item__remove"
                       onClick={() =>
                         onDeleteProduct(item.productId, item.variant?.id)
                       }
@@ -187,62 +187,62 @@ const Cart = () => {
                     </button>
                   </div>
 
-                  <div className="vepace-cart-item__total">
+                  <div className="horizon-cart-item__total">
                     {formatPriceVND(item.subTotal)}
                   </div>
                 </li>
               ))}
             </ul>
 
-            <div className="vepace-cart-coupon">
+            <div className="horizon-cart-coupon">
               <label htmlFor="coupon">Discount code</label>
-              <div className="vepace-cart-coupon__row">
+              <div className="horizon-cart-coupon__row">
                 <input
                   id="coupon"
                   type="text"
-                  placeholder="e.g. VEPACE"
-                  className="vepace-cart-input"
+                  placeholder="e.g. HORIZON"
+                  className="horizon-cart-input"
                 />
-                <button type="button" className="vepace-cart-btn vepace-cart-btn--outline">
+                <button type="button" className="horizon-cart-btn horizon-cart-btn--outline">
                   Apply
                 </button>
               </div>
             </div>
 
-            <Link to="/products" className="vepace-cart-continue">
+            <Link to="/products" className="horizon-cart-continue">
               <FiArrowLeft size={16} />
               Continue shopping
             </Link>
           </div>
 
-          <aside className="vepace-cart-summary">
+          <aside className="horizon-cart-summary">
             <h2>Order summary</h2>
-            <div className="vepace-cart-summary__row">
+            <div className="horizon-cart-summary__row">
               <span>Subtotal</span>
               <strong>{formatPriceVND(subTotal)}</strong>
             </div>
-            <div className="vepace-cart-summary__row">
+            <div className="horizon-cart-summary__row">
               <span>Shipping</span>
               <strong className="is-free">Free (EU)</strong>
             </div>
-            <div className="vepace-cart-summary__total">
+            <div className="horizon-cart-summary__total">
               <span>Total</span>
               <span>{formatPriceVND(subTotal)}</span>
             </div>
-            <p className="vepace-cart-summary__note">
+            <p className="horizon-cart-summary__note">
               Taxes included. Free helmet offer applied at checkout when eligible.
             </p>
             <button
               type="button"
-              className="vepace-cart-btn vepace-cart-btn--primary"
+              className="horizon-cart-btn horizon-cart-btn--primary"
               onClick={() => navigate('/checkout')}
             >
               Proceed to checkout
             </button>
-            <button type="button" className="vepace-cart-btn vepace-cart-btn--paypal">
+            <button type="button" className="horizon-cart-btn horizon-cart-btn--paypal">
               Pay with PayPal
             </button>
-            <p className="vepace-cart-summary__secure">
+            <p className="horizon-cart-summary__secure">
               <FiLock size={14} aria-hidden />
               Secure checkout · 100% protected
             </p>
@@ -254,24 +254,24 @@ const Cart = () => {
         <>
           <button
             type="button"
-            className="vepace-cart-modal-backdrop"
+            className="horizon-cart-modal-backdrop"
             aria-label="Close"
             onClick={() => setModalOpen(false)}
           />
-          <div className="vepace-cart-modal" role="dialog" aria-modal="true">
+          <div className="horizon-cart-modal" role="dialog" aria-modal="true">
             <h3>Remove item?</h3>
             <p>This product will be removed from your cart.</p>
-            <div className="vepace-cart-modal__actions">
+            <div className="horizon-cart-modal__actions">
               <button
                 type="button"
-                className="vepace-cart-btn vepace-cart-btn--outline"
+                className="horizon-cart-btn horizon-cart-btn--outline"
                 onClick={() => setModalOpen(false)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="vepace-cart-btn vepace-cart-btn--danger"
+                className="horizon-cart-btn horizon-cart-btn--danger"
                 onClick={onDeleteItem}
               >
                 Remove

@@ -52,14 +52,14 @@ const Register = () => {
   if (enableVerify) return <VerifyCode email={control._formValues.email} />;
 
   return (
-    <div className="vepace-auth-card">
-      <div className="vepace-auth-card__head">
+    <div className="horizon-auth-card">
+      <div className="horizon-auth-card__head">
         <h1>Create account</h1>
-        <p>Join the Vepace Rider Family and shop premium electric scooters.</p>
+        <p>Join the Horizon Rider Family and shop premium electric scooters.</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
-        <div className="vepace-auth-field">
+        <div className="horizon-auth-field">
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -74,10 +74,10 @@ const Register = () => {
               },
             })}
           />
-          {errors.email && <p className="vepace-auth-error">{errors.email.message}</p>}
+          {errors.email && <p className="horizon-auth-error">{errors.email.message}</p>}
         </div>
 
-        <div className="vepace-auth-field">
+        <div className="horizon-auth-field">
           <Controller
             name="password"
             control={control}
@@ -98,17 +98,17 @@ const Register = () => {
           />
         </div>
 
-        {apiError && <p className="vepace-auth-error">{apiError}</p>}
+        {apiError && <p className="horizon-auth-error">{apiError}</p>}
 
-        <button type="submit" className="vepace-auth-submit" style={{ marginTop: '1rem' }}>
+        <button type="submit" className="horizon-auth-submit" style={{ marginTop: '1rem' }}>
           Create account
         </button>
       </form>
 
-      <div className="vepace-auth-divider">or</div>
+      <div className="horizon-auth-divider">or</div>
       <GoogleSignIn />
 
-      <p className="vepace-auth-footer">
+      <p className="horizon-auth-footer">
         Already have an account? <NavLink to="/v1/login">Sign in</NavLink>
       </p>
     </div>

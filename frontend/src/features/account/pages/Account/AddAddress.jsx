@@ -42,11 +42,11 @@ const AddAddress = ({ onCancel, onSaved }) => {
   }, []);
 
   return (
-    <div className="vepace-address-form">
+    <div className="horizon-address-form">
       <h2>Thêm địa chỉ</h2>
 
       <form onSubmit={onSubmit}>
-        <div className="vepace-form-field">
+        <div className="horizon-form-field">
           <label>Họ và tên</label>
           <input
             type="text"
@@ -58,7 +58,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
           />
         </div>
 
-        <div className="vepace-form-field">
+        <div className="horizon-form-field">
           <label>Số điện thoại</label>
           <input
             type="text"
@@ -70,7 +70,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
           />
         </div>
 
-        <div className="vepace-form-field">
+        <div className="horizon-form-field">
           <label>Địa chỉ</label>
           <input
             type="text"
@@ -82,8 +82,8 @@ const AddAddress = ({ onCancel, onSaved }) => {
           />
         </div>
 
-        <div className="vepace-form-row">
-          <div className="vepace-form-field">
+        <div className="horizon-form-row">
+          <div className="horizon-form-field">
             <input
               type="text"
               name="city"
@@ -93,7 +93,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
               required
             />
           </div>
-          <div className="vepace-form-field">
+          <div className="horizon-form-field">
             <input
               type="text"
               name="state"
@@ -105,7 +105,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
           </div>
         </div>
 
-        <div className="vepace-form-field">
+        <div className="horizon-form-field">
           <input
             type="text"
             name="zipCode"
@@ -115,19 +115,19 @@ const AddAddress = ({ onCancel, onSaved }) => {
           />
         </div>
 
-        {error && <p className="vepace-form-error">{error}</p>}
+        {error && <p className="horizon-form-error">{error}</p>}
 
-        <div className="vepace-form-actions">
+        <div className="horizon-form-actions">
           <button
             type="button"
             onClick={onCancel}
-            className="vepace-btn vepace-btn--outline"
+            className="horizon-btn horizon-btn--outline"
           >
             Hủy
           </button>
           <button
             type="submit"
-            className="vepace-btn vepace-btn--dark"
+            className="horizon-btn horizon-btn--dark"
             disabled={saving}
           >
             {saving ? 'Đang lưu…' : 'Lưu'}

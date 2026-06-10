@@ -19,17 +19,17 @@ const Logouts = () => {
   };
 
   return (
-    <div className="vepace-logout-page">
-      <div className="vepace-auth-card" style={{ maxWidth: 480, margin: '0 auto' }}>
-        <div className="vepace-auth-card__head">
+    <div className="horizon-logout-page">
+      <div className="horizon-auth-card" style={{ maxWidth: 480, margin: '0 auto' }}>
+        <div className="horizon-auth-card__head">
           <h1>Sign out</h1>
-          <p>Are you sure you want to log out of your VEPACE account?</p>
+          <p>Are you sure you want to log out of your Horizon account?</p>
         </div>
 
-        <div className="vepace-auth-actions">
+        <div className="horizon-auth-actions">
           <button
             type="button"
-            className="vepace-auth-submit vepace-auth-submit--red"
+            className="horizon-auth-submit horizon-auth-submit--red"
             onClick={handleLogout}
             disabled={loading}
           >
@@ -37,7 +37,7 @@ const Logouts = () => {
           </button>
           <button
             type="button"
-            className="vepace-auth-submit vepace-auth-submit--outline"
+            className="horizon-auth-submit horizon-auth-submit--outline"
             onClick={() => navigate('/account-details/profile')}
             disabled={loading}
           >
@@ -45,7 +45,7 @@ const Logouts = () => {
           </button>
         </div>
 
-        <p className="vepace-auth-footer" style={{ marginTop: '1.25rem' }}>
+        <p className="horizon-auth-footer" style={{ marginTop: '1.25rem' }}>
           <Link to="/">Return to homepage</Link>
         </p>
       </div>

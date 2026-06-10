@@ -4,17 +4,17 @@ import { Link } from 'react-router-dom';
 const getDropdownModifier = (menu) => {
   switch (menu.label) {
     case 'Electric Scooters':
-      return 'vepace-dropdown--2col';
+      return 'horizon-dropdown--2col';
     case 'Minimotors':
-      return 'vepace-dropdown--mega';
+      return 'horizon-dropdown--mega';
     case 'Kukirin':
-      return 'vepace-dropdown--2col';
+      return 'horizon-dropdown--2col';
     case 'Teverun':
-      return 'vepace-dropdown--1col vepace-dropdown--wide-col';
+      return 'horizon-dropdown--1col horizon-dropdown--wide-col';
     case 'Contact':
-      return 'vepace-dropdown--1col vepace-dropdown--align-right';
+      return 'horizon-dropdown--1col horizon-dropdown--align-right';
     default:
-      return 'vepace-dropdown--1col';
+      return 'horizon-dropdown--1col';
   }
 };
 
@@ -23,16 +23,16 @@ const NavDropdown = ({ menu, onNavigate }) => {
 
   return (
     <div
-      className={`vepace-dropdown ${getDropdownModifier(menu)}`}
+      className={`horizon-dropdown ${getDropdownModifier(menu)}`}
       role="menu"
     >
-      <div className="vepace-dropdown__inner">
+      <div className="horizon-dropdown__inner">
         {menu.columns.map((column, colIndex) => (
-          <div key={column.key || column.title || colIndex} className="vepace-dropdown__col">
+          <div key={column.key || column.title || colIndex} className="horizon-dropdown__col">
             {column.title && (
               <Link
                 to={column.to || menu.to}
-                className="vepace-dropdown__heading"
+                className="horizon-dropdown__heading"
                 onClick={onNavigate}
               >
                 {column.title}
