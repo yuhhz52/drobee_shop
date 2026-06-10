@@ -71,6 +71,22 @@ server:
   port: ${PORT:8080}
   forward-headers-strategy: framework
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
 logging:
   level:
     "[org.springframework.mail]": INFO

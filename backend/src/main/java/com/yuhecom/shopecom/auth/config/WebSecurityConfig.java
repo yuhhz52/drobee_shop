@@ -67,7 +67,8 @@ public class WebSecurityConfig {
             "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
             "/oauth2/success", "/oauth2/tokens",
             "/uploads/**",
-            "/api/orders/vnpay-return"
+            "/api/orders/vnpay-return",
+            "/actuator/health/**", "/actuator/health", "/actuator/info"
     };
 
     @Bean
