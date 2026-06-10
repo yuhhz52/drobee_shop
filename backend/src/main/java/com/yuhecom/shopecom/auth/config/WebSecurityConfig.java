@@ -64,7 +64,9 @@ public class WebSecurityConfig {
 
     private static final String[] PUBLIC_APIS = {
             "/api/auth/**",
-            "/v1/api-docs/**", "/v1/docs", "/v1/docs/**", "/swagger-ui/**",
+            "/v1/api-docs/**", "/v1/api-docs",
+            "/v1/docs", "/v1/docs/**",
+            "/swagger-ui/**", "/swagger-ui.html",
             "/oauth2/success", "/oauth2/tokens",
             "/uploads/**",
             "/api/orders/vnpay-return",
