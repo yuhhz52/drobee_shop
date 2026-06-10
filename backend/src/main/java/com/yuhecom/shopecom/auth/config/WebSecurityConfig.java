@@ -1,12 +1,14 @@
 package com.yuhecom.shopecom.auth.config;
 
 import com.yuhecom.shopecom.auth.handler.OAuth2LoginSuccessHandler;
+import com.yuhecom.shopecom.config.AppProperties;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -53,6 +55,9 @@ public class WebSecurityConfig {
 
     @Autowired
     private TokenBlacklistService tokenBlacklistService;
+
+    @Autowired
+    private AppProperties appProperties;
 
     @Value("${upload.dir:uploads}")
     private String uploadDir;
@@ -106,7 +111,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5175", "http://localhost:5173")); // chỉ định rõ
+        config.setAllowedOrigins(appProperties.getCors().getAllowedOrigins());
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Range"));
@@ -130,7 +135,7 @@ public class WebSecurityConfig {
     @Configuration
     public class WebConfig implements WebMvcConfigurer {
         @Override
-        public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
             registry.addResourceHandler("/uploads/**")
                     .addResourceLocations("file:" + uploadDir + "/");
         }

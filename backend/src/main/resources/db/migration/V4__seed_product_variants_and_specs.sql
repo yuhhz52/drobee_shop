@@ -132,7 +132,7 @@ INSERT INTO scooter_specs (
 
     -- Dualtron Aminia Special
     ('00000008-0000-0000-0000-000000000009', '00000003-0000-0000-0000-000000000009',
-     2400, 4200, 25, 70, 100, 30, 35, 60.0, 'Lithium', 18, 1, 42.0, 160, 'Aluminium',
+     2400, 4200, 25, 70, 100, 30, 35, 60.0, 'Lithium', 18, true, 42.0, 160, 'Aluminium',
      10.0, 'Pneumatic', 'Hydraulic Disc', 'Hydraulic Disc', 'Rubber Suspension', 'Rubber Suspension',
      125, 55, 130, 125, 55, 62,
      'LED Head + Rear + Turn', 'TFT Color Display', 'Bluetooth', 'IPX5', 36,
@@ -148,7 +148,7 @@ INSERT INTO scooter_specs (
 
     -- Teverun Fighter Eleven Plus
     ('00000008-0000-0000-0000-000000000011', '00000003-0000-0000-0000-000000000011',
-     3500, 6000, 25, 85, 130, 40, 45, 72.0, 'Lithium', 22, 1, 50.0, 190, 'Aluminium',
+     3500, 6000, 25, 85, 130, 40, 45, 72.0, 'Lithium', 22, true, 50.0, 190, 'Aluminium',
      11.0, 'Pneumatic', 'Hydraulic Disc', 'Hydraulic Disc', 'Rubber Suspension', 'Rubber Suspension',
      132, 62, 138, 132, 62, 68,
      'LED Head + Rear + Turn + RGB', 'TFT Color Display', 'Bluetooth, App', 'IPX6', 36,
@@ -172,7 +172,7 @@ INSERT INTO scooter_specs (
 
     -- KuickWheel Urban Pro
     ('00000008-0000-0000-0000-000000000014', '00000003-0000-0000-0000-000000000014',
-     500, 800, 25, 40, 35, 10, 10, 36.0, 'Lithium', 4, 1, 18.0, 100, 'Aluminium',
+     500, 800, 25, 40, 35, 10, 10, 36.0, 'Lithium', 4, true, 18.0, 100, 'Aluminium',
      8.0, 'Pneumatic', 'Disc', 'E-ABS', 'Spring', NULL,
      105, 40, 108, 105, 40, 44,
      'LED Head', 'LED Display', 'Bluetooth', 'IPX4', 12,

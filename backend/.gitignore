@@ -7,6 +7,11 @@ target/
 ### Environment ###
 .env
 
+### Local DB scripts ###
+src/main/resources/db/*.sql
+!src/main/resources/db/migration/
+!src/main/resources/db/migration/*.sql
+
 ### STS ###
 .apt_generated
 .classpath

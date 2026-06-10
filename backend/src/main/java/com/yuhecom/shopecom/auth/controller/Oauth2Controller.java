@@ -3,6 +3,7 @@ package com.yuhecom.shopecom.auth.controller;
 import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.service.OAuth2Service;
+import com.yuhecom.shopecom.config.AppProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +14,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,17 +30,23 @@ public class Oauth2Controller {
     @Autowired
     private JWTTokenHelper jwtTokenHelper;
 
+    @Autowired
+    private AppProperties appProperties;
+
     @GetMapping("/success")
     public void callbackOAuth2(@AuthenticationPrincipal OAuth2User oAuth2User, HttpServletResponse response) throws IOException {
         String userName = oAuth2User.getAttribute("email");
         User user = oAuth2Service.getUser(userName);
-        if(null==user){
-            user = oAuth2Service.createUser(oAuth2User,"google");
+        if (user == null) {
+            user = oAuth2Service.createUser(oAuth2User, "google");
         }
 
-        String token = jwtTokenHelper.generateToken((user));
+        String token = jwtTokenHelper.generateToken(user);
+        String redirectUri = appProperties.getOauth2().getRedirectUri();
+        String separator = redirectUri.contains("?") ? "&" : "?";
 
-        response.sendRedirect("http://localhost:5175/oauth2/callback?token=" +token);
+        response.sendRedirect(redirectUri + separator + "token="
+                + URLEncoder.encode(token, StandardCharsets.UTF_8));
     }
 
     /**

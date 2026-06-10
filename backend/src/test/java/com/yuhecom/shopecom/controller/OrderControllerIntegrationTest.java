@@ -5,6 +5,7 @@ import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.config.WebSecurityConfig;
 import com.yuhecom.shopecom.auth.handler.OAuth2LoginSuccessHandler;
 import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
+import com.yuhecom.shopecom.config.AppProperties;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(OrderController.class)
 @AutoConfigureMockMvc
-@Import({WebSecurityConfig.class, GlobalExceptionHandler.class})
+@Import({WebSecurityConfig.class, GlobalExceptionHandler.class, TestSecurityConfig.class})
 class OrderControllerIntegrationTest {
 
     @Autowired

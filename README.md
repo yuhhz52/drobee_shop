@@ -31,7 +31,7 @@ Demo video: https://drive.google.com/file/d/1Vx17PWB32tDK9qL2eNLBnSO5-jRn6_Kz/vi
 
 ### Cơ sở dữ liệu và Cache
 
-- MySQL 8
+- PostgreSQL
 - Redis 7
 
 ### DevOps
@@ -40,10 +40,10 @@ Demo video: https://drive.google.com/file/d/1Vx17PWB32tDK9qL2eNLBnSO5-jRn6_Kz/vi
 
 ## Yêu cầu
 
-- Docker Desktop và Docker Compose
+- Nếu chạy full stack bằng Docker: Docker Desktop và Docker Compose
 - (Tuỳ chọn chạy local) JDK 21+, Node.js 20+, npm
 
-## Chạy bằng Docker (khuyến nghị)
+## Chạy full stack bằng Docker (tuỳ chọn cho local/self-host)
 
 ### 1) Clone dự án
 
@@ -57,8 +57,9 @@ cd drobee_shop
 Tạo file `.env` ở thư mục gốc với các biến tối thiểu (giá trị demo, hãy thay bằng thực tế khi triển khai):
 
 ```
-DB_USERNAME=root
-DB_PASSWORD=123456
+DB_URL=jdbc:postgresql://postgres:5432/shopecom
+DB_USERNAME=postgres
+DB_PASSWORD=change-me
 REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_PASSWORD=
@@ -88,17 +89,22 @@ Truy cập:
 docker compose down
 ```
 
+### Frontend deploy lên Vercel
+
+Frontend có thể deploy riêng lên Vercel bằng thư mục `frontend/` và `frontend/vercel.json`, không cần chạy Docker.
+Khi deploy kiểu này, chỉ cần trỏ frontend về URL backend/public API phù hợp qua biến môi trường của Vercel.
+
 ## Chạy local (tuỳ chọn)
 
 ### Backend (Spring Boot)
 
-1) Bật MySQL và Redis (có thể dùng Docker chỉ cho 2 service này):
+1) Bật PostgreSQL và Redis (có thể dùng Docker chỉ cho 2 service này):
 
 ```
-docker compose up -d mysql redis
+docker compose up -d postgres redis
 ```
 
-2) Nếu chạy backend local, cần chỉnh `spring.datasource.url` về `jdbc:mysql://localhost:3306/shopecom` hoặc tạo profile riêng.
+2) Nếu chạy backend local, cần chỉnh `spring.datasource.url` về `jdbc:postgresql://localhost:5432/shopecom` hoặc tạo profile riêng.
 
 3) Chạy backend:
 
@@ -121,12 +127,12 @@ Frontend local: http://localhost:5175
 
 - 8080: Backend API
 - 5175: Frontend (Docker)
-- 3306: MySQL
+- 5432: PostgreSQL
 - 6379: Redis
 
 ## Troubleshooting nhanh
 
-- Port bị chiếm (3306, 5175): dừng dịch vụ đang chạy hoặc đổi port trong `docker-compose.yml`.
+- Port bị chiếm (5432, 5175): dừng dịch vụ đang chạy hoặc đổi port trong `docker-compose.yml`.
 - Thiếu `.env`: tạo file `.env` theo mục "Tạo file .env".
 
 ## Cấu trúc thư mục

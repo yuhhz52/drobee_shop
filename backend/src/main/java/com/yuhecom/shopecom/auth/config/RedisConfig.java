@@ -14,16 +14,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${spring.redis.host}")
-    private String host;
+    @Value("${spring.data.redis.host}")
+    private String host = "";
 
-    @Value("${spring.redis.port}")
+    @Value("${spring.data.redis.port}")
     private int port;
 
-    @Value("${spring.redis.password:}")
-    private String password;
+    @Value("${spring.data.redis.password:}")
+    private String password = "";
 
-    @Value("${spring.redis.tls:false}")
+    @Value("${spring.data.redis.ssl.enabled:false}")
     private boolean tls;
 
     @Bean

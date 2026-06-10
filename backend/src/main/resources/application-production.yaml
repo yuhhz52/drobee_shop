@@ -1,10 +1,11 @@
 spring:
-  application:
-    name: shopecom
+  config:
+    activate:
+      on-profile: production
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?prepareThreshold=0&preparedStatementCacheQueries=0}
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
@@ -13,13 +14,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: ${JPA_SHOW_SQL:false}
+    show-sql: false
     properties:
       hibernate:
-        "[format_sql]": ${JPA_FORMAT_SQL:false}
+        "[format_sql]": false
         jdbc:
           "[prepare_threshold]": 0
     open-in-view: false
+
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -71,7 +73,7 @@ server:
 
 logging:
   level:
-    "[org.springframework.mail]": ${MAIL_LOG_LEVEL:INFO}
+    "[org.springframework.mail]": INFO
 
 jwt:
   signerKey: ${JWT_SECRET}
@@ -82,12 +84,12 @@ jwt:
 
 app:
   oauth2:
-    redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:5175/oauth2/callback}
+    redirect-uri: ${APP_OAUTH2_REDIRECT_URI}
   cors:
     allowed-origins:
-      - ${APP_CORS_ORIGIN_1:http://localhost:5175}
-      - ${APP_CORS_ORIGIN_2:http://localhost:5173}
-  order-confirmed-url: ${ORDER_CONFIRMED_URL:http://localhost:5175/orderConfirmed}
+      - ${APP_CORS_ORIGIN_1}
+      - ${APP_CORS_ORIGIN_2:}
+  order-confirmed-url: ${ORDER_CONFIRMED_URL}
 
 stripe:
   secret: ${STRIPE_SECRET}
@@ -96,7 +98,7 @@ vnpay:
   tmnCode: ${VNPAY_TMN_CODE}
   hashSecret: ${VNPAY_HASH_SECRET}
   payUrl: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-  returnUrl: ${VNPAY_RETURN_URL:http://localhost:8080/api/orders/vnpay-return}
+  returnUrl: ${VNPAY_RETURN_URL}
 
 upload:
   dir: ${UPLOAD_DIR:uploads}

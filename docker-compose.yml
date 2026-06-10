@@ -1,18 +1,19 @@
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: shopecom-mysql
+  postgres:
+    image: postgres:16
+    container_name: shopecom-postgres
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: shopecom
+      POSTGRES_DB: shopecom
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: change-me
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shopecom"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -40,7 +41,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -57,4 +58,4 @@ services:
       - backend
 
 volumes:
-  mysql_data:
+  postgres_data:

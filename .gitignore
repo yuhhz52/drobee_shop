@@ -7,5 +7,7 @@ target/
 /.mvn/
 .mvn/wrapper/maven-wrapper.jar
 .env
+.env.*
+!.env.example
 .tmp_*.html
 .tmp_*.txt
