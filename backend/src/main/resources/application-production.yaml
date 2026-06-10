@@ -71,6 +71,13 @@ server:
   port: ${PORT:8080}
   forward-headers-strategy: framework
 
+springdoc:
+  api-docs:
+    path: /v1/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
 management:
   endpoints:
     web:
