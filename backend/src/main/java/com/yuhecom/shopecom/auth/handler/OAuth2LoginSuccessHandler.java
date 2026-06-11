@@ -56,38 +56,36 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private void addHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge, HttpServletRequest request) {
+        // HTTPS detection: check X-Forwarded-Proto header (set by reverse proxy / Railway)
         String protocol = request.getHeader("X-Forwarded-Proto");
         if (protocol == null) {
             protocol = request.getScheme();
         }
-        boolean isHttps = "https".equalsIgnoreCase(protocol);
-        boolean isLocal = isLocalHost(request.getServerName());
+        boolean isHttps = "https".equalsIgnoreCase(protocol)
+                || request.getServerPort() == 443;
+
+        if (!isHttps) {
+            log.debug("Request is not HTTPS (serverPort={}, scheme={}), skipping SameSite=None on cookie '{}'",
+                    request.getServerPort(), request.getScheme(), name);
+        }
 
         ResponseCookie cookie;
-        if (isLocal) {
+        if (isHttps) {
             cookie = ResponseCookie.from(name, value)
                     .httpOnly(true)
-                    .sameSite("Lax")
-                    .secure(isHttps)
+                    .sameSite("None")
+                    .secure(true)
                     .path("/")
                     .maxAge(maxAge)
                     .build();
         } else {
             cookie = ResponseCookie.from(name, value)
                     .httpOnly(true)
-                    .sameSite(isHttps ? "None" : "Lax")
-                    .secure(true)
+                    .sameSite("Lax")
+                    .secure(false)
                     .path("/")
                     .maxAge(maxAge)
                     .build();
         }
         response.addHeader("Set-Cookie", cookie.toString());
     }
-
-    private boolean isLocalHost(String serverName) {
-        return "localhost".equalsIgnoreCase(serverName)
-            || "127.0.0.1".equalsIgnoreCase(serverName)
-            || serverName.startsWith("192.168.")
-            || serverName.startsWith("10.");
-    }
-}
