@@ -1,130 +1,32 @@
+# =============================================
+# Production Profile — thin override only
+# Base defaults come from application.yaml
+# =============================================
 spring:
-  config:
-    activate:
-      on-profile: production
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    hikari:
-      auto-commit: false
-
   jpa:
-    hibernate:
-      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
-        "[format_sql]": false
-        jdbc:
-          "[prepare_threshold]": 0
-    open-in-view: false
+        format_sql: false
+    # ddl-auto stays 'validate' — never auto-modify schema in prod
 
   flyway:
-    enabled: true
-    baseline-on-migrate: true
-    baseline-version: '0'
-    locations: classpath:db/migration
     clean-disabled: true
-    connect-retries: 3
-    init-sql: "-- Flyway init"
     validate-on-migrate: true
-
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      ssl:
-        enabled: ${REDIS_TLS:false}
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    properties:
-      "[mail.smtp.auth]": true
-      "[mail.smtp.starttls.enable]": true
-
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}
-            authorization-grant-type: authorization_code
-            scope:
-              - email
-              - profile
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
 server:
   port: ${PORT:8080}
-  forward-headers-strategy: framework
-
-springdoc:
-  api-docs:
-    path: /v1/api-docs
-  swagger-ui:
-    path: /v1/docs
-    enabled: true
-    operations-sorter: method
-    tags-sorter: alpha
-    display-request-duration: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: when_authorized
-      probes:
-        enabled: true
-  health:
-    livenessState:
-      enabled: true
-    readinessState:
-      enabled: true
+  error:
+    include-stacktrace: never
 
 logging:
   level:
-    "[org.springframework.mail]": INFO
-
-jwt:
-  signerKey: ${JWT_SECRET}
-  auth:
-    expires_in: 3600
-  refresh:
-    expires_in: 1296000
-
-app:
-  oauth2:
-    redirect-uri: ${APP_OAUTH2_REDIRECT_URI}
-  cors:
-    allowed-origins:
-      - ${APP_CORS_ORIGIN_1}
-      - ${APP_CORS_ORIGIN_2:}
-  order-confirmed-url: ${ORDER_CONFIRMED_URL}
-
-stripe:
-  secret: ${STRIPE_SECRET}
-
-vnpay:
-  tmnCode: ${VNPAY_TMN_CODE}
-  hashSecret: ${VNPAY_HASH_SECRET}
-  payUrl: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-  returnUrl: ${VNPAY_RETURN_URL}
-
-upload:
-  dir: ${UPLOAD_DIR:uploads}
+    root: WARN
+    com.yuhecom.shopecom: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.mail: WARN
+  file:
+    name: /var/log/shopecom/application.log
+    max-size: 100MB
+    max-history: 30

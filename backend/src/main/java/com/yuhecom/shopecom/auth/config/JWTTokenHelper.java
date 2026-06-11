@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 @Component
 public class JWTTokenHelper {
 
-    @Value("${jwt.signerKey}")
+    @Value("${jwt.signer-key}")
     private String secretKey;
 
-    @Value("${jwt.auth.expires_in}")
+    @Value("${jwt.auth.expires-in}")
     private int expiresIn;
 
-    @Value("${jwt.refresh.expires_in}")
+    @Value("${jwt.refresh.expires-in}")
     private int refreshExpiresIn;
 
     /**

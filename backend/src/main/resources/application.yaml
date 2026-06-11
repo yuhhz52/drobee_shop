@@ -2,51 +2,84 @@ spring:
   application:
     name: shopecom
 
+  # ── Database ────────────────────────────────────────────────
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?prepareThreshold=0&preparedStatementCacheQueries=0}
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
       auto-commit: false
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 20
+      minimum-idle: 5
+      pool-name: ShopEcomHikariPool
+      leak-detection-threshold: 60000
 
   jpa:
     hibernate:
-      ddl-auto: none
-    show-sql: ${JPA_SHOW_SQL:false}
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
     properties:
       hibernate:
-        "[format_sql]": ${JPA_FORMAT_SQL:false}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
-          "[prepare_threshold]": 0
-    open-in-view: false
+          prepare_threshold: 0
+        format_sql: ${JPA_FORMAT_SQL:false}
+        order_inserts: true
+        order_updates: true
+        jdbc.batch_size: 25
+        generate_statistics: false
+        # Log bound parameters (useful for debugging SQL)
+        use_sql_comments: false
+
+  # ── Flyway ────────────────────────────────────────────────────
   flyway:
     enabled: true
     baseline-on-migrate: true
-    baseline-version: '0'
+    baseline-version: "0"
     locations: classpath:db/migration
     clean-disabled: true
     connect-retries: 3
-    init-sql: "-- Flyway init"
     validate-on-migrate: true
+    table: flyway_schema_history
 
+  # ── Redis ─────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2000ms
       ssl:
         enabled: ${REDIS_TLS:false}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+          max-wait: 2000ms
 
+  # ── Mail ───────────────────────────────────────────────────────
   mail:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
-      "[mail.smtp.auth]": true
-      "[mail.smtp.starttls.enable]": true
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
 
+  # ── OAuth2 / Google ────────────────────────────────────────────
   security:
     oauth2:
       client:
@@ -54,75 +87,123 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
             scope:
               - email
               - profile
+            client-name: Google
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
+# ── HTTP Server ───────────────────────────────────────────────────
 server:
   port: ${PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,text/css,application/javascript
+    min-response-size: 1024
+  http2:
+    enabled: true
   forward-headers-strategy: framework
 
+# ── OpenAPI / Swagger ─────────────────────────────────────────────
 springdoc:
   api-docs:
     path: /v1/api-docs
+    enabled: true
   swagger-ui:
     path: /v1/docs
     enabled: true
     operations-sorter: method
     tags-sorter: alpha
     display-request-duration: true
+    try-it-out-enabled: true
 
+# ── Actuator ───────────────────────────────────────────────────────
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
+      base-path: /actuator
   endpoint:
     health:
       show-details: when_authorized
       probes:
         enabled: true
+    metrics:
+      enabled: true
   health:
     livenessState:
       enabled: true
     readinessState:
       enabled: true
+    db:
+      enabled: true
+    redis:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
+# ── Logging ───────────────────────────────────────────────────────
 logging:
   level:
-    "[org.springframework.mail]": ${MAIL_LOG_LEVEL:INFO}
+    root: INFO
+    com.yuhecom.shopecom: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.mail: ${MAIL_LOG_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/shopecom.log
+    max-size: 100MB
+    max-history: 14
 
+# ── JWT ────────────────────────────────────────────────────────────
 jwt:
-  signerKey: ${JWT_SECRET}
+  signer-key: ${JWT_SECRET}
   auth:
-    expires_in: 3600
+    expires-in: ${JWT_AUTH_EXPIRES:3600}
   refresh:
-    expires_in: 1296000
+    expires-in: ${JWT_REFRESH_EXPIRES:1296000}
 
+# ── App Custom ────────────────────────────────────────────────────
 app:
   oauth2:
     redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:5175/oauth2/callback}
   cors:
     allowed-origins:
-      - ${APP_CORS_ORIGIN_1:http://localhost:5175}
-      - ${APP_CORS_ORIGIN_2:http://localhost:5173}
+      - ${APP_CORS_ORIGIN_1:}
+      - ${APP_CORS_ORIGIN_2:}
+      - ${APP_CORS_ORIGIN_3:}
   order-confirmed-url: ${ORDER_CONFIRMED_URL:http://localhost:5175/orderConfirmed}
 
+# ── Stripe ─────────────────────────────────────────────────────────
 stripe:
   secret: ${STRIPE_SECRET}
 
+# ── VNPay ─────────────────────────────────────────────────────────
 vnpay:
-  tmnCode: ${VNPAY_TMN_CODE}
-  hashSecret: ${VNPAY_HASH_SECRET}
-  payUrl: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-  returnUrl: ${VNPAY_RETURN_URL:http://localhost:8080/api/orders/vnpay-return}
+  tmn-code: ${VNPAY_TMN_CODE}
+  hash-secret: ${VNPAY_HASH_SECRET}
+  pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+  return-url: ${VNPAY_RETURN_URL:http://localhost:8080/api/orders/vnpay-return}
 
+# ── File Upload ────────────────────────────────────────────────────
 upload:
   dir: ${UPLOAD_DIR:uploads}
