@@ -3,29 +3,24 @@ import { useNavigate } from 'react-router-dom'
 import { saveTokens, isTokenValid } from '@shared/utils/jwt-helper';
 import { httpClient } from '@core/api/httpClient';
 
-/**
- * OAuth2 callback handler - reads tokens from HTTP-Only cookies via backend API
- * and saves them to localStorage for the app to use.
- */
-const OAuth2loginCallback = () => {
+const OAuth2LoginCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Gọi backend endpoint để đọc tokens từ HTTP-Only cookies
+    // Read tokens from HTTP-Only cookies via backend API
     httpClient.get('/oauth2/tokens')
       .then(res => {
         const { accessToken, refreshToken } = res.data;
-
         if (accessToken && refreshToken && isTokenValid(accessToken)) {
           saveTokens(accessToken, refreshToken);
           navigate('/');
         } else {
-          console.warn('OAuth2 callback: invalid or expired tokens');
+          console.warn('OAuth2 callback: invalid tokens from cookies');
           navigate('/v1/login');
         }
       })
-      .catch(err => {
-        console.error('OAuth2 callback failed:', err);
+      .catch(() => {
+        console.error('OAuth2 callback failed: cookies not found or session expired');
         navigate('/v1/login');
       });
   }, [navigate]);
@@ -40,4 +35,4 @@ const OAuth2loginCallback = () => {
   );
 }
 
-export default OAuth2loginCallback;
+export default OAuth2LoginCallback;

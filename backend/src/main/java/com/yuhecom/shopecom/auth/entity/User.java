@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -55,9 +56,9 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "authority_id"))
     private List<Authority>  authorities;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
-    private List<Address> addressList;
+    private Set<Address> addressList;
 
 
     @Override

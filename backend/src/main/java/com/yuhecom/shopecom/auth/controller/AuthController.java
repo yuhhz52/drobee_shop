@@ -6,153 +6,182 @@ import com.yuhecom.shopecom.auth.dto.RegistrationRequest;
 import com.yuhecom.shopecom.auth.dto.RegistrationResponse;
 import com.yuhecom.shopecom.auth.dto.UserToken;
 import com.yuhecom.shopecom.auth.entity.User;
+import com.yuhecom.shopecom.auth.repository.UsersRepository;
 import com.yuhecom.shopecom.auth.service.RegistrationService;
 import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.Map;
 
-@CrossOrigin
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 @Slf4j
 public class AuthController {
-    @Autowired
-    AuthenticationManager authenticationManager;
 
-    @Autowired
-    RegistrationService registrationService;
+    private final AuthenticationManager authenticationManager;
+    private final RegistrationService registrationService;
+    private final UserDetailsService userDetailsService;
+    private final JWTTokenHelper jwtTokenHelper;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final UsersRepository userRepository;
 
-    @Autowired
-    UserDetailsService userDetailsService;
-
-    @Autowired
-    JWTTokenHelper jwtTokenHelper;
-
-    @Autowired
-    TokenBlacklistService tokenBlacklistService;
-
-
+    /**
+     * Login: trả access token + refresh token về body (FE tự lưu).
+     * Có thể mở rộng set refresh token vào HTTP-Only cookie (như OAuth2).
+     */
     @PostMapping("/login")
-    public ResponseEntity<UserToken> login(@Valid @RequestBody LoginRequest loginRequest){
+    public ResponseEntity<UserToken> login(@Valid @RequestBody LoginRequest request) {
+        log.info("Login attempt for: {}", request.getUserName());
+
         try {
-            Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUserName(),
-                    loginRequest.getPassword());
+            Authentication auth = authenticationManager.authenticate(
+                    UsernamePasswordAuthenticationToken.unauthenticated(request.getUserName(), request.getPassword())
+            );
 
-            Authentication authenticationResponse = this.authenticationManager.authenticate(authentication);
-
-            if(authenticationResponse.isAuthenticated()){
-                User user = (User) authenticationResponse.getPrincipal();
-                if(!user.isEnabled()){
-                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-                }
-
-                String accessToken = jwtTokenHelper.generateToken(user);
-                String refreshToken = jwtTokenHelper.generateRefreshToken(user);
-
-                UserToken userToken = UserToken.builder()
-                        .token(accessToken)
-                        .refreshToken(refreshToken)
-                        .build();
-                return new ResponseEntity<>(userToken,HttpStatus.OK);
-
+            if (!auth.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
+
+            User user = (User) auth.getPrincipal();
+            if (!user.isEnabled()) {
+                log.warn("Login rejected — account disabled: {}", request.getUserName());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            String accessToken = jwtTokenHelper.generateToken(user);
+            String refreshToken = jwtTokenHelper.generateRefreshToken(user);
+
+            log.info("Login success: {}", request.getUserName());
+            return ResponseEntity.ok(UserToken.builder()
+                    .token(accessToken)
+                    .refreshToken(refreshToken)
+                    .build());
+
         } catch (Exception e) {
-            log.warn("Login failed for user: {}", loginRequest.getUserName(), e);
+            log.warn("Login failed for: {}", request.getUserName());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponse> register(@Valid @RequestBody RegistrationRequest request){
-        RegistrationResponse registrationResponse = registrationService.createUser(request);
-
-        return new ResponseEntity<>(registrationResponse,
-                registrationResponse.getCode() == 200 ? HttpStatus.OK: HttpStatus.BAD_REQUEST);
+    public ResponseEntity<RegistrationResponse> register(@Valid @RequestBody RegistrationRequest request) {
+        RegistrationResponse response = registrationService.createUser(request);
+        HttpStatus status = response.getCode() == 200 ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyCode(@RequestBody Map<String,String> map){
-        String userName = map.get("userName");
-        String code = map.get("code");
+    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> body) {
+        String email = body.get("userName");
+        String code = body.get("code");
 
-        User user= (User) userDetailsService.loadUserByUsername(userName);
-        if(null != user && user.getVerificationCode().equals(code)){
-            registrationService.verifyUser(userName);
-            return new ResponseEntity<>(HttpStatus.OK);
+        if (email == null || code == null) {
+            return ResponseEntity.badRequest().body("Missing userName or code");
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        return userRepository.findByEmail(email)
+                .filter(u -> code.equals(u.getVerificationCode()))
+                .map(u -> {
+                    registrationService.verifyUser(email);
+                    return ResponseEntity.ok().<Void>build();
+                })
+                .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
-
-    //Refresh token: dùng refreshToken để lấy accessToken mới
+    /**
+     * Refresh: refresh token đọc từ HTTP-Only cookie (consistent với OAuth2 flow).
+     * FE gọi với option { withCredentials: true }.
+     */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
+        String refreshToken = extractRefreshToken(request);
         if (refreshToken == null) {
-            return new ResponseEntity<>("Missing refresh token", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body("Missing refresh token");
+        }
+
+        if (tokenBlacklistService.isRefreshTokenBlacklisted(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token has been revoked");
         }
 
         try {
-            // Kiểm tra xem refresh token đã bị đưa vào danh sách đen (blacklist) chưa
-            if (tokenBlacklistService.isRefreshTokenBlacklisted(refreshToken)) {
-                return new ResponseEntity<>("Refresh token has been blacklisted/logged out", HttpStatus.UNAUTHORIZED);
-            }
-
             String username = jwtTokenHelper.getUserNameFromToken(refreshToken);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            var userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtTokenHelper.validateToken(refreshToken, userDetails)) {
-                String newAccessToken = jwtTokenHelper.generateToken((User) userDetails);
-                UserToken userToken = UserToken.builder()
-                        .token(newAccessToken)
-                        .refreshToken(refreshToken)
-                        .build();
-                return new ResponseEntity<>(userToken, HttpStatus.OK);
+            if (!jwtTokenHelper.validateToken(refreshToken, userDetails)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired or invalid");
             }
-        } catch (Exception e) {
-            return new ResponseEntity<>("Invalid or expired refresh token", HttpStatus.UNAUTHORIZED);
-        }
 
-        return new ResponseEntity<>("Invalid refresh token", HttpStatus.UNAUTHORIZED);
+            String newAccessToken = jwtTokenHelper.generateToken((User) userDetails);
+            return ResponseEntity.ok(UserToken.builder()
+                    .token(newAccessToken)
+                    .refreshToken(refreshToken)
+                    .build());
+
+        } catch (Exception e) {
+            log.warn("Refresh token invalid: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
     }
 
-
-
-    //Logout: đưa accessToken vào blacklist Redis
+    /**
+     * Logout: revoke refresh token (blacklist).
+     * Access token sẽ tự hết hạn — không cần blacklist riêng.
+     */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
-
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = extractRefreshToken(request);
         if (refreshToken != null) {
             try {
-                Date expiry = jwtTokenHelper.getExpirationDate(refreshToken);
+                var expiry = jwtTokenHelper.getExpirationDate(refreshToken);
                 tokenBlacklistService.blacklistRefreshToken(refreshToken, expiry);
             } catch (Exception e) {
-                // Token expired hoặc invalid -> vẫn cho phép logout, TTL = 1s
+                // Token invalid → blacklist với TTL ngắn
                 tokenBlacklistService.blacklistRefreshToken(
                         refreshToken,
-                        new Date(System.currentTimeMillis() + 1000)
+                        new java.util.Date(System.currentTimeMillis() + 1000)
                 );
             }
         }
-        return ResponseEntity.ok("Logged out successfully");
+        // Xoá cookies phía client
+        clearCookies(response);
+        log.info("Logout processed");
+        return ResponseEntity.ok().build();
     }
 
+    // ── Private helpers ───────────────────────────────────────────────────────
 
+    private String extractRefreshToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("refreshToken".equals(c.getName())) return c.getValue();
+            }
+        }
+        return null;
+    }
 
+    private void clearCookies(HttpServletResponse response) {
+        for (String name : new String[]{"accessToken", "refreshToken"}) {
+            Cookie cookie = new Cookie(name, "");
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            cookie.setAttribute("SameSite", "Lax");
+            response.addCookie(cookie);
+        }
+    }
 }
-
-

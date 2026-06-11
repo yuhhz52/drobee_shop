@@ -1,0 +1,20 @@
+# =============================================
+# Docker Profile — overrides for containerised
+# local dev (docker-compose up)
+# =============================================
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/postgres}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      password: ${REDIS_PASSWORD:}
+
+logging:
+  level:
+    root: INFO
+    com.yuhecom.shopecom: INFO

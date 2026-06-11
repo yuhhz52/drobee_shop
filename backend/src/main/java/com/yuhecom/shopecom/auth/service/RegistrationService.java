@@ -5,91 +5,59 @@ import com.yuhecom.shopecom.auth.dto.RegistrationResponse;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.helper.VerificationCodeGenerator;
 import com.yuhecom.shopecom.auth.repository.UsersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ServerErrorException;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class RegistrationService {
-    @Autowired
-    private UsersRepository userDetailRepository;
 
-    @Autowired
-    private AuthorityService authorityService;
+    private final UsersRepository userRepository;
+    private final AuthorityService authorityService;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public RegistrationResponse createUser(RegistrationRequest request) {
-        User existing = userDetailRepository.findByEmail(request.getEmail());
-
-        if (null != existing) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             return RegistrationResponse.builder()
                     .code(400)
-                    .message("Email already exist")
+                    .message("Email already exists")
                     .build();
         }
 
-        try {
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .provider("manual")
+                .enabled(false)
+                .verificationCode(VerificationCodeGenerator.generateCode())
+                .authorities(authorityService.getUserAuthority())
+                .build();
 
-            User user = new User();
-            user.setFirstName(request.getFirstName());
-            user.setLastName(request.getLastName());
-            user.setEmail(request.getEmail());
-            user.setEnabled(false);
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setProvider("manual");
-            String code = VerificationCodeGenerator.generateCode();
-            user.setVerificationCode(code);
-            user.setAuthorities(authorityService.getUserAuthority());
-            userDetailRepository.save(user);
+        userRepository.save(user);
+        emailService.sendMail(user);
 
-            emailService.sendMail(user);
-
-            return RegistrationResponse.builder()
-                    .code(200)
-                    .message("User created!")
-                    .build();
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw new ServerErrorException(e.getMessage(), e.getCause());
-        }
-
+        log.info("User registered: {}", user.getEmail());
+        return RegistrationResponse.builder()
+                .code(200)
+                .message("User created!")
+                .build();
     }
 
-    public void verifyUser(String userName) {
-        User user = userDetailRepository.findByEmail(userName);
+    @Transactional
+    public void verifyUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
         user.setEnabled(true);
-        userDetailRepository.save(user);
+        user.setVerificationCode(null);
+        userRepository.save(user);
+        log.info("User verified: {}", email);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

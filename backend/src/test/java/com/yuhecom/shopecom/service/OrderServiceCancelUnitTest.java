@@ -1,11 +1,19 @@
 package com.yuhecom.shopecom.service;
 
 import com.yuhecom.shopecom.auth.entity.User;
+import com.yuhecom.shopecom.auth.repository.UsersRepository;
 import com.yuhecom.shopecom.entity.Order;
 import com.yuhecom.shopecom.entity.OrderStatus;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.BusinessException;
+import com.yuhecom.shopecom.mapper.OrderMapper;
+import com.yuhecom.shopecom.mapper.ProductMapper;
+import com.yuhecom.shopecom.mapper.ProductVariantMapper;
+import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.reponsitory.OrderRepository;
+import com.yuhecom.shopecom.service.impl.OrderServiceImpl;
+import com.yuhecom.shopecom.config.AppProperties;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,13 +21,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
-
 import java.security.Principal;
 import java.util.Optional;
 import java.util.UUID;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,47 +33,53 @@ import static org.mockito.Mockito.*;
 public class OrderServiceCancelUnitTest {
 
     @Mock
-    private UserDetailsService userDetailsService;
+    private UsersRepository usersRepository;
 
     @Mock
     private OrderRepository orderRepository;
 
-    // other dependencies (not used in cancel) mocked
     @Mock
-    private com.yuhecom.shopecom.service.ProductService productService;
+    private ProductService productService;
+
     @Mock
-    private com.yuhecom.shopecom.service.StripeService stripeService;
+    private StripeService stripeService;
+
     @Mock
-    private com.yuhecom.shopecom.service.VnPayService vnPayService;
+    private VnPayService vnPayService;
+
     @Mock
-    private com.yuhecom.shopecom.mapper.ProductVariantMapper productVariantMapper;
+    private ProductVariantMapper productVariantMapper;
+
     @Mock
-    private com.yuhecom.shopecom.mapper.ProductMapper productMapper;
+    private ProductMapper productMapper;
+
     @Mock
-    private com.yuhecom.shopecom.mapper.OrderMapper orderMapper;
+    private OrderMapper orderMapper;
+
     @Mock
-    private com.yuhecom.shopecom.mapper.UsersMapper usersMapper;
+    private UsersMapper usersMapper;
+
     @Mock
-    private com.yuhecom.shopecom.config.AppProperties appProperties;
+    private AppProperties appProperties;
 
     @Mock
     private HttpServletRequest httpServletRequest;
 
-    private OrderService orderService;
+    private OrderServiceImpl orderService;
 
     @BeforeEach
     public void setup() {
-        orderService = new OrderService(
-                userDetailsService,
+        orderService = new OrderServiceImpl(
                 orderRepository,
-                (com.yuhecom.shopecom.service.ProductService) productService,
-                (com.yuhecom.shopecom.service.StripeService) stripeService,
-                (com.yuhecom.shopecom.service.VnPayService) vnPayService,
-                (com.yuhecom.shopecom.mapper.ProductVariantMapper) productVariantMapper,
-                (com.yuhecom.shopecom.mapper.ProductMapper) productMapper,
-                (com.yuhecom.shopecom.mapper.OrderMapper) orderMapper,
-                (com.yuhecom.shopecom.mapper.UsersMapper) usersMapper,
-                (com.yuhecom.shopecom.config.AppProperties) appProperties,
+                usersRepository,
+                productService,
+                stripeService,
+                vnPayService,
+                productVariantMapper,
+                productMapper,
+                orderMapper,
+                usersMapper,
+                appProperties,
                 httpServletRequest
         );
     }
@@ -77,21 +87,19 @@ public class OrderServiceCancelUnitTest {
     @Test
     public void cancelOrder_success() {
         UUID id = UUID.randomUUID();
-        User user = User.builder().id(UUID.randomUUID()).email("user@example.com").build();
-        Order order = new Order();
-        order.setId(id);
-        order.setUser(user);
-        order.setOrderStatus(OrderStatus.PENDING);
+        UUID userId = UUID.randomUUID();
+        String email = "user@example.com";
 
-        when(userDetailsService.loadUserByUsername(user.getEmail())).thenReturn(user);
+        User user = User.builder().id(userId).email(email).build();
+        Order order = Order.builder().id(id).user(user).orderStatus(OrderStatus.PENDING).build();
+
+        when(usersRepository.findByEmailForAuth(email)).thenReturn(Optional.of(user));
         when(orderRepository.findById(id)).thenReturn(Optional.of(order));
 
-        Principal p = () -> user.getEmail();
-
+        Principal p = () -> email;
         boolean result = orderService.cancelOrder(id, p);
 
         assertThat(result).isTrue();
-
         ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
         verify(orderRepository, times(1)).save(captor.capture());
         assertThat(captor.getValue().getOrderStatus()).isEqualTo(OrderStatus.CANCELLED);
@@ -100,14 +108,14 @@ public class OrderServiceCancelUnitTest {
     @Test
     public void cancelOrder_forbiddenUser() {
         UUID id = UUID.randomUUID();
-        User user = User.builder().id(UUID.randomUUID()).email("user@example.com").build();
-        User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
-        Order order = new Order();
-        order.setId(id);
-        order.setUser(otherUser);
-        order.setOrderStatus(OrderStatus.PENDING);
+        UUID userId = UUID.randomUUID();
+        UUID otherUserId = UUID.randomUUID();
 
-        when(userDetailsService.loadUserByUsername(user.getEmail())).thenReturn(user);
+        User user = User.builder().id(userId).email("user@example.com").build();
+        User otherUser = User.builder().id(otherUserId).email("other@example.com").build();
+        Order order = Order.builder().id(id).user(otherUser).orderStatus(OrderStatus.PENDING).build();
+
+        when(usersRepository.findByEmailForAuth(user.getEmail())).thenReturn(Optional.of(user));
         when(orderRepository.findById(id)).thenReturn(Optional.of(order));
 
         Principal p = () -> user.getEmail();
@@ -119,17 +127,16 @@ public class OrderServiceCancelUnitTest {
     @Test
     public void cancelOrder_alreadyCancelled() {
         UUID id = UUID.randomUUID();
-        User user = User.builder().id(UUID.randomUUID()).email("user@example.com").build();
-        Order order = new Order();
-        order.setId(id);
-        order.setUser(user);
-        order.setOrderStatus(OrderStatus.CANCELLED);
+        UUID userId = UUID.randomUUID();
+        String email = "user@example.com";
 
-        when(userDetailsService.loadUserByUsername(user.getEmail())).thenReturn(user);
+        User user = User.builder().id(userId).email(email).build();
+        Order order = Order.builder().id(id).user(user).orderStatus(OrderStatus.CANCELLED).build();
+
+        when(usersRepository.findByEmailForAuth(email)).thenReturn(Optional.of(user));
         when(orderRepository.findById(id)).thenReturn(Optional.of(order));
 
-        Principal p = () -> user.getEmail();
-
+        Principal p = () -> email;
         boolean result = orderService.cancelOrder(id, p);
 
         assertThat(result).isFalse();
@@ -139,12 +146,15 @@ public class OrderServiceCancelUnitTest {
     @Test
     public void cancelOrder_notFound() {
         UUID id = UUID.randomUUID();
-        User user = User.builder().id(UUID.randomUUID()).email("user@example.com").build();
+        UUID userId = UUID.randomUUID();
+        String email = "user@example.com";
 
-        when(userDetailsService.loadUserByUsername(user.getEmail())).thenReturn(user);
+        User user = User.builder().id(userId).email(email).build();
+
+        when(usersRepository.findByEmailForAuth(email)).thenReturn(Optional.of(user));
         when(orderRepository.findById(id)).thenReturn(Optional.empty());
 
-        Principal p = () -> user.getEmail();
+        Principal p = () -> email;
 
         assertThrows(BusinessException.class, () -> orderService.cancelOrder(id, p));
         verify(orderRepository, never()).save(any(Order.class));
