@@ -3,20 +3,18 @@ package com.yuhecom.shopecom.auth.handler;
 import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.service.OAuth2Service;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -58,31 +56,32 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private void addHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge, HttpServletRequest request) {
-        String encoded = URLEncoder.encode(value, StandardCharsets.UTF_8);
-        Cookie cookie = new Cookie(name, encoded);
-        cookie.setHttpOnly(true);
-        boolean isLocal = isLocalHost(request.getServerName());
-        // HTTPS detection: check X-Forwarded-Proto header or scheme
         String protocol = request.getHeader("X-Forwarded-Proto");
         if (protocol == null) {
             protocol = request.getScheme();
         }
         boolean isHttps = "https".equalsIgnoreCase(protocol);
+        boolean isLocal = isLocalHost(request.getServerName());
 
+        ResponseCookie cookie;
         if (isLocal) {
-            // Same-origin (local dev): Lax allows cookies on subresource requests from same site
-            cookie.setSameSite("Lax");
-            // For local HTTP, Secure=false is fine
-            // For local HTTPS, set Secure=true
-            cookie.setSecure(isHttps);
+            cookie = ResponseCookie.from(name, value)
+                    .httpOnly(true)
+                    .sameSite("Lax")
+                    .secure(isHttps)
+                    .path("/")
+                    .maxAge(maxAge)
+                    .build();
         } else {
-            // Cross-origin (prod): None requires Secure (HTTPS)
-            cookie.setSameSite(isHttps ? "None" : "Lax");
-            cookie.setSecure(true);
+            cookie = ResponseCookie.from(name, value)
+                    .httpOnly(true)
+                    .sameSite(isHttps ? "None" : "Lax")
+                    .secure(true)
+                    .path("/")
+                    .maxAge(maxAge)
+                    .build();
         }
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     private boolean isLocalHost(String serverName) {
