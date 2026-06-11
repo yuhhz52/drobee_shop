@@ -9,7 +9,7 @@ export const ENDPOINTS = {
     login: '/api/auth/login',
     register: '/api/auth/register',
     verify: '/api/auth/verify',
-    profile: '/api/auth/profile',
+    profile: '/api/user/profile',
     logout: '/api/auth/logout',
     refresh: '/api/auth/refresh',
   },

@@ -6,20 +6,21 @@ const chunk = (items = [], size = 10) => {
   return out
 }
 
-const PRODUCT_CATEGORY_CODES = new Set([
-  'electric',
-  'minimotors',
-  'kukirin',
-  'teverun',
-  'rovoron',
-  'kuickwheel',
-])
+const FALLBACK_LAYOUTS = {
+  electric: '2col',
+  minimotors: 'mega',
+  kukirin: '2col',
+  teverun: 'wide-col',
+  rovoron: '2col',
+  kuickwheel: '2col',
+}
 
 export const buildNavMenus = (categories = []) => {
   const categoryMenus = (Array.isArray(categories) ? categories : []).map((c) => {
-    const types = PRODUCT_CATEGORY_CODES.has(c?.code)
-      ? (c?.categoryTypes || c?.types || []).filter((t) => t?.code !== 'all')
-      : []
+    const hasLayout = c?.dropdownLayout ?? FALLBACK_LAYOUTS[c?.code]
+    if (!hasLayout) return null
+
+    const types = (c?.categoryTypes || c?.types || []).filter((t) => t?.code !== 'all')
     const categoryPath = buildCollectionUrl(c)
     const typeLinks = (Array.isArray(types) ? types : []).map((t, tIdx) => ({
       label: t?.name ?? 'Type',
@@ -39,16 +40,18 @@ export const buildNavMenus = (categories = []) => {
     return {
       label: c?.name ?? 'Category',
       to: categoryPath,
+      layout: c?.dropdownLayout ?? FALLBACK_LAYOUTS[c?.code] ?? '1col',
       columns,
       key: c.id,
     }
-  })
+  }).filter(Boolean)
 
   return [
     ...categoryMenus,
     {
       label: 'Contact',
       to: '/contact',
+      layout: 'align-right',
       columns: [
         {
           links: [
