@@ -187,10 +187,7 @@ app:
   oauth2:
     redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:5175/oauth2/callback}
   cors:
-    allowed-origins:
-      - ${APP_CORS_ORIGIN_1:}
-      - ${APP_CORS_ORIGIN_2:}
-      - ${APP_CORS_ORIGIN_3:}
+    allowed-origins: ${APP_CORS_ORIGINS:}
   order-confirmed-url: ${ORDER_CONFIRMED_URL:http://localhost:5175/orderConfirmed}
 
 # ── Stripe ─────────────────────────────────────────────────────────

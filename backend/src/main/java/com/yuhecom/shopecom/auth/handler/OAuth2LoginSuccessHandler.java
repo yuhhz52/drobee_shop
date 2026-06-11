@@ -45,7 +45,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         User user = oAuth2Service.createOrUpdateUser(oAuth2User, "google");
-        log.info("OAuth2 login success for user: {}", email);
+        log.info("OAuth2 login success for user: {} | redirect to: {}", email, redirectUri);
 
         String accessToken = jwtTokenHelper.generateToken(user);
         String refreshToken = jwtTokenHelper.generateRefreshToken(user);
@@ -53,6 +53,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         addHttpOnlyCookie(response, "accessToken", accessToken, COOKIE_MAX_AGE, request);
         addHttpOnlyCookie(response, "refreshToken", refreshToken, COOKIE_MAX_AGE, request);
 
+        log.debug("Cookies set — domain={} path=/ SameSite=Lax (cross-origin)", request.getServerName());
         response.sendRedirect(redirectUri);
     }
 
@@ -61,10 +62,26 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         Cookie cookie = new Cookie(name, encoded);
         cookie.setHttpOnly(true);
         boolean isLocal = isLocalHost(request.getServerName());
-        cookie.setSecure(!isLocal);
+        // HTTPS detection: check X-Forwarded-Proto header or scheme
+        String protocol = request.getHeader("X-Forwarded-Proto");
+        if (protocol == null) {
+            protocol = request.getScheme();
+        }
+        boolean isHttps = "https".equalsIgnoreCase(protocol);
+
+        if (isLocal) {
+            // Same-origin (local dev): Lax allows cookies on subresource requests from same site
+            cookie.setSameSite("Lax");
+            // For local HTTP, Secure=false is fine
+            // For local HTTPS, set Secure=true
+            cookie.setSecure(isHttps);
+        } else {
+            // Cross-origin (prod): None requires Secure (HTTPS)
+            cookie.setSameSite(isHttps ? "None" : "Lax");
+            cookie.setSecure(true);
+        }
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        cookie.setAttribute("SameSite", isLocal ? "Lax" : "None");
         response.addCookie(cookie);
     }
 

@@ -115,7 +115,18 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(appProperties.getCors().getAllowedOrigins());
+        List<String> origins = appProperties.getCors().getAllowedOrigins()
+                .stream()
+                .filter(o -> o != null && !o.isBlank())
+                .toList();
+        if (origins.isEmpty()) {
+            throw new IllegalStateException(
+                "app.cors.allowed-origins is empty. " +
+                "Set APP_CORS_ORIGINS env var (comma-separated, e.g. https://example.com,https://www.example.com) " +
+                "or configure application.yaml with non-empty allowed-origins list."
+            );
+        }
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Range"));
