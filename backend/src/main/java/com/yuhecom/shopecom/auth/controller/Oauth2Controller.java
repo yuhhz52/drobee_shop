@@ -18,10 +18,15 @@ public class Oauth2Controller {
      */
     @GetMapping("/tokens")
     public ResponseEntity<Map<String, String>> getTokens(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         String accessToken = null;
         String refreshToken = null;
 
-        for (Cookie c : request.getCookies()) {
+        for (Cookie c : cookies) {
             switch (c.getName()) {
                 case "accessToken" -> accessToken = c.getValue();
                 case "refreshToken" -> refreshToken = c.getValue();
