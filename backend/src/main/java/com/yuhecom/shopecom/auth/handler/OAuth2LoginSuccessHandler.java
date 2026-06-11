@@ -89,3 +89,4 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         response.addHeader("Set-Cookie", cookie.toString());
     }
+}
