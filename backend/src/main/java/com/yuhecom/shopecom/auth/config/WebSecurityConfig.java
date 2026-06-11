@@ -67,7 +67,7 @@ public class WebSecurityConfig {
             "/v1/api-docs/**", "/v1/api-docs",
             "/v1/docs", "/v1/docs/swagger-ui/**", "/v1/docs/**",
             "/v1/swagger-ui/**",
-            "/oauth2/success", "/oauth2/tokens",
+            "/oauth2/success", "/oauth2/tokens", "/oauth2/authorization/google",
             "/uploads/**",
             "/api/orders/vnpay-return",
             "/actuator/health/**", "/actuator/health", "/actuator/info"
@@ -82,7 +82,8 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
-               .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_APIS).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
                     .anyRequest().authenticated()
