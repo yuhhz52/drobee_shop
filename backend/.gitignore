@@ -6,6 +6,7 @@ target/
 
 ### Environment ###
 .env
+.env.production
 
 ### Local DB scripts ###
 src/main/resources/db/*.sql
