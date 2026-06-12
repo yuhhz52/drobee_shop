@@ -178,10 +178,10 @@ logging:
 # ── JWT ────────────────────────────────────────────────────────────
 jwt:
   auth:
-    signer-key: ${JWT_AUTH_SECRET}
+    signer-key: ${JWT_AUTH_SECRET:}
     expires-in: ${JWT_AUTH_EXPIRES:3600}
   refresh:
-    signer-key: ${JWT_REFRESH_SECRET}
+    signer-key: ${JWT_REFRESH_SECRET:}
     expires-in: ${JWT_REFRESH_EXPIRES:1296000}
 
 # ── App Custom ────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import com.yuhecom.shopecom.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,19 @@ public class JWTTokenHelper {
 
     public static final String TYPE_ACCESS  = "access";
     public static final String TYPE_REFRESH = "refresh";
+
+    @PostConstruct
+    public void validateSecrets() {
+        if (authSecretKey == null || authSecretKey.isBlank()) {
+            throw new IllegalStateException("jwt.auth.signer-key is required. Set JWT_AUTH_SECRET environment variable.");
+        }
+        if (refreshSecretKey == null || refreshSecretKey.isBlank()) {
+            throw new IllegalStateException("jwt.refresh.signer-key is required. Set JWT_REFRESH_SECRET environment variable.");
+        }
+        if (authSecretKey.equals(refreshSecretKey)) {
+            throw new IllegalStateException("JWT_AUTH_SECRET and JWT_REFRESH_SECRET must be different values.");
+        }
+    }
 
     public String generateToken(User user) {
         return buildToken(user, TYPE_ACCESS, expiresIn);
