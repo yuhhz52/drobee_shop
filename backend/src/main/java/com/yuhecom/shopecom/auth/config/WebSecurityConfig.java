@@ -91,7 +91,6 @@ public class WebSecurityConfig {
 
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler)
-                        .loginPage("/oauth2/authorization/google")
                 )
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(authenticationEntryPoint()) // 401 cho request ko có JWT
