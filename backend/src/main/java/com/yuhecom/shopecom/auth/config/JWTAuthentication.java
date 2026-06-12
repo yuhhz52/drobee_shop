@@ -39,7 +39,11 @@ public class JWTAuthentication extends OncePerRequestFilter {
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/api/auth")
                 || path.startsWith("/oauth2/success")
-                || path.startsWith("/api/orders/vnpay-return");
+                || path.startsWith("/oauth2/tokens")
+                || path.startsWith("/oauth2/authorization")
+                || path.startsWith("/login/oauth2/code")
+                || path.startsWith("/api/orders/vnpay-return")
+                || path.startsWith("/actuator/health");
     }
 
     @Override
