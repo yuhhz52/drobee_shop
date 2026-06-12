@@ -27,6 +27,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Value("${app.oauth2.redirect-uri}")
     private String redirectUri;
 
+    @Value("${app.oauth2.cookie-domain:#{null}}")
+    private String cookieDomain;
+
+    @Value("${app.oauth2.cookie-samesite:None}")
+    private String cookieSameSite;
+
+    @Value("${app.oauth2.cookie-secure:true}")
+    private boolean cookieSecure;
+
     private static final int COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
     @Override
@@ -57,23 +66,28 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private void addHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge, HttpServletRequest request) {
         String serverName = request.getServerName();
-        String forwardedProto = request.getHeader("X-Forwarded-Proto");
-        boolean isHttps = "https".equalsIgnoreCase(forwardedProto)
+        boolean isHttps = request.getHeader("X-Forwarded-Proto") != null
+                && request.getHeader("X-Forwarded-Proto").equalsIgnoreCase("https")
                 || request.getServerPort() == 443
-                || serverName != null && (serverName.endsWith(".up.railway.app") || serverName.endsWith(".railway.app"));
+                || cookieSecure;
 
-        log.debug("Cookie '{}': serverName={} forwardedProto={} isHttps={}", name, serverName, forwardedProto, isHttps);
+        log.debug("Cookie '{}': serverName={} cookieDomain={} cookieSameSite={} isHttps={}",
+                name, serverName, cookieDomain, cookieSameSite, isHttps);
 
-        // Custom Domain approach: SameSite=Lax (not None) because frontend and backend share same root domain
-        // e.g., scooter-bay.com (frontend) and api.scooter-bay.com (backend) are same-site
-        ResponseCookie cookie = ResponseCookie.from(name, value)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
                 .httpOnly(true)
-                .sameSite("Lax")
                 .secure(isHttps)
+                .sameSite(cookieSameSite)
                 .path("/")
-                .maxAge(maxAge)
-                .domain(null)
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+                .maxAge(maxAge);
+
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+            log.debug("Cookie '{}': domain={} sameSite={}", name, cookieDomain, cookieSameSite);
+        } else {
+            log.debug("Cookie '{}': no domain set (same-site cookie)", name);
+        }
+
+        response.addHeader("Set-Cookie", builder.build().toString());
     }
 }

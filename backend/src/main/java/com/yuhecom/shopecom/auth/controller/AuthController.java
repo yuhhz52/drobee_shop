@@ -117,12 +117,12 @@ public class AuthController {
         }
 
         try {
-            String username = jwtTokenHelper.getUserNameFromToken(refreshToken);
-            var userDetails = userDetailsService.loadUserByUsername(username);
-
-            if (!jwtTokenHelper.validateToken(refreshToken, userDetails)) {
+            if (!jwtTokenHelper.validateRefreshToken(refreshToken)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired or invalid");
             }
+
+            String username = jwtTokenHelper.getUserNameFromToken(refreshToken);
+            var userDetails = userDetailsService.loadUserByUsername(username);
 
             String newAccessToken = jwtTokenHelper.generateToken((User) userDetails);
             return ResponseEntity.ok(UserToken.builder()

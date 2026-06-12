@@ -177,10 +177,11 @@ logging:
 
 # ── JWT ────────────────────────────────────────────────────────────
 jwt:
-  signer-key: ${JWT_SECRET}
   auth:
+    signer-key: ${JWT_AUTH_SECRET}
     expires-in: ${JWT_AUTH_EXPIRES:3600}
   refresh:
+    signer-key: ${JWT_REFRESH_SECRET}
     expires-in: ${JWT_REFRESH_EXPIRES:1296000}
 
 # ── App Custom ────────────────────────────────────────────────────
@@ -190,6 +191,9 @@ app:
     # Frontend: https://horizonshop.io.vn
     # Backend:  https://api.horizonshop.io.vn
     redirect-uri: ${APP_OAUTH2_REDIRECT_URI:https://horizonshop.io.vn/oauth2/callback}
+    cookie-domain: ${APP_COOKIE_DOMAIN:.horizonshop.io.vn}
+    cookie-secure: ${APP_COOKIE_SECURE:true}
+    cookie-samesite: ${APP_COOKIE_SAMESITE:None}
   cors:
     # Custom Domain: Frontend origin (no wildcard, exact match)
     allowed-origins: ${APP_CORS_ORIGINS:https://horizonshop.io.vn}
