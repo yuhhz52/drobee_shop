@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { fetchOrderAPI } from '@services/user.service'
 import { useSelector, useDispatch } from 'react-redux'
-import { deleteCart } from '@app/store/slices/cart.jsx'
+import { clearCart } from '@app/store/actions/cartAction'
 import Spinner from '@shared/components/Spinner/Spinner.jsx'
 import { formatDisplayPrice } from '@shared/utils/price-format'
 import { getPrimaryResourceUrl } from '@shared/utils/product-media'
@@ -43,7 +43,7 @@ const OrderConfirmed = () => {
         const found = orders.find((o) => String(o.id) === String(orderId))
         if (found) {
           setOrder(found)
-          dispatch(deleteCart())
+          dispatch(clearCart())
         } else {
           setError('Order not found.')
         }

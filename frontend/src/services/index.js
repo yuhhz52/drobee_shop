@@ -5,3 +5,4 @@ export { authService, loginAPI, registerAPI, verifyAPI, getProfileAPI, logoutAPI
 export { userService, fetchUserDetails, fetchOrderAPI, cancelOrderAPI, addAddressAPI, deleteAddressAPI } from './user.service';
 export { orderService, placeOrderAPI, confirmPaymentAPI } from './order.service';
 export { uploadService, fileUploadAPI } from './upload.service';
+export { cartService } from './cart.service';

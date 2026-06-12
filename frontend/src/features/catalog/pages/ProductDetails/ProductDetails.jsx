@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { FiMinus, FiPlus } from 'react-icons/fi';
 import _ from 'lodash';
 import { getAllProducts } from '@services/product.service';
-import { addItemToCartAction } from '@app/store/actions/cartAction';
+import { addItemToCart } from '@app/store/slices/cart.jsx';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
@@ -325,16 +325,18 @@ const ProductDetails = () => {
       return;
     }
 
-    dispatch(
-      addItemToCartAction({
-        productId: product.id,
-        thumbnail: activeImage || primaryImage,
-        name: product.name,
-        variant: selectedVariant || { id: 'default', variantName: '', color: '' },
-        quantity,
-        price: displayPrice,
-      })
-    );
+    const item = {
+      productId: product.id,
+      thumbnail: activeImage || primaryImage,
+      name: product.name,
+      variant: selectedVariant || { id: 'default', variantName: '', color: '' },
+      quantity,
+      price: displayPrice,
+    };
+    // Instant sync update for responsive UI
+    dispatch(addToCart(item));
+    // Async backend sync
+    dispatch(addItemToCart(item));
     setError('');
   }, [
     dispatch,

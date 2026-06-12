@@ -5,6 +5,10 @@ export const ENDPOINTS = {
   categoryById: (id) => `/api/categories/${id}`,
   products: '/api/products',
   productById: (id) => `/api/products/${id}`,
+  cart: '/api/cart',
+  cartItems: '/api/cart/items',
+  cartItem: (itemId) => `/api/cart/items/${itemId}`,
+  cartMerge: '/api/cart/merge',
   auth: {
     login: '/api/auth/login',
     register: '/api/auth/register',

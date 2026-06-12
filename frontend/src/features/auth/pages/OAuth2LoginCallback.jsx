@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { saveTokens, isTokenValid } from '@shared/utils/jwt-helper';
 import { httpClient } from '@core/api/httpClient';
+import { cartService } from '@services/cart.service';
 
 const OAuth2LoginCallback = () => {
   const navigate = useNavigate();
@@ -10,10 +11,16 @@ const OAuth2LoginCallback = () => {
     // Read tokens from HTTP-Only cookies via backend API
     // Custom Domain: cookies are same-site, no URL fallback needed
     httpClient.get('/oauth2/tokens')
-      .then(res => {
+      .then(async res => {
         const { accessToken, refreshToken } = res.data;
         if (accessToken && refreshToken && isTokenValid(accessToken)) {
           saveTokens(accessToken, refreshToken);
+          // Merge anonymous cart into user cart
+          try {
+            await cartService.mergeCart();
+          } catch (e) {
+            console.warn('Cart merge failed:', e);
+          }
           navigate('/');
         } else {
           console.warn('OAuth2 callback: invalid tokens from cookies');

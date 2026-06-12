@@ -4,6 +4,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setLoading } from '@app/store/slices/common.jsx';
 import { loginAPI } from '@services/auth.service';
+import { cartService } from '@services/cart.service';
 import { Controller, useForm } from 'react-hook-form';
 import PasswordInput from '@shared/components/PasswordInput.jsx';
 import '@shared/styles/AuthPages.css';
@@ -42,6 +43,11 @@ const Login = () => {
       try {
         const res = await loginAPI(data);
         if (res?.accessToken || res?.token) {
+          try {
+            await cartService.mergeCart();
+          } catch (e) {
+            console.warn('Cart merge failed:', e);
+          }
           navigate('/');
         } else {
           throw new Error('Invalid response');

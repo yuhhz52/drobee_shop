@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import { FiShoppingCart } from 'react-icons/fi'
 import { formatDisplayPrice } from '@shared/utils/price-format'
 import { colorSelector } from '@shared/components/Filters/ColorFilter'
-import { addItemToCartAction } from '@app/store/actions/cartAction'
+import { addToCart } from '@app/store/slices/cart.jsx'
 import { getPrimaryResourceUrl } from '@shared/utils/product-media'
 import './ProductCard.css'
 
@@ -69,16 +69,15 @@ const ProductCard = ({
     if (!variant) return
     if (variant.stockQuantity != null && variant.stockQuantity <= 0) return
 
-    dispatch(
-      addItemToCartAction({
-        productId: id,
-        thumbnail: imageUrl,
-        name,
-        variant,
-        quantity: 1,
-        price,
-      })
-    )
+    const item = {
+      productId: id,
+      thumbnail: imageUrl,
+      name,
+      variant,
+      quantity: 1,
+      price,
+    }
+    dispatch(addToCart(item))
   }
 
   const canAddToCart =

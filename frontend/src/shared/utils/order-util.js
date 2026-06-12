@@ -10,10 +10,11 @@ export const createOrderRequest = (cartItems, userId, addressId) => {
 
   let total = 0;
   const orderItems = cartItems.map(item => {
-    total += item?.subTotal || 0;
+    const subTotal = item?.subTotal ?? (item.unitPrice ? item.unitPrice * item.quantity : 0);
+    total += subTotal;
     return {
       productId: item.productId,
-      productVariantId: item.variant?.id,
+      productVariantId: item.variantId || item.variant?.id || null,
       discount: 0,
       quantity: item.quantity,
     };

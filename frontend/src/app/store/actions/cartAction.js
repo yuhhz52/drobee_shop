@@ -1,31 +1,10 @@
-import { addToCart, deleteCart, removeFromCart, updateQuantity } from '../slices/cart.jsx';
+import {
+  addItemToCart,
+  updateCartItem,
+  removeCartItem,
+  clearCart,
+  fetchCart,
+  syncCart,
+} from '../slices/cart.jsx';
 
-export const addItemToCartAction = (productItem) => {
-  return (dispatch) => {
-    dispatch(addToCart(productItem));
-  };
-};
-
-export const updateItemCartAction = (productItem) => {
-  return (dispatch) => {
-    dispatch(updateQuantity({
-      variantId: productItem?.variantId || productItem?.variant?.id,
-      quantity: productItem?.quantity
-    }));
-  };
-};
-
-export const delteItemFromCartAction = (payload) => {
-  return (dispatch) => {
-    dispatch(removeFromCart({
-      productId: payload?.productId,
-      variantId: payload?.variantId
-    }));
-  };
-};
-
-export const clearCart = () => {
-  return (dispatch) => {
-    dispatch(deleteCart());
-  };
-};
+export { addItemToCart, updateCartItem, removeCartItem, clearCart, fetchCart, syncCart };

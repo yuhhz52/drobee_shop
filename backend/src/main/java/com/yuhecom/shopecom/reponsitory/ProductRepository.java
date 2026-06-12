@@ -21,6 +21,13 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
             org.springframework.data.domain.Pageable pageable
     );
 
+    @Query("""
+            SELECT DISTINCT p FROM Product p
+            LEFT JOIN FETCH p.resources
+            WHERE p.id = :id
+            """)
+    Optional<Product> findByIdWithResources(@Param("id") UUID id);
+
     /**
      * Fetch scalar associations only. Lists (variants, resources) are loaded separately
      * to avoid Hibernate MultipleBagFetchException.

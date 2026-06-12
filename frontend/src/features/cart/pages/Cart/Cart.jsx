@@ -4,8 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiTrash2, FiLock } from 'react-icons/fi';
 import { selectCartItems } from '@app/store/slices/cart.jsx';
 import {
-  delteItemFromCartAction,
-  updateItemCartAction,
+  updateCartItem,
+  removeCartItem,
+  clearCart,
 } from '@app/store/actions/cartAction';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
@@ -32,8 +33,8 @@ const Cart = () => {
   const cartItems = useSelector(selectCartItems);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [deleteItemId, setDeleteItemId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [deleteItem, setDeleteItem] = useState({});
 
   const subTotal = useMemo(() => {
     let value = 0;
@@ -49,28 +50,24 @@ const Cart = () => {
   );
 
   const onChangeQuantity = useCallback(
-    (value, productId, variantId) => {
-      dispatch(
-        updateItemCartAction({
-          productId,
-          variant_id: variantId,
-          quantity: value,
-        })
-      );
+    (value, itemId) => {
+      dispatch(updateCartItem({ itemId, quantity: value }));
     },
     [dispatch]
   );
 
-  const onDeleteProduct = useCallback((productId, variantId) => {
-    setDeleteItem({ productId, variantId });
+  const onDeleteProduct = useCallback((itemId) => {
+    setDeleteItemId(itemId);
     setModalOpen(true);
   }, []);
 
   const onDeleteItem = useCallback(() => {
-    dispatch(delteItemFromCartAction(deleteItem));
+    if (deleteItemId) {
+      dispatch(removeCartItem(deleteItemId));
+    }
     setModalOpen(false);
-    setDeleteItem({});
-  }, [deleteItem, dispatch]);
+    setDeleteItemId(null);
+  }, [deleteItemId, dispatch]);
 
   if (!cartItems?.length) {
     return (
@@ -127,17 +124,17 @@ const Cart = () => {
             </div>
 
             <ul className="horizon-cart-items">
-              {cartItems.map((item, index) => (
+              {cartItems.map((item) => (
                 <li
-                  key={`${item.productId}-${item.variant?.id || index}`}
+                  key={item.id}
                   className="horizon-cart-item"
                 >
                   <div className="horizon-cart-item__product">
                     <Link
-                      to={`/product/${item.slug || item.productId}`}
+                      to={`/product/${item.productSlug || item.productId}`}
                       className="horizon-cart-item__image"
                     >
-                      <img src={item.thumbnail} alt="" />
+                      <img src={item.productImage} alt="" />
                     </Link>
                     <div>
                       {inferBrandFromProduct(item) && (
@@ -146,20 +143,20 @@ const Cart = () => {
                         </p>
                       )}
                       <h3>
-                        <Link to={`/product/${item.slug || item.productId}`}>
-                          {item.name}
+                        <Link to={`/product/${item.productSlug || item.productId}`}>
+                          {item.productName}
                         </Link>
                       </h3>
                       <p className="horizon-cart-item__meta">
-                        {item.variant?.variantName && (
-                          <span>Version: {item.variant.variantName}</span>
+                        {item.variantName && (
+                          <span>Version: {item.variantName}</span>
                         )}
-                        {item.variant?.color && (
-                          <span> · {item.variant.color}</span>
+                        {item.variantColor && (
+                          <span> · {item.variantColor}</span>
                         )}
                       </p>
                       <p className="horizon-cart-item__unit">
-                        {formatPriceVND(item.price)} each
+                        {formatPriceVND(item.unitPrice)} each
                       </p>
                     </div>
                   </div>
@@ -167,12 +164,8 @@ const Cart = () => {
                   <div className="horizon-cart-item__qty-col">
                     <CartQty
                       quantity={item.quantity}
-                      onChange={(v) =>
-                        onChangeQuantity(v, item.productId, item.variant?.id)
-                      }
-                      onRemove={() =>
-                        onDeleteProduct(item.productId, item.variant?.id)
-                      }
+                      onChange={(v) => onChangeQuantity(v, item.id)}
+                      onRemove={() => onDeleteProduct(item.id)}
                     />
                     <button
                       type="button"

@@ -16,6 +16,7 @@ import { fetchCategories } from '@services/category.service';
 import { loadCategories } from '@app/store/slices/category.jsx';
 import { loadUserInfo, selectUserInfo } from '@app/store/slices/user.jsx';
 import { fetchUserDetails } from '@services/user.service';
+import { fetchCart } from '@app/store/actions/cartAction';
 import { getAccessToken, isTokenValid } from '@shared/utils/jwt-helper';
 import { buildUserInitial, resolveAvatarUrl } from '@shared/utils/avatar';
 import { getPrimaryResourceUrl } from '@shared/utils/product-media';
@@ -41,7 +42,7 @@ const Navigation = () => {
   const categories = useSelector((state) => state.categoryState.categories);
   const userInfo = useSelector(selectUserInfo);
   const cartLength = useSelector((state) =>
-    state.cartState.cart.reduce((sum, item) => sum + (item.quantity || 1), 0)
+    state.cartState.items.reduce((sum, item) => sum + (item.quantity || 1), 0)
   );
   const isLoggedIn = isTokenValid(getAccessToken());
 
@@ -65,6 +66,10 @@ const Navigation = () => {
       .then((res) => dispatch(loadUserInfo(res)))
       .catch(() => {});
   }, [dispatch, isLoggedIn, userInfo?.email]);
+
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
   const navMenus = buildNavMenus(categories);
   const avatarUrl = resolveAvatarUrl(userInfo?.avatarUrl);
