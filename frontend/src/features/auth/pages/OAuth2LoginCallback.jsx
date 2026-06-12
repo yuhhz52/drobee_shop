@@ -8,6 +8,7 @@ const OAuth2LoginCallback = () => {
 
   useEffect(() => {
     // Read tokens from HTTP-Only cookies via backend API
+    // Custom Domain: cookies are same-site, no URL fallback needed
     httpClient.get('/oauth2/tokens')
       .then(res => {
         const { accessToken, refreshToken } = res.data;

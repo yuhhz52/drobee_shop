@@ -51,42 +51,29 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         addHttpOnlyCookie(response, "accessToken", accessToken, COOKIE_MAX_AGE, request);
         addHttpOnlyCookie(response, "refreshToken", refreshToken, COOKIE_MAX_AGE, request);
 
-        log.debug("Cookies set — domain={} path=/ SameSite=Lax (cross-origin)", request.getServerName());
+        log.debug("Cookies set — serverName={} redirectUri={}", request.getServerName(), redirectUri);
         response.sendRedirect(redirectUri);
     }
 
     private void addHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge, HttpServletRequest request) {
-        // HTTPS detection: check X-Forwarded-Proto header (set by reverse proxy / Railway)
-        String protocol = request.getHeader("X-Forwarded-Proto");
-        if (protocol == null) {
-            protocol = request.getScheme();
-        }
-        boolean isHttps = "https".equalsIgnoreCase(protocol)
-                || request.getServerPort() == 443;
+        String serverName = request.getServerName();
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        boolean isHttps = "https".equalsIgnoreCase(forwardedProto)
+                || request.getServerPort() == 443
+                || serverName != null && (serverName.endsWith(".up.railway.app") || serverName.endsWith(".railway.app"));
 
-        if (!isHttps) {
-            log.debug("Request is not HTTPS (serverPort={}, scheme={}), skipping SameSite=None on cookie '{}'",
-                    request.getServerPort(), request.getScheme(), name);
-        }
+        log.debug("Cookie '{}': serverName={} forwardedProto={} isHttps={}", name, serverName, forwardedProto, isHttps);
 
-        ResponseCookie cookie;
-        if (isHttps) {
-            cookie = ResponseCookie.from(name, value)
-                    .httpOnly(true)
-                    .sameSite("None")
-                    .secure(true)
-                    .path("/")
-                    .maxAge(maxAge)
-                    .build();
-        } else {
-            cookie = ResponseCookie.from(name, value)
-                    .httpOnly(true)
-                    .sameSite("Lax")
-                    .secure(false)
-                    .path("/")
-                    .maxAge(maxAge)
-                    .build();
-        }
+        // Custom Domain approach: SameSite=Lax (not None) because frontend and backend share same root domain
+        // e.g., scooter-bay.com (frontend) and api.scooter-bay.com (backend) are same-site
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .sameSite("Lax")
+                .secure(isHttps)
+                .path("/")
+                .maxAge(maxAge)
+                .domain(null)
+                .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
 }
