@@ -20,7 +20,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -67,7 +66,8 @@ public class WebSecurityConfig {
             "/v1/api-docs/**", "/v1/api-docs",
             "/v1/docs", "/v1/docs/swagger-ui/**", "/v1/docs/**",
             "/v1/swagger-ui/**",
-            "/oauth2/success", "/oauth2/tokens", "/oauth2/authorization/google",
+            "/oauth2/**",
+            "/login/oauth2/code/**",
             "/uploads/**",
             "/api/orders/vnpay-return",
             "/actuator/health/**", "/actuator/health", "/actuator/info"
@@ -82,32 +82,26 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
+
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_APIS).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
                     .anyRequest().authenticated()
                 )
-
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler)
-                )
-                .exceptionHandling(eh -> eh
-                        .authenticationEntryPoint(authenticationEntryPoint()) // 401 cho request ko có JWT
-                )
                 .addFilterBefore(new JWTAuthentication(jwtTokenHelper, userDetailsService, tokenBlacklistService),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, authException) -> {
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Unauthorized or invalid token\"}");
-        };
     }
 
     @Bean
@@ -135,8 +129,6 @@ public class WebSecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
-    
 
     @Bean
     public AuthenticationManager authenticationManager() {

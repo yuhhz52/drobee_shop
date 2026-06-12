@@ -163,7 +163,8 @@ logging:
     root: INFO
     com.yuhecom.shopecom: DEBUG
     org.springframework.web: INFO
-    org.springframework.security: INFO
+    org.springframework.security: TRACE
+    org.springframework.security.oauth2: TRACE
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
     org.springframework.mail: ${MAIL_LOG_LEVEL:INFO}
