@@ -6,12 +6,15 @@ import {
   saveTokens,
   clearTokens,
 } from '@shared/utils/jwt-helper';
+import { applyCsrfInterceptor } from '@core/api/csrf';
 
 export const httpClient = axios.create({
   baseURL: env.apiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
+
+applyCsrfInterceptor(httpClient);
 
 httpClient.interceptors.request.use((config) => {
   const token = getAccessToken();
