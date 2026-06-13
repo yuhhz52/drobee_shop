@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiMinus, FiPlus } from 'react-icons/fi';
 import _ from 'lodash';
 import { getAllProducts } from '@services/product.service';
-import { addItemToCart } from '@app/store/slices/cart.jsx';
+import { addItemToCart, addToCart, selectCartError, selectCartLoading } from '@app/store/slices/cart.jsx';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
@@ -171,6 +171,10 @@ const ProductDetails = () => {
   const { product } = useLoaderData();
   const dispatch = useDispatch();
 
+  // Cart state
+  const cartError = useSelector(selectCartError);
+  const cartLoading = useSelector(selectCartLoading);
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [selectedVariantName, setSelectedVariantName] = useState('');
@@ -291,6 +295,13 @@ const ProductDetails = () => {
     setError('');
   }, [product?.id]);
 
+  // Sync cart errors from Redux to local state
+  useEffect(() => {
+    if (cartError) {
+      setError(cartError);
+    }
+  }, [cartError]);
+
   // Auto-select defaults when variants load
   useEffect(() => {
     if (allVariants.length > 0 && !selectedVariantName && !selectedColor) {
@@ -305,7 +316,7 @@ const ProductDetails = () => {
     }
   }, [allVariants.length, hasVersions, allVersions]);
 
-  const addItemToCart = useCallback(() => {
+  const handleAddToCart = useCallback(() => {
     // Require version selection if product has versions
     if (hasVersions && !selectedVariantName) {
       setError('Please select a version');
@@ -329,7 +340,9 @@ const ProductDetails = () => {
       productId: product.id,
       thumbnail: activeImage || primaryImage,
       name: product.name,
-      variant: selectedVariant || { id: 'default', variantName: '', color: '' },
+      variant: selectedVariant
+        ? { id: selectedVariant.id, variantName: selectedVariant.variantName, color: selectedVariant.color }
+        : { id: 'default', variantName: '', color: '' },
       quantity,
       price: displayPrice,
     };
@@ -502,7 +515,7 @@ const ProductDetails = () => {
           <button
             type="button"
             className="horizon-pdp__atc"
-            onClick={addItemToCart}
+            onClick={handleAddToCart}
             disabled={!inStock}
           >
             {inStock ? 'Add to cart' : 'Sold out'}

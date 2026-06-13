@@ -1,33 +1,25 @@
 /**
- * Cart session ID is stored in a browser cookie (httpOnly=false) set by the server.
- * The FE reads it from document.cookie to include in the fetchCart request body
- * or to display the cart count when user is anonymous.
+ * Cart session ID is stored in an HttpOnly cookie set by the server.
+ * The browser automatically attaches the cookie to every request, so the
+ * FE does not need to read it directly.
  *
- * Session is automatically created on first POST /cart/items.
+ * Because HttpOnly cookies cannot be read via document.cookie, the FE
+ * cannot derive a session ID from the client. Cart state (item count,
+ * contents) is fetched through the API and rendered from the response.
+ *
+ * No localStorage fallback is needed: the server is the source of truth.
  */
 
-const SESSION_KEY = 'cart_session';
-
-/** Returns the cart session ID from browser cookie. */
 export const getCartSessionId = () => {
-  const match = document.cookie.match(new RegExp(`(^| )${SESSION_KEY}=([^;]+)`));
-  return match?.[2] || null;
+  // HttpOnly cookie is opaque to JS by design. The server uses it implicitly.
+  return null;
 };
 
-/** Reads Set-Cookie from axios response and persists to localStorage as fallback. */
-export const setCartSessionId = (res) => {
-  const setCookie = res?.headers?.['set-cookie'];
-  if (!setCookie) return;
-
-  const cookieStr = Array.isArray(setCookie) ? setCookie[0] : setCookie;
-  const idMatch = cookieStr.match(new RegExp(`${SESSION_KEY}=([^;]+)`));
-  if (idMatch?.[1]) {
-    localStorage.setItem(SESSION_KEY, idMatch[1]);
-  }
+export const setCartSessionId = () => {
+  // No-op: the server sets the HttpOnly cookie on first cart write.
 };
 
-/** Clears both cookie and localStorage fallback. */
 export const clearCartSession = () => {
-  localStorage.removeItem(SESSION_KEY);
-  document.cookie = `${SESSION_KEY}=; Max-Age=0; Path=/`;
+  // Cannot clear HttpOnly cookie from JS — the server handles cart reset
+  // through DELETE /api/cart. Frontend triggers a clearCart() call instead.
 };

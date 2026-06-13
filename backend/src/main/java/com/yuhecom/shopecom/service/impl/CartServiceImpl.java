@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.auth.entity.User;
+import com.yuhecom.shopecom.dto.CartCheckoutValidation;
 import com.yuhecom.shopecom.dto.CartItemRequest;
 import com.yuhecom.shopecom.dto.CartItemResponse;
 import com.yuhecom.shopecom.dto.CartResponse;
@@ -83,6 +84,12 @@ public class CartServiceImpl implements CartService {
                         "Variant does not belong to this product");
             }
 
+            // Verify variant is active
+            if (!Boolean.TRUE.equals(variant.getActive())) {
+                throw new AppException(ErrorCode.VARIANT_INACTIVE,
+                        "This variant is not available: " + variant.getVariantName());
+            }
+
             // Verify variant has stock
             if (variant.getStockQuantity() == null || variant.getStockQuantity() <= 0) {
                 throw new AppException(ErrorCode.OUT_OF_STOCK,
@@ -103,6 +110,8 @@ public class CartServiceImpl implements CartService {
         }
 
         // ── ③ Validate stock for requested quantity ─────────────────────────
+        // Note: Cart does NOT reserve stock. Multiple users can add the same product.
+        // Stock validation ensures user doesn't request more than physically available.
         int requestedQty = request.getQuantity();
         int existingQty = cart.getItems().stream()
                 .filter(i -> sameItem(i, request.getProductId(), request.getVariantId()))
@@ -115,10 +124,10 @@ public class CartServiceImpl implements CartService {
                     "Maximum quantity per item is " + MAX_QUANTITY_PER_ITEM);
         }
 
-        if (totalQty > (variant != null ? variant.getStockQuantity() : Integer.MAX_VALUE)) {
-            throw new AppException(ErrorCode.OUT_OF_STOCK,
-                    "Requested quantity exceeds available stock. Available: "
-                            + (variant != null ? variant.getStockQuantity() : "unlimited"));
+        // Validate against stock (only for variants, products without variants have unlimited stock)
+        if (variant != null && totalQty > variant.getStockQuantity()) {
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK,
+                    String.format("Only %d items available", variant.getStockQuantity()));
         }
 
         // ── ④ Find or create CartItem (deduplication) ──────────────────────
@@ -182,9 +191,8 @@ public class CartServiceImpl implements CartService {
             if (item.getProductVariant() != null) {
                 ProductVariant variant = item.getProductVariant();
                 if (quantity > variant.getStockQuantity()) {
-                    throw new AppException(ErrorCode.OUT_OF_STOCK,
-                            "Requested quantity exceeds available stock. Available: "
-                                    + variant.getStockQuantity());
+                    throw new AppException(ErrorCode.INSUFFICIENT_STOCK,
+                            String.format("Only %d items available", variant.getStockQuantity()));
                 }
             }
 
@@ -252,13 +260,31 @@ public class CartServiceImpl implements CartService {
             if (existing.isPresent()) {
                 CartItem target = existing.get();
                 int newQty = target.getQuantity() + anonItem.getQuantity();
+                // Validate stock when merging
+                if (target.getProductVariant() != null) {
+                    int stock = target.getProductVariant().getStockQuantity();
+                    if (newQty > stock) {
+                        newQty = stock;
+                    }
+                }
                 // Cap at max
                 target.setQuantity(Math.min(newQty, MAX_QUANTITY_PER_ITEM));
             } else {
+                int qtyToAdd = anonItem.getQuantity();
+                // Validate stock when adding new item
+                if (anonItem.getProductVariant() != null) {
+                    int stock = anonItem.getProductVariant().getStockQuantity();
+                    if (qtyToAdd > stock) {
+                        qtyToAdd = stock;
+                    }
+                }
+                if (qtyToAdd <= 0) {
+                    continue; // Skip if out of stock
+                }
                 CartItem copy = CartItem.builder()
                         .product(anonItem.getProduct())
                         .productVariant(anonItem.getProductVariant())
-                        .quantity(Math.min(anonItem.getQuantity(), MAX_QUANTITY_PER_ITEM))
+                        .quantity(Math.min(qtyToAdd, MAX_QUANTITY_PER_ITEM))
                         .unitPrice(anonItem.getUnitPrice())
                         .productSnapshotName(anonItem.getProductSnapshotName())
                         .productSnapshotSlug(anonItem.getProductSnapshotSlug())
@@ -277,6 +303,94 @@ public class CartServiceImpl implements CartService {
         log.info("Merged anonymous cart into user cart: userId={}, sessionId={}, "
                 + "itemsMerged={}", user.getId(), sessionId, anonymousCart.getItems().size());
         return toResponse(userCart);
+    }
+
+    // ── Checkout Operations ────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public Cart getCartForCheckout(User user, UUID cartId) {
+        if (user == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "User must be logged in to checkout");
+        }
+
+        Cart cart = cartRepository.findByIdAndUserIdForCheckout(cartId, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND,
+                        "Cart not found or does not belong to user"));
+
+        if (cart.getItems().isEmpty()) {
+            throw new AppException(ErrorCode.CART_EMPTY, "Cart is empty");
+        }
+
+        return cart;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CartCheckoutValidation validateCartForCheckout(Cart cart) {
+        List<CartCheckoutValidation.CartItemValidation> itemValidations = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        int totalItems = 0;
+
+        for (CartItem item : cart.getItems()) {
+            int availableStock = Integer.MAX_VALUE;
+            boolean inStock = true;
+            boolean active = true;
+
+            if (item.getProductVariant() != null) {
+                ProductVariant variant = item.getProductVariant();
+                availableStock = variant.getStockQuantity() != null ? variant.getStockQuantity() : 0;
+                inStock = availableStock >= item.getQuantity();
+                active = Boolean.TRUE.equals(variant.getActive());
+            }
+
+            // Check product active status
+            if (!Boolean.TRUE.equals(item.getProduct().getActive())) {
+                active = false;
+            }
+
+            BigDecimal unitPrice = item.getUnitPrice() != null ? item.getUnitPrice() : BigDecimal.ZERO;
+            BigDecimal subTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+
+            itemValidations.add(CartCheckoutValidation.CartItemValidation.builder()
+                    .productId(item.getProduct().getId())
+                    .variantId(item.getProductVariant() != null ? item.getProductVariant().getId() : null)
+                    .productName(item.getProductSnapshotName())
+                    .variantName(item.getVariantSnapshotName())
+                    .quantity(item.getQuantity())
+                    .availableStock(availableStock)
+                    .unitPrice(unitPrice)
+                    .subTotal(subTotal)
+                    .inStock(inStock)
+                    .active(active)
+                    .build());
+
+            if (inStock && active) {
+                totalAmount = totalAmount.add(subTotal);
+                totalItems += item.getQuantity();
+            }
+        }
+
+        return CartCheckoutValidation.builder()
+                .cartId(cart.getId())
+                .items(itemValidations)
+                .totalItems(totalItems)
+                .totalAmount(totalAmount)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void clearCartAfterCheckout(UUID cartId) {
+        Cart cart = cartRepository.findByIdForCheckout(cartId)
+                .orElse(null);
+
+        if (cart != null && !cart.getItems().isEmpty()) {
+            cartItemRepository.deleteAll(new ArrayList<>(cart.getItems()));
+            cart.getItems().clear();
+            cartRepository.save(cart);
+            log.info("Cleared cart after checkout: cartId={}", cartId);
+        }
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
@@ -370,7 +484,9 @@ public class CartServiceImpl implements CartService {
         }
 
         List<CartItemResponse> itemResponses = cart.getItems().stream()
+                .filter(item -> item != null)
                 .map(this::toItemResponse)
+                .filter(response -> response != null)
                 .collect(Collectors.toList());
 
         BigDecimal total = itemResponses.stream()
@@ -386,20 +502,40 @@ public class CartServiceImpl implements CartService {
     }
 
     private CartItemResponse toItemResponse(CartItem item) {
-        BigDecimal subTotal = item.getUnitPrice()
-                .multiply(BigDecimal.valueOf(item.getQuantity()));
+        if (item == null) {
+            log.warn("Null CartItem encountered, skipping");
+            return null;
+        }
+        
+        BigDecimal unitPrice = item.getUnitPrice() != null 
+                ? item.getUnitPrice() 
+                : BigDecimal.ZERO;
+        int quantity = item.getQuantity() > 0 ? item.getQuantity() : 1;
+        BigDecimal subTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        
+        UUID productId = null;
+        if (item.getProduct() != null && item.getProduct().getId() != null) {
+            productId = item.getProduct().getId();
+        } else {
+            log.warn("CartItem has null product, itemId={}", item.getId());
+        }
+        
+        UUID variantId = null;
+        if (item.getProductVariant() != null) {
+            variantId = item.getProductVariant().getId();
+        }
+        
         return CartItemResponse.builder()
                 .id(item.getId())
-                .productId(item.getProduct().getId())
+                .productId(productId)
                 .productName(item.getProductSnapshotName())
                 .productSlug(item.getProductSnapshotSlug())
                 .productImage(item.getProductSnapshotImage())
-                .variantId(item.getProductVariant() != null
-                        ? item.getProductVariant().getId() : null)
+                .variantId(variantId)
                 .variantName(item.getVariantSnapshotName())
                 .variantColor(item.getVariantSnapshotColor())
-                .quantity(item.getQuantity())
-                .unitPrice(item.getUnitPrice())
+                .quantity(quantity)
+                .unitPrice(unitPrice)
                 .subTotal(subTotal)
                 .build();
     }

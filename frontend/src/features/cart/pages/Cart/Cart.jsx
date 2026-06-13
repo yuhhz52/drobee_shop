@@ -124,9 +124,12 @@ const Cart = () => {
             </div>
 
             <ul className="horizon-cart-items">
-              {cartItems.map((item) => (
+              {cartItems.map((item) => {
+                // Use :: separator to avoid conflicts with UUID hyphens
+                const itemKey = item.id || `${item.productId}::${item.variant?.id || 'default'}`;
+                return (
                 <li
-                  key={item.id}
+                  key={itemKey}
                   className="horizon-cart-item"
                 >
                   <div className="horizon-cart-item__product">
@@ -164,19 +167,17 @@ const Cart = () => {
                   <div className="horizon-cart-item__qty-col">
                     <CartQty
                       quantity={item.quantity}
-                      onChange={(v) => onChangeQuantity(v, item.id)}
-                      onRemove={() => onDeleteProduct(item.id)}
+                      onChange={(v) => onChangeQuantity(v, itemKey)}
+                      onRemove={() => onDeleteProduct(itemKey)}
                     />
                     <button
                       type="button"
                       className="horizon-cart-item__remove"
-                      onClick={() =>
-                        onDeleteProduct(item.productId, item.variant?.id)
-                      }
+                      onClick={() => onDeleteProduct(itemKey)}
                       aria-label="Remove"
                     >
                       <FiTrash2 size={16} />
-                      Remove
+                      Xóa
                     </button>
                   </div>
 
@@ -184,7 +185,8 @@ const Cart = () => {
                     {formatPriceVND(item.subTotal)}
                   </div>
                 </li>
-              ))}
+              );
+              })}
             </ul>
 
             <div className="horizon-cart-coupon">

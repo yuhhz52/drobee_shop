@@ -31,6 +31,14 @@ public class ProductVariant extends BaseEntity {
     @Column(nullable = false)
     private Integer stockQuantity;
 
+    /**
+     * Whether this variant is active and can be added to cart.
+     * Inactive variants are hidden from the store but existing cart items are preserved.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean active = true;
+
     @Column(precision = 12, scale = 2)
     private BigDecimal additionalPrice;
 

@@ -17,18 +17,33 @@ export const cartService = {
   },
 
   addItem(payload) {
+    console.log('[cartService.addItem] sending:', payload);
     return httpClient
       .post(ENDPOINTS.cartItems, payload)
       .then((res) => {
-        setCartSessionId(res);
-        return res.data;
+        console.log('[cartService.addItem] response:', res.data);
+        // Backend returns CartResponse with items array
+        const cartResponse = res.data;
+        // Set session cookie if present in response headers
+        if (res.headers?.['set-cookie']) {
+          setCartSessionId(res);
+        }
+        return cartResponse;
+      })
+      .catch((err) => {
+        console.error('[cartService.addItem] error:', err.response?.data || err.message);
+        throw err;
       });
   },
 
   updateQuantity(itemId, quantity) {
     return httpClient
       .patch(ENDPOINTS.cartItem(itemId), { quantity })
-      .then((res) => res.data);
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error('[cartService.updateQuantity] error:', err.response?.data || err.message);
+        throw err;
+      });
   },
 
   removeItem(itemId) {
