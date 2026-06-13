@@ -1,13 +1,18 @@
 package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.entity.Order;
+import com.yuhecom.shopecom.entity.Payment;
+import com.yuhecom.shopecom.reponsitory.PaymentRepository;
 import com.yuhecom.shopecom.service.VnPayService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -17,7 +22,10 @@ import java.util.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class VnPayServiceImpl implements VnPayService {
+
+    private final PaymentRepository paymentRepository;
 
     @Value("${vnpay.tmn-code}")
     private String vnpTmnCode;
@@ -32,9 +40,11 @@ public class VnPayServiceImpl implements VnPayService {
     private String vnpReturnUrl;
 
     @Override
+    @Transactional
     public String createPaymentUrl(Order order, String clientIp) {
         String vnpIpAddr = (clientIp != null && !clientIp.isBlank()) ? clientIp : "127.0.0.1";
         long amount = order.getTotalAmount().longValue() * 100;
+        String txnRef = getRandomNumber(8);
 
         Map<String, String> vnpParams = new LinkedHashMap<>();
         vnpParams.put("vnp_Version", "2.1.0");
@@ -42,7 +52,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnpParams.put("vnp_TmnCode", vnpTmnCode);
         vnpParams.put("vnp_Amount", String.valueOf(amount));
         vnpParams.put("vnp_CurrCode", "VND");
-        vnpParams.put("vnp_TxnRef", getRandomNumber(8));
+        vnpParams.put("vnp_TxnRef", txnRef);
         vnpParams.put("vnp_OrderInfo", "ORDER_ID_" + order.getId());
         vnpParams.put("vnp_OrderType", "other");
         vnpParams.put("vnp_Locale", "vn");
@@ -74,7 +84,14 @@ public class VnPayServiceImpl implements VnPayService {
         String secureHash = hmacSHA512(vnpHashSecret, hashData.toString());
         query.append("&vnp_SecureHash=").append(secureHash);
 
-        log.info("VNPay URL created for orderId={}", order.getId());
+        // Persist txnRef to Payment for later verification on return
+        if (order.getPayment() != null) {
+            Payment payment = order.getPayment();
+            payment.setVnpayTxnRef(txnRef);
+            paymentRepository.save(payment);
+        }
+
+        log.info("VNPay URL created for orderId={}, txnRef={}", order.getId(), txnRef);
         return vnpPayUrl + "?" + query;
     }
 
@@ -107,6 +124,40 @@ public class VnPayServiceImpl implements VnPayService {
                     generatedHash.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             log.warn("VNPay return validation failed", e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean verifyReturnAmount(Map<String, String> params, Order order) {
+        try {
+            String vnpAmount = params.get("vnp_Amount");
+            if (vnpAmount == null) {
+                log.warn("VNPay return missing vnp_Amount for orderId={}", order.getId());
+                return false;
+            }
+
+            long returnedAmount = Long.parseLong(vnpAmount);
+            long expectedAmount = order.getTotalAmount().multiply(BigDecimal.valueOf(100)).longValue();
+
+            if (returnedAmount != expectedAmount) {
+                log.warn("VNPay amount mismatch for orderId={}: expected={}, returned={}",
+                        order.getId(), expectedAmount, returnedAmount);
+                return false;
+            }
+
+            // Persist transaction info from VNPay
+            if (order.getPayment() != null) {
+                Payment payment = order.getPayment();
+                payment.setVnpayTransactionNo(params.get("vnp_TransactionNo"));
+                payment.setVnpayResponseCode(params.get("vnp_ResponseCode"));
+                paymentRepository.save(payment);
+            }
+
+            return true;
+        } catch (NumberFormatException e) {
+            log.warn("VNPay amount parse error: {}", e.getMessage());
             return false;
         }
     }

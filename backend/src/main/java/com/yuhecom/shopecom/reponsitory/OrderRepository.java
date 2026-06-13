@@ -13,6 +13,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.yuhecom.shopecom.entity.PaymentStatus;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,4 +42,19 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
            WHERE o.user = :user
            """)
     List<Order> findByUserWithItems(@Param("user") User user);
+
+    /**
+     * Find abandoned orders - PENDING orders with PENDING payment older than cutoff time.
+     */
+    @Query("""
+           SELECT o FROM Order o
+           WHERE o.orderStatus = :orderStatus
+           AND o.payment.paymentStatus = :paymentStatus
+           AND o.orderDate < :cutoffTime
+           """)
+    List<Order> findAbandonedOrders(
+            @Param("orderStatus") OrderStatus orderStatus,
+            @Param("paymentStatus") PaymentStatus paymentStatus,
+            @Param("cutoffTime") LocalDateTime cutoffTime
+    );
 }

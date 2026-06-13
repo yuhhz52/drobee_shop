@@ -38,4 +38,13 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
+
+    @Column(name = "vnpay_txn_ref", length = 100)
+    private String vnpayTxnRef;
+
+    @Column(name = "vnpay_transaction_no", length = 100)
+    private String vnpayTransactionNo;
+
+    @Column(name = "vnpay_response_code", length = 20)
+    private String vnpayResponseCode;
 }
