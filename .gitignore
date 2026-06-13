@@ -11,3 +11,4 @@ target/
 !.env.example
 .tmp_*.html
 .tmp_*.txt
+.docs
