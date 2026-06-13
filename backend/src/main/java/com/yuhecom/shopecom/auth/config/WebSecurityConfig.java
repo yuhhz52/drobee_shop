@@ -96,7 +96,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_APIS).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/collections/**").permitAll()
                     .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JWTAuthentication(jwtTokenHelper, userDetailsService, tokenBlacklistService),
@@ -109,10 +109,12 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
+
         List<String> origins = appProperties.getCors().getAllowedOrigins()
                 .stream()
                 .filter(o -> o != null && !o.isBlank())
                 .toList();
+
         if (origins.isEmpty()) {
             throw new IllegalStateException(
                 "app.cors.allowed-origins is empty. " +
@@ -120,8 +122,9 @@ public class WebSecurityConfig {
                 "or configure application.yaml with non-empty allowed-origins list."
             );
         }
+
         config.setAllowedOrigins(origins);
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Range"));
         config.setMaxAge(3600L);
