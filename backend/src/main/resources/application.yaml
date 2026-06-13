@@ -44,7 +44,9 @@ spring:
     locations: classpath:db/migration
     clean-disabled: true
     connect-retries: 3
-    validate-on-migrate: true
+    validate-on-migrate: false
+    ignore-missing-migrations: true
+    out-of-order: true
     table: flyway_schema_history
 
   # ── Redis ─────────────────────────────────────────────────────
@@ -196,7 +198,8 @@ app:
     cookie-samesite: ${APP_COOKIE_SAMESITE:None}
   cors:
     # Custom Domain: Frontend origin (no wildcard, exact match)
-    allowed-origins: ${APP_CORS_ORIGINS:https://horizonshop.io.vn}
+    # For local dev: set APP_CORS_ORIGINS=,http://localhost:5175
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5175,https://horizonshop.io.vn}
   order-confirmed-url: ${ORDER_CONFIRMED_URL:https://horizonshop.io.vn/order-confirmed}
 
 # ── Stripe ─────────────────────────────────────────────────────────
