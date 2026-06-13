@@ -2,6 +2,7 @@ package com.yuhecom.shopecom.service;
 
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.repository.UsersRepository;
+import com.yuhecom.shopecom.auth.service.EmailService;
 import com.yuhecom.shopecom.entity.Order;
 import com.yuhecom.shopecom.entity.OrderStatus;
 import com.yuhecom.shopecom.exception.AppException;
@@ -11,6 +12,7 @@ import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.mapper.ProductVariantMapper;
 import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.reponsitory.OrderRepository;
+import com.yuhecom.shopecom.reponsitory.ProductVariantRepository;
 import com.yuhecom.shopecom.service.impl.OrderServiceImpl;
 import com.yuhecom.shopecom.config.AppProperties;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +50,9 @@ public class OrderServiceCancelUnitTest {
     private VnPayService vnPayService;
 
     @Mock
+    private EmailService emailService;
+
+    @Mock
     private ProductVariantMapper productVariantMapper;
 
     @Mock
@@ -65,6 +70,15 @@ public class OrderServiceCancelUnitTest {
     @Mock
     private HttpServletRequest httpServletRequest;
 
+    @Mock
+    private ProductVariantRepository productVariantRepository;
+
+    @Mock
+    private CartService cartService;
+
+    @Mock
+    private CouponService couponService;
+
     private OrderServiceImpl orderService;
 
     @BeforeEach
@@ -75,12 +89,16 @@ public class OrderServiceCancelUnitTest {
                 productService,
                 stripeService,
                 vnPayService,
+                emailService,
                 productVariantMapper,
                 productMapper,
                 orderMapper,
                 usersMapper,
                 appProperties,
-                httpServletRequest
+                httpServletRequest,
+                productVariantRepository,
+                cartService,
+                couponService
         );
     }
 

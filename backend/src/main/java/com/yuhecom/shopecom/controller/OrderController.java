@@ -2,14 +2,17 @@ package com.yuhecom.shopecom.controller;
 
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.dto.ApiResponse;
+import com.yuhecom.shopecom.dto.CheckoutRequest;
 import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
 import com.yuhecom.shopecom.dto.PagingResult;
+import com.yuhecom.shopecom.service.IdempotencyService;
 import com.yuhecom.shopecom.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +29,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
 
     private final OrderService orderService;
+    private final IdempotencyService idempotencyService;
 
     @GetMapping("/vnpay-return")
     public void vnpayReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -37,16 +42,114 @@ public class OrderController {
         for (String key : parameterMap.keySet()) {
             params.put(key, parameterMap.get(key)[0]);
         }
-        String redirectUrl = orderService.buildVnPayRedirectUrl(params);
-        response.sendRedirect(redirectUrl);
+        try {
+            String redirectUrl = orderService.buildVnPayRedirectUrl(params);
+            response.sendRedirect(redirectUrl);
+        } catch (SecurityException e) {
+            log.warn("VNPay return rejected: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @Valid @RequestBody OrderRequest request,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
             Principal principal,
             HttpServletRequest httpRequest) throws Exception {
+
+        // Use header idempotency key or fall back to body
+        String key = idempotencyKey != null ? idempotencyKey : request.getIdempotencyKey();
+
+        // Check for duplicate request
+        if (key != null && !key.isBlank()) {
+            var existingResponse = idempotencyService.getExistingResponse(key);
+            if (existingResponse.isPresent()) {
+                log.info("Returning cached response for idempotency key: {}", key);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cached = existingResponse.get();
+                OrderResponse cachedOrder = OrderResponse.builder()
+                        .orderId(UUID.fromString((String) cached.get("orderId")))
+                        .paymentMethod((String) cached.get("paymentMethod"))
+                        .build();
+                @SuppressWarnings("unchecked")
+                Map<String, String> credentials = (Map<String, String>) cached.get("credentials");
+                if (credentials != null) {
+                    cachedOrder.setCredentials(credentials);
+                }
+                return ResponseEntity.ok(ApiResponse.<OrderResponse>builder()
+                        .result(cachedOrder)
+                        .message("Duplicate request - returning cached response")
+                        .build());
+            }
+        }
+
         OrderResponse result = orderService.createOrder(request, principal, httpRequest);
+
+        // Store response for idempotency
+        if (key != null && !key.isBlank()) {
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("orderId", result.getOrderId().toString());
+            responseMap.put("paymentMethod", result.getPaymentMethod());
+            if (result.getCredentials() != null) {
+                responseMap.put("credentials", result.getCredentials());
+            }
+            idempotencyService.completeKey(key, result.getOrderId(), responseMap);
+        }
+
+        return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(result).build());
+    }
+
+    /**
+     * Checkout from cart - preferred method for creating orders.
+     * Uses cart items and validates stock before deducting.
+     */
+    @PostMapping("/checkout")
+    public ResponseEntity<ApiResponse<OrderResponse>> checkoutFromCart(
+            @Valid @RequestBody CheckoutRequest request,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
+            Principal principal,
+            HttpServletRequest httpRequest) throws Exception {
+
+        // Use header idempotency key or fall back to body
+        String key = idempotencyKey != null ? idempotencyKey : request.getIdempotencyKey();
+
+        // Check for duplicate request
+        if (key != null && !key.isBlank()) {
+            var existingResponse = idempotencyService.getExistingResponse(key);
+            if (existingResponse.isPresent()) {
+                log.info("Returning cached response for idempotency key: {}", key);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cached = existingResponse.get();
+                OrderResponse cachedOrder = OrderResponse.builder()
+                        .orderId(UUID.fromString((String) cached.get("orderId")))
+                        .paymentMethod((String) cached.get("paymentMethod"))
+                        .build();
+                @SuppressWarnings("unchecked")
+                Map<String, String> credentials = (Map<String, String>) cached.get("credentials");
+                if (credentials != null) {
+                    cachedOrder.setCredentials(credentials);
+                }
+                return ResponseEntity.ok(ApiResponse.<OrderResponse>builder()
+                        .result(cachedOrder)
+                        .message("Duplicate request - returning cached response")
+                        .build());
+            }
+        }
+
+        OrderResponse result = orderService.checkoutFromCart(request, principal, httpRequest);
+
+        // Store response for idempotency
+        if (key != null && !key.isBlank()) {
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("orderId", result.getOrderId().toString());
+            responseMap.put("paymentMethod", result.getPaymentMethod());
+            if (result.getCredentials() != null) {
+                responseMap.put("credentials", result.getCredentials());
+            }
+            idempotencyService.completeKey(key, result.getOrderId(), responseMap);
+        }
+
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(result).build());
     }
 

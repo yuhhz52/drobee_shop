@@ -69,4 +69,9 @@ public class Order extends BaseEntity {
     @ToString.Exclude
     private Payment payment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    @ToString.Exclude
+    private Coupon coupon;
+
 }

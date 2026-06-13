@@ -1,7 +1,6 @@
 package com.yuhecom.shopecom.dto;
 
 import lombok.*;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -34,5 +33,9 @@ public class OrderRequest {
     private BigDecimal discount;
     private LocalDateTime expectedDeliveryDate;
 
-
+    /**
+     * Idempotency key for preventing duplicate orders from network retries.
+     * Client should generate a unique UUID for each order attempt.
+     */
+    private String idempotencyKey;
 }

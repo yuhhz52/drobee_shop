@@ -4,6 +4,7 @@ import com.stripe.model.PaymentIntent;
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.auth.entity.User;
 import com.yuhecom.shopecom.auth.repository.UsersRepository;
+import com.yuhecom.shopecom.auth.service.EmailService;
 import com.yuhecom.shopecom.config.AppProperties;
 import com.yuhecom.shopecom.dto.*;
 import com.yuhecom.shopecom.entity.*;
@@ -15,6 +16,8 @@ import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.mapper.ProductVariantMapper;
 import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.reponsitory.OrderRepository;
+import com.yuhecom.shopecom.service.CartService;
+import com.yuhecom.shopecom.service.CouponService;
 import com.yuhecom.shopecom.service.OrderService;
 import com.yuhecom.shopecom.service.ProductService;
 import com.yuhecom.shopecom.service.StripeService;
@@ -36,7 +39,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
@@ -44,15 +46,19 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final StripeService stripeService;
     private final VnPayService vnPayService;
+    private final EmailService emailService;
     private final ProductVariantMapper productVariantMapper;
     private final ProductMapper productMapper;
     private final OrderMapper orderMapper;
     private final UsersMapper usersMapper;
     private final AppProperties appProperties;
     private final HttpServletRequest httpServletRequest;
+    private final com.yuhecom.shopecom.reponsitory.ProductVariantRepository productVariantRepository;
+    private final CartService cartService;
+    private final CouponService couponService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public OrderResponse createOrder(OrderRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception {
         User user = userRepository.findByEmailForProfile(principal.getName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
@@ -78,15 +84,25 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItemRequest itemReq : request.getOrderItemRequest()) {
             Product product = productService.fetchProductById(itemReq.getProductId());
-            ProductVariant variant = productService.fetchProductVariantByIdForUpdate(itemReq.getProductVariantId());
+            ProductVariant variant = productVariantRepository.findWithLockingById(itemReq.getProductVariantId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, 
+                            "Variant not found: " + itemReq.getProductVariantId()));
 
             if (!variant.getProduct().getId().equals(product.getId())) {
                 throw new BusinessException(ErrorCode.BAD_REQUEST, "Product variant does not belong to product");
             }
-            if (variant.getStockQuantity() == null || variant.getStockQuantity() < itemReq.getQuantity()) {
-                throw new BusinessException(ErrorCode.OUT_OF_STOCK, "Product variant is out of stock");
+
+            // ATOMIC STOCK DEDUCTION - prevents race conditions
+            int rowsAffected = productVariantRepository.deductStock(variant.getId(), itemReq.getQuantity());
+            if (rowsAffected == 0) {
+                throw new BusinessException(ErrorCode.OUT_OF_STOCK, 
+                        "Insufficient stock for variant: " + variant.getVariantName());
             }
-            variant.setStockQuantity(variant.getStockQuantity() - itemReq.getQuantity());
+
+            // Re-fetch variant to get updated state for price calculation
+            variant = productVariantRepository.findById(itemReq.getProductVariantId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, 
+                            "Variant not found after stock deduction: " + itemReq.getProductVariantId()));
 
             BigDecimal unitPrice = product.getSalePrice() != null ? product.getSalePrice() : product.getPrice();
             BigDecimal additionalPrice = variant.getAdditionalPrice() == null ? BigDecimal.ZERO : variant.getAdditionalPrice();
@@ -114,7 +130,158 @@ public class OrderServiceImpl implements OrderService {
         order.setPayment(payment);
 
         Order savedOrder = orderRepository.save(order);
-        log.info("Order created id={} method={}", savedOrder.getId(), request.getPaymentMethod());
+        log.info("Order created id={} method={} totalAmount={}", 
+                savedOrder.getId(), request.getPaymentMethod(), totalAmount);
+
+        // Send order confirmation email (async, fire-and-forget)
+        try {
+            if (user != null) {
+                emailService.sendOrderConfirmation(user, savedOrder);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to dispatch order confirmation email for orderId={}", savedOrder.getId(), e);
+        }
+
+        OrderResponse response = OrderResponse.builder()
+                .paymentMethod(request.getPaymentMethod())
+                .orderId(savedOrder.getId())
+                .build();
+
+        if ("CARD".equals(request.getPaymentMethod())) {
+            response.setCredentials(stripeService.createPaymentIntent(order));
+        } else if ("VNPAY".equals(request.getPaymentMethod())) {
+            Map<String, String> credentials = new HashMap<>();
+            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, getClientIp()));
+            response.setCredentials(credentials);
+        }
+
+        return response;
+    }
+
+    /**
+     * Checkout from cart - validates and uses cart items for order creation.
+     * This is the preferred checkout method as it ensures proper stock validation.
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public OrderResponse checkoutFromCart(CheckoutRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception {
+        User user = userRepository.findByEmailForProfile(principal.getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        // Get cart with pessimistic lock
+        Cart cart = cartService.getCartForCheckout(user, request.getCartId());
+
+        // Validate cart before proceeding
+        CartCheckoutValidation validation = cartService.validateCartForCheckout(cart);
+
+        // Check if all items are valid
+        boolean allItemsValid = validation.getItems().stream()
+                .allMatch(item -> item.isInStock() && item.isActive());
+
+        if (!allItemsValid) {
+            throw new AppException(ErrorCode.CART_ITEM_UNAVAILABLE,
+                    "Some items in your cart are no longer available or out of stock");
+        }
+
+        // Validate and calculate coupon discount
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        Coupon appliedCoupon = null;
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            CouponDto couponDto = couponService.validateAndCalculateDiscount(
+                    request.getCouponCode(), validation.getTotalAmount());
+            discountAmount = couponDto.getCalculatedDiscount();
+            
+            // Load full coupon entity for storage
+            appliedCoupon = new Coupon();
+            appliedCoupon.setId(couponDto.getId());
+            appliedCoupon.setCode(couponDto.getCode());
+            log.info("Coupon applied: code={}, discount={}", couponDto.getCode(), discountAmount);
+        }
+
+        // Get address
+        Address address = user.getAddressList().stream()
+                .filter(a -> request.getAddressId().equals(a.getId()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found"));
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        BigDecimal subtotalAmount = BigDecimal.ZERO;
+
+        Order order = Order.builder()
+                .user(user)
+                .address(address)
+                .totalAmount(BigDecimal.ZERO)
+                .orderDate(LocalDateTime.now())
+                .discount(discountAmount)
+                .coupon(appliedCoupon)
+                .paymentMethod(request.getPaymentMethod())
+                .orderStatus(OrderStatus.PENDING)
+                .orderDisplayCode(generateDisplayCode())
+                .build();
+
+        // Process each cart item with atomic stock deduction
+        for (CartItem cartItem : cart.getItems()) {
+            ProductVariant variant = cartItem.getProductVariant();
+            if (variant == null) {
+                continue;
+            }
+
+            // Atomic stock deduction with pessimistic lock
+            int rowsAffected = productVariantRepository.deductStock(variant.getId(), cartItem.getQuantity());
+            if (rowsAffected == 0) {
+                throw new AppException(ErrorCode.OUT_OF_STOCK,
+                        String.format("Insufficient stock for %s", cartItem.getProductSnapshotName()));
+            }
+
+            orderItems.add(OrderItem.builder()
+                    .product(cartItem.getProduct())
+                    .productVariant(variant)
+                    .quantity(cartItem.getQuantity())
+                    .itemPrice(cartItem.getUnitPrice())
+                    .order(order)
+                    .build());
+
+            subtotalAmount = subtotalAmount.add(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        }
+
+        order.setOrderItemList(orderItems);
+        
+        // Calculate final total: subtotal - discount
+        BigDecimal finalTotal = subtotalAmount.subtract(discountAmount);
+        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
+            finalTotal = BigDecimal.ZERO;
+        }
+        order.setTotalAmount(finalTotal);
+
+        Payment payment = new Payment();
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setOrder(order);
+        payment.setAmount(finalTotal);
+        payment.setPaymentMethod(request.getPaymentMethod());
+        order.setPayment(payment);
+
+        Order savedOrder = orderRepository.save(order);
+
+        // Increment coupon usage after successful order
+        if (appliedCoupon != null) {
+            couponService.incrementUsage(appliedCoupon.getId());
+        }
+
+        // Clear cart after successful order creation
+        cartService.clearCartAfterCheckout(cart.getId());
+
+        log.info("Order created from cart: orderId={}, cartId={}, method={}, subtotal={}, discount={}, total={}",
+                savedOrder.getId(), cart.getId(), request.getPaymentMethod(), subtotalAmount, discountAmount, finalTotal);
+
+        // Send order confirmation email (async, fire-and-forget)
+        try {
+            if (user != null) {
+                emailService.sendOrderConfirmation(user, savedOrder);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to dispatch order confirmation email for orderId={}", savedOrder.getId(), e);
+        }
 
         OrderResponse response = OrderResponse.builder()
                 .paymentMethod(request.getPaymentMethod())
@@ -138,11 +305,9 @@ public class OrderServiceImpl implements OrderService {
         log.info("Stripe update status paymentIntentId={} status={}", paymentIntentId, status);
         try {
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-            if (!"succeeded".equals(paymentIntent.getStatus())) {
-                throw new BusinessException(ErrorCode.PAYMENT_INTENT_INVALID, "PaymentIntent not succeeded");
-            }
-
+            String stripeStatus = paymentIntent.getStatus();
             String orderId = paymentIntent.getMetadata().get("orderId");
+
             if (orderId == null || orderId.isBlank()) {
                 throw new BusinessException(ErrorCode.PAYMENT_INTENT_INVALID, "PaymentIntent missing orderId metadata");
             }
@@ -151,14 +316,35 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND, "Order not found: " + orderId));
 
             Payment payment = order.getPayment();
-            payment.setPaymentStatus(PaymentStatus.COMPLETED);
             payment.setPaymentMethod(paymentIntent.getPaymentMethod());
-            order.setOrderStatus(OrderStatus.IN_PROGRESS);
-            orderRepository.save(order);
 
-            log.info("Stripe payment confirmed orderId={}", orderId);
+            if ("succeeded".equals(stripeStatus)) {
+                // Payment successful
+                payment.setPaymentStatus(PaymentStatus.COMPLETED);
+                order.setOrderStatus(OrderStatus.IN_PROGRESS);
+                orderRepository.save(order);
+                log.info("Stripe payment confirmed orderId={}", orderId);
+                if (order.getUser() != null) {
+                    emailService.sendPaymentSuccess(order.getUser(), order);
+                }
+            } else if ("canceled".equals(stripeStatus) || "failed".equals(stripeStatus)) {
+                // Payment failed - restore stock
+                payment.setPaymentStatus(PaymentStatus.FAILED);
+                order.setOrderStatus(OrderStatus.CANCELLED);
+                restoreOrderStock(order.getId());
+                orderRepository.save(order);
+                log.info("Stripe payment failed, stock restored orderId={}", orderId);
+                if (order.getUser() != null) {
+                    emailService.sendPaymentFailure(order.getUser(), order, stripeStatus);
+                }
+            } else {
+                // Other status - don't change order status yet
+                log.info("Stripe payment status: {} for orderId={}", stripeStatus, orderId);
+            }
+
             Map<String, String> result = new HashMap<>();
             result.put("orderId", orderId);
+            result.put("paymentStatus", stripeStatus);
             result.put("amount", String.valueOf(order.getTotalAmount()));
             return result;
 
@@ -185,6 +371,18 @@ public class OrderServiceImpl implements OrderService {
         try {
             String orderInfo = params.get("vnp_OrderInfo");
             orderId = extractOrderId(orderInfo);
+
+            // Verify amount on return to prevent tampering
+            Order order = orderRepository.findById(UUID.fromString(orderId))
+                    .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND, "Order not found: " + orderId));
+
+            boolean amountValid = vnPayService.verifyReturnAmount(params, order);
+            if (!amountValid) {
+                log.warn("VNPay return amount mismatch for orderId={} — possible tampering", orderId);
+                updateOrderStatusVnpay(orderId, false);
+                return buildRedirectUrl(orderId, "fail", "Amount mismatch");
+            }
+
             log.info("VNPay return valid={} responseCode={} orderId={}",
                     valid, params.get("vnp_ResponseCode"), orderId);
 
@@ -220,7 +418,8 @@ public class OrderServiceImpl implements OrderService {
                 "vnp_OrderInfo does not contain valid orderId: " + orderInfo);
     }
 
-    @Transactional
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateOrderStatusVnpay(String orderId, boolean success) {
         orderRepository.findById(UUID.fromString(orderId)).ifPresent(order -> {
             Payment payment = order.getPayment();
@@ -230,9 +429,25 @@ public class OrderServiceImpl implements OrderService {
             } else {
                 payment.setPaymentStatus(PaymentStatus.FAILED);
                 order.setOrderStatus(OrderStatus.CANCELLED);
+                // Restore stock on payment failure
+                restoreOrderStock(order.getId());
             }
             orderRepository.save(order);
             log.info("VNPay order status updated orderId={} success={}", orderId, success);
+
+            // Fire-and-forget email notification
+            try {
+                User user = order.getUser();
+                if (user != null) {
+                    if (success) {
+                        emailService.sendOrderConfirmation(user, order);
+                    } else {
+                        emailService.sendPaymentFailure(user, order, "VNPay payment failed");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Email notification dispatch failed for orderId={}", orderId, e);
+            }
         });
     }
 
@@ -270,7 +485,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean cancelOrder(UUID id, Principal principal) {
         User user = userRepository.findByEmailForAuth(principal.getName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
@@ -285,18 +500,44 @@ public class OrderServiceImpl implements OrderService {
             return false;
         }
 
+        // ATOMIC STOCK RESTORE - prevents race conditions
         if (order.getOrderItemList() != null) {
             for (OrderItem item : order.getOrderItemList()) {
                 ProductVariant variant = item.getProductVariant();
-                if (variant != null && variant.getStockQuantity() != null) {
-                    variant.setStockQuantity(variant.getStockQuantity() + item.getQuantity());
+                if (variant != null) {
+                    productVariantRepository.restoreStock(variant.getId(), item.getQuantity());
+                    log.info("Restored stock for variant {}: +{} units", variant.getId(), item.getQuantity());
                 }
             }
         }
 
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
+        log.info("Order cancelled id={}", id);
+
+        // Notify user about cancellation (async, fire-and-forget)
+        if (order.getUser() != null) {
+            emailService.sendPaymentFailure(order.getUser(), order, "Order cancelled by user");
+        }
         return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void restoreOrderStock(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND, "Order not found: " + orderId));
+
+        if (order.getOrderItemList() != null) {
+            for (OrderItem item : order.getOrderItemList()) {
+                ProductVariant variant = item.getProductVariant();
+                if (variant != null) {
+                    productVariantRepository.restoreStock(variant.getId(), item.getQuantity());
+                    log.info("Restored stock for order {} variant {}: +{} units",
+                            orderId, variant.getId(), item.getQuantity());
+                }
+            }
+        }
     }
 
     @Override

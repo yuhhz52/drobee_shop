@@ -19,10 +19,29 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(2001, "order not found", HttpStatus.NOT_FOUND),
     ADDRESS_NOT_FOUND(2002, "address not found", HttpStatus.NOT_FOUND),
     OUT_OF_STOCK(2003, "out of stock", HttpStatus.BAD_REQUEST),
-    PRODUCT_NOT_FOUND(2004, "product not found", HttpStatus.NOT_FOUND),
-    PRODUCT_VARIANT_NOT_FOUND(2005, "product variant not found", HttpStatus.NOT_FOUND),
-    CATEGORY_NOT_FOUND(2006, "category not found", HttpStatus.NOT_FOUND),
-    CATEGORY_TYPE_NOT_FOUND(2007, "category type not found", HttpStatus.NOT_FOUND);
+    INSUFFICIENT_STOCK(2004, "only %d items available", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_FOUND(2005, "product not found", HttpStatus.NOT_FOUND),
+    PRODUCT_VARIANT_NOT_FOUND(2006, "product variant not found", HttpStatus.NOT_FOUND),
+    VARIANT_NOT_FOUND(2007, "variant not found", HttpStatus.NOT_FOUND),
+    VARIANT_INACTIVE(2008, "variant is not available", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_FOUND(2009, "category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_TYPE_NOT_FOUND(2010, "category type not found", HttpStatus.NOT_FOUND),
+    CART_NOT_FOUND(2011, "cart not found", HttpStatus.NOT_FOUND),
+    CART_EMPTY(2012, "cart is empty", HttpStatus.BAD_REQUEST),
+    CART_ITEM_UNAVAILABLE(2013, "cart item is no longer available", HttpStatus.BAD_REQUEST),
+
+    PAYMENT_FAILED(4001, "payment failed", HttpStatus.BAD_REQUEST),
+    PAYMENT_TIMEOUT(4002, "payment timeout", HttpStatus.BAD_REQUEST),
+    ORDER_ABANDONED(4003, "order abandoned - payment not completed", HttpStatus.GONE),
+
+    DUPLICATE_REQUEST(3001, "duplicate request detected", HttpStatus.CONFLICT),
+
+    COUPON_NOT_FOUND(5001, "coupon not found", HttpStatus.NOT_FOUND),
+    COUPON_INACTIVE(5002, "coupon is inactive", HttpStatus.BAD_REQUEST),
+    COUPON_EXPIRED(5003, "coupon has expired", HttpStatus.BAD_REQUEST),
+    COUPON_NOT_YET_VALID(5004, "coupon is not yet valid", HttpStatus.BAD_REQUEST),
+    COUPON_USAGE_LIMIT_REACHED(5005, "coupon usage limit reached", HttpStatus.BAD_REQUEST),
+    COUPON_MIN_ORDER_NOT_MET(5006, "minimum order amount not met", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;

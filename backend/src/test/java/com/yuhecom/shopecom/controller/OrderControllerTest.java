@@ -1,5 +1,6 @@
 package com.yuhecom.shopecom.controller;
 
+import com.yuhecom.shopecom.service.IdempotencyService;
 import com.yuhecom.shopecom.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,11 +27,14 @@ public class OrderControllerTest {
     @Mock
     private OrderService orderService;
 
+    @Mock
+    private IdempotencyService idempotencyService;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setup() {
-        OrderController controller = new OrderController(orderService);
+        OrderController controller = new OrderController(orderService, idempotencyService);
         this.mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
