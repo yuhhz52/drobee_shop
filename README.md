@@ -2,7 +2,6 @@
 
 Drobee Fullstack E-Commerce Project là ứng dụng fullstack kết hợp React (frontend) và Spring Boot (backend), được Docker hóa để triển khai nhanh và nhất quán giữa các môi trường.
 
-Demo video: https://drive.google.com/file/d/1Vx17PWB32tDK9qL2eNLBnSO5-jRn6_Kz/view?usp=drive_link
 
 ## Tính năng chính
 
