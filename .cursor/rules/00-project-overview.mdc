@@ -1,0 +1,36 @@
+---
+description: Tổng quan dự án Drobee (Horizon Shop) fullstack — stack, kiến trúc, ngôn ngữ & quy ước chung
+globs:
+alwaysApply: true
+---
+
+# Drobee / Horizon Shop — Project Overview
+
+Đây là **Drobee Fullstack E-Commerce** (custom domain `horizonshop.io.vn`): bán xe điện (electric scooters). Project gồm 2 phần chính nằm trong cùng repo:
+
+- `backend/` — **Spring Boot 3.5.3**, Java 21, Maven (root package `com.yuhecom.shopecom`)
+- `frontend/` — **React 19 + Vite 6**, Redux Toolkit, MUI 7, Tailwind 4, react-admin
+
+Có thêm `docker-compose.yml`, `README.md` ở root và `.github/` cho CI.
+
+## Ngôn ngữ & bình luận
+
+- **Code identifiers, class/method/variable names**: tiếng Anh.
+- **User-facing strings, UI text, error messages** (label, alert, toast, button): tiếng Anh là chính, **một số chỗ dùng tiếng Việt** (ví dụ `Footer`, `Register`, `Login`, `ErrorBoundary`, `ProductDetails` có câu tiếng Việt). **Giữ đúng pattern hiện tại**: khi sửa/viết UI text mới, ưu tiên tiếng Anh cho consistency, nhưng tiếng Việt vẫn được chấp nhận nếu phù hợp ngữ cảnh.
+- **Comments trong code**: hỗn hợp EN + VI. Comment cũ có cả hai ngôn ngữ — comment mới có thể dùng EN cho rõ ràng.
+
+## Quy ước dùng chung (áp dụng cho cả backend & frontend)
+
+1. **Không sửa typo `reponsitory`** trong package `com.yuhecom.shopecom.reponsitory` — đây là convention có chủ đích của dự án, tất cả repositories đều nằm ở đây. Có thể thêm file mới vào đúng package này.
+2. **Không commit secrets**. Mọi giá trị nhạy cảm (DB password, JWT secret, Stripe key, OAuth client secret, mail password, VNPay hash secret, Google client secret) **bắt buộc** qua biến môi trường, xem `backend/src/main/resources/application.yaml` để biết các key.
+3. **Idempotency cho payment/order**: mọi mutation tạo order/checkout phải hỗ trợ `X-Idempotency-Key` header (xem pattern trong `OrderController.createOrder`).
+4. **i18n / locale**: project dùng tiếng Anh làm ngôn ngữ chính cho UI; tiền tệ hiển thị qua `@shared/utils/price-format.js` (`formatPriceVND`).
+5. **Conventional commits**: commit message bằng tiếng Anh, dạng `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`.
+6. **Cấu trúc thư mục không được tự ý thay đổi** — đặc biệt package backend và alias frontend. Thêm file mới vào đúng vị trí quy ước.
+
+## Các rule chuyên biệt sẽ được apply tự động
+
+Khi agent chỉnh sửa file trong `backend/**/*.java` → apply rule `backend-java-spring.mdc`.
+Khi agent chỉnh sửa file trong `frontend/src/**/*.{js,jsx}` → apply rule `frontend-react.mdc`.
+
+Đọc thêm các rule chuyên biệt trước khi code, tránh đoán.

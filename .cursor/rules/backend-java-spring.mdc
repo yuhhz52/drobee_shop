@@ -1,0 +1,126 @@
+---
+description: Quy ước backend Spring Boot (Java 21, JPA, MapStruct, JWT, CSRF, RateLimit) cho package com.yuhecom.shopecom
+globs: backend/**/*.java
+alwaysApply: false
+---
+
+# Backend — Spring Boot Conventions (Drobee)
+
+## Stack bắt buộc
+
+- **Java 21** + **Spring Boot 3.5.3** (xem `backend/pom.xml`).
+- **Spring Web, Spring Security (JWT + OAuth2 Google), Spring Data JPA, Spring Validation, Spring Data Redis, Spring Mail, spring-dotenv**.
+- **JPA + Hibernate** (`spring.jpa.hibernate.ddl-auto=validate`), **Flyway** cho migration (`backend/src/main/resources/db/migration/V*.sql`).
+- **PostgreSQL** + **Redis 7** + **Bucket4j** cho rate limit.
+- **MapStruct 1.6.3** + **Lombok** (annotation processor trong `maven-compiler-plugin`).
+- **springdoc-openapi 2.8.8** (Swagger UI ở `/v1/docs`).
+- **Stripe 26.5.1** + **VNPay SDK** (custom service).
+
+## Cấu trúc package (giữ nguyên — đừng tự ý đổi)
+
+```
+com.yuhecom.shopecom
+├── ShopecomApplication.java
+├── auth/                # Auth module: controller, dto, entity, repository, service, config (Security/JWT/Redis)
+├── config/              # CsrfFilter, RateLimitFilter, RateLimitService, AppProperties, SwaggerConfig
+├── controller/          # REST controllers: Cart, Order, Products, Category, Collection, Address, FileUpload
+├── dto/                 # Request/Response DTOs + ApiResponse<T> wrapper + PagingResult
+├── entity/              # JPA @Entity classes, mọi entity extends BaseEntity
+├── exception/           # ErrorCode enum, AppException, BusinessException, GlobalExceptionHandler
+├── mapper/              # MapStruct mapper interfaces
+├── reponsitory/         # "repository"
+├── scheduler/           # @Scheduled jobs (CartCleanupJob, AbandonedOrderCleanupJob)
+└── service/             # Service interfaces + impl/ subpackage
+```
+
+## Quy ước code
+
+### Annotations tiêu chuẩn cho mỗi loại class
+
+- **Controller**: `@RestController` + `@RequestMapping("/api/{resource}")` + `@RequiredArgsConstructor` + `@Slf4j` (Lombok). Ví dụ: `OrderController`, `CartController`.
+- **Service impl**: `@Service` + `@RequiredArgsConstructor` + `@Slf4j`. Service interface KHÔNG cần annotation.
+- **Entity**: `@Entity` + `@Table(name = "snake_case", indexes = {...})` + Lombok `@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder`. Phải `extends BaseEntity`. Dùng `FetchType.LAZY` cho mọi quan hệ `@ManyToOne` / `@OneToMany` / `@OneToOne`. Đánh `@JsonIgnore` trên back-reference (vd `Order.user`).
+- **DTO**: Lombok `@Data` (hoặc `@Getter @Setter`) + `@NoArgsConstructor @AllArgsConstructor @Builder`. Validate với `jakarta.validation.constraints.*` (`@NotNull`, `@NotBlank`, `@Size`, ...). Dùng `Optional<T>` cho find-by-id.
+- **Repository**: `@Repository` extends `JpaRepository<Entity, UUID>`. Tất cả file mới phải nằm trong package `reponsitory` (typo cố ý).
+- **Mapper (MapStruct)**: `@Mapper(componentModel = "spring", uses = {OtherMapper.class})` + `@Mapping(source = "x", target = "y")` cho field khác tên.
+
+### Transactions & locking (RẤT QUAN TRỌNG)
+
+- **Đọc**: `@Transactional(readOnly = true)`.
+- **Ghi / business logic có nhiều bước**: `@Transactional(rollbackFor = Exception.class)` (KHÔPH dùng mặc định `@Transactional` vì nó không rollback cho checked exception).
+- **Cart operations**: dùng `@Lock(LockModeType.PESSIMISTIC_WRITE)` trong repository methods (xem `CartRepository.findByUserIdWithItemsForUpdate`). Mỗi write phải lấy lock trước.
+- **Stock deduction**: LUÔN dùng atomic query `@Modifying @Query("UPDATE ... WHERE id = :id AND stockQuantity >= :qty")` thay vì đọc-sửa-ghi. Nếu `rowsAffected == 0` → throw `OUT_OF_STOCK` / `INSUFFICIENT_STOCK`. Xem `ProductVariantRepository.deductStock` và `restoreStock`.
+- **Lazy collections**: dùng `Hibernate.initialize(...)` hoặc `@EntityGraph(attributePaths = {...})` thay vì trigger LazyInitializationException. Xem `ProductServiceImpl.initializeProductCollections`.
+
+### Error handling
+
+- **Mọi business error** throw `AppException` hoặc subclass `BusinessException` với một `ErrorCode` enum value.
+- **KHÔNG throw** `RuntimeException` thô, `IllegalStateException` tuỳ tiện, hay `ResponseEntity.badRequest().body(...)` cho lỗi nghiệp vụ — để `GlobalExceptionHandler` xử lý nhất quán.
+- **Thêm ErrorCode mới** vào enum `ErrorCode` theo nhóm số (1xxx = auth, 2xxx = product/cart, 3xxx = duplicate, 4xxx = payment, 5xxx = coupon). Enum phải có `(int code, String message, HttpStatus status)`.
+- Validation lỗi (`@Valid`) → `MethodArgumentNotValidException` đã được handle, trả về field đầu tiên lỗi. KHÔNG cần thêm handler.
+
+### API Response
+
+- **Mọi endpoint** trả về `ResponseEntity<ApiResponse<T>>` (generic) với `code` mặc định 1000 = success.
+- `ApiResponse.builder().result(data).build()` cho thành công. KHÔNG truyền `code`/`message` cho success case (đã có default).
+- Một số endpoint cũ trả thẳng DTO (không bọc) — pattern này vẫn còn (`CartController` có endpoint trả `CartResponse` trực tiếp). Khi thêm endpoint mới, **ưu tiên bọc `ApiResponse<T>`** để thống nhất.
+
+### Logging
+
+- Dùng `@Slf4j` + `log.info/warn/error` với **key=value placeholders** (không phải JSON thuần). Ví dụ: `log.info("Add to cart: user={}, product={}, qty={}", email, id, qty);`
+- **KHÔNG log** PII, password, full token, CSRF token, hay session ID đầy đủ. Mask session ID khi log (`maskSessionId` pattern trong `CartController`).
+- Error log dùng 2-arg: `log.error("msg: {}", e.getMessage(), e);`
+
+### Security
+
+- **Authentication**: JWT access token (header `Authorization: Bearer ...`) + refresh token. Tokens lưu ở FE localStorage; access qua `JWTAuthentication` filter. OAuth2 (Google) qua `OAuth2LoginSuccessHandler`.
+- **Authorization**: dùng `@PreAuthorize("hasRole('ADMIN')")` cho admin-only endpoint. KHÔNG tự roll role check trong controller.
+- **CSRF**: dự án dùng **double-submit cookie** custom `CsrfFilter` (xem `config/CsrfFilter.java`). Token `XSRF-TOKEN` cookie (không HttpOnly) + header `X-CSRF-Token`. **Bao vệ POST/PUT/PATCH/DELETE trên `/api/cart/items`, `/api/cart/add`**. Bearer-auth requests exempt (vì CORS preflight đã bảo vệ).
+- **Rate limit**: dùng `RateLimitService` (Bucket4j) qua `RateLimitFilter`. Áp dụng cho `/api/auth/login|register|forgot-password` (5/min per IP), `/api/orders/checkout|create` (10/min per user or IP), `/api/cart/items|add` (60/min per identity). **Khi thêm endpoint mới** cần rate limit, mở rộng `RateLimitFilter` + `RateLimitService`.
+- **Password**: dùng `PasswordEncoderFactories.createDelegatingPasswordEncoder()` (BCrypt). KHÔNG lưu plain text.
+
+### CORS & Cookies
+
+- CORS config ở `WebSecurityConfig.corsConfigurationSource()` đọc origins từ `app.cors.allowed-origins` (env `APP_CORS_ORIGINS`).
+- Cookies (`cart_session`, `accessToken`, `refreshToken`): `HttpOnly`, `Secure`, `Path=/`, `SameSite=Lax` (cart) hoặc `SameSite=None` (OAuth2 cross-site).
+- **Không hardcode origin** — luôn đi qua `application.yaml` + env.
+
+### Idempotency
+
+- Cho `POST /api/orders` và `POST /api/orders/checkout`, FE gửi `X-Idempotency-Key` header (UUID). Backend lưu response trong bảng `idempotency_keys` qua `IdempotencyService`. Khi nhận cùng key, trả về cached response với message `"Duplicate request - returning cached response"`.
+
+## Cấu trúc code mẫu cho 1 module mới (ví dụ: Reviews)
+
+```
+dto/ReviewRequest.java            # @Getter @Setter @Builder + validation
+dto/ReviewResponse.java
+entity/Review.java                # extends BaseEntity, UUID @Id
+reponsitory/ReviewRepository.java # @Repository extends JpaRepository<Review, UUID>
+service/ReviewService.java        # interface
+service/impl/ReviewServiceImpl.java  # @Service + @Transactional(rollbackFor = ...)
+controller/ReviewController.java  # @RestController + @RequestMapping("/api/reviews")
+mapper/ReviewMapper.java          # MapStruct
+```
+
+## Migration
+
+- File đặt tên `V{version}__{descriptive_name.sql` trong `backend/src/main/resources/db/migration/`.
+- Schema mới: `V900__schema_full.sql` (cũ). Seed data: `V901__seed_full.sql`. Migration tiếp theo phải có version cao hơn.
+- **KHÔNG** sửa file migration đã chạy trên bất kỳ môi trường nào — tạo file mới.
+
+## Testing
+
+- Unit test ở `backend/src/test/java/...` đã có sẵn cho một số service. Dùng **JUnit 5 + Spring Boot Test + Mockito** (đã có sẵn qua `spring-boot-starter-test`).
+- Tên file: `*UnitTest.java` cho pure unit, `*IntegrationTest.java` cho integration.
+- Khi viết service mới có logic nghiệp vụ phức tạp, **bắt buộc viết unit test** cho happy path + ít nhất 1 error path.
+
+## Điều KHÔNG được làm
+
+- ❌ Hardcode bất kỳ secret/credential nào trong code.
+- ❌ Commit file `.env` hay `application-local.yaml` thật.
+- ❌ Thêm dependency mới mà chưa hỏi user.
+- ❌ Dùng `synchronized` thay vì pessimistic lock database cho cart/order.
+- ❌ Sửa typo `reponsitory` thành `repository`.
+- ❌ Trả về raw `Entity` từ controller (luôn qua DTO/MapStruct).
+- ❌ Log full session ID, JWT, password.
+- ❌ Tạo migration "fix" bằng cách sửa file cũ.

@@ -1,0 +1,182 @@
+---
+description: Quy ước frontend React 19 + Vite 6 (Redux Toolkit, MUI, Tailwind, react-hook-form, Axios) cho dự án Drobee
+globs: frontend/src/**/*.{js,jsx}
+alwaysApply: false
+---
+
+# Frontend — React Conventions (Drobee)
+
+## Stack bắt buộc
+
+- **React 19** + **Vite 6** (`frontend/vite.config.js`).
+- **Redux Toolkit** + **react-redux** (slice pattern, `createAsyncThunk`).
+- **React Router 7** (`createBrowserRouter`).
+- **Axios** (qua 2 client: `httpClient` cho auth, `publicClient` cho public).
+- **MUI 7** + **Tailwind CSS 4** + custom CSS modules theo feature.
+- **react-hook-form** + `Controller` cho custom inputs.
+- **react-admin 5.9** cho admin panel.
+- **Stripe (@stripe/react-stripe-js, @stripe/stripe-js)**.
+- **lodash**, **uuid**, **classnames**, **framer-motion**, **react-icons**.
+
+## Vite aliases (BẮT BUỘC dùng, không dùng đường dẫn tương đối dài)
+
+Cấu hình trong `frontend/vite.config.js`:
+
+| Alias       | Path                          | Dùng cho                                      |
+|-------------|-------------------------------|-----------------------------------------------|
+| `@`         | `./src`                       | fallback root                                 |
+| `@app`      | `./src/app`                   | Providers, router, store                      |
+| `@core`     | `./src/core`                  | API client, env config, endpoints             |
+| `@services` | `./src/services`              | API service layer                             |
+| `@hooks`    | `./src/hooks`                 | Custom hooks (`@hooks/api/*` cho data hooks)  |
+| `@features` | `./src/features`              | Feature-based modules                         |
+| `@shared`   | `./src/shared`                | Shared components, utils, styles              |
+| `@data`     | `./src/data`                  | Static data, fixtures                         |
+| `@assets`   | `./src/assets`                | Images, fonts                                 |
+
+## Cấu trúc thư mục (feature-based, giữ nguyên)
+
+```
+frontend/src/
+├── app/
+│   ├── App.jsx
+│   ├── providers/AppProviders.jsx     # Provider <Router> + Redux + ErrorBoundary
+│   ├── router.jsx                     # createBrowserRouter, khai báo route + errorElement
+│   └── store/
+│       ├── index.js                   # configureStore + combineReducers
+│       ├── slices/                    # auth, cart, category, common, product, user (đuôi .jsx)
+│       └── actions/                   # re-export thunks
+├── core/
+│   ├── api/
+│   │   ├── httpClient.js              # axios + Bearer token + 401 refresh + CSRF
+│   │   ├── publicClient.js            # axios no-auth + getAuthHeaders()
+│   │   ├── csrf.js                    # applyCsrfInterceptor
+│   │   ├── endpoints.js               # ENDPOINTS object (string + function)
+│   │   └── extractors.js              # extractList, extractTotalElements
+│   └── config/env.js                  # env.apiBaseUrl, env.stripePublicKey
+├── features/
+│   ├── admin/                         # react-admin AdminPanel
+│   ├── auth/                          # Login, Register, VerifyCode, OAuth2 callback, layout
+│   ├── cart/                          # Cart page + cartAction
+│   ├── catalog/                       # ProductListPage, ProductDetails, loader, filters
+│   ├── checkout/                      # Checkout
+│   ├── home/                          # HomeScooter
+│   ├── navigation/                    # Nav, menu
+│   ├── order/                         # OrderComfirmed
+│   ├── payment/                       # Stripe Payment, StripeReturnHandler
+│   └── footer/                        # Footer
+├── hooks/                             # index.js + api/{useAuth,useCategories,useCollection,useProduct,useProducts,useProductSearch}.js
+├── services/                          # 1 file mỗi resource: auth, cart, category, collection, order, product, upload, user (+ index.js)
+├── shared/
+│   ├── components/                    # Button, Filters, Carousel, ErrorBoundary, ProtectdRouter (typo cố ý), Spinner, etc.
+│   ├── styles/                        # Global CSS (AuthPages.css, kalles-shop.css, modal.js)
+│   └── utils/                         # cart-session, jwt-helper, price-format, product-media, slug, order-util
+├── assets/
+└── data/
+```
+
+**Lưu ý**: tên file `ProtectdRouter` (thiếu 'e') là typo có sẵn — **giữ nguyên** khi tham chiếu.
+
+## Quy tắc code
+
+### Component
+
+- **Functional component only**, dùng hooks. KHÔNG dùng class component (trừ `ErrorBoundary` đã có sẵn).
+- **Mỗi component export default** ở cuối file. Named export chỉ khi cần thiết (sub-component trong cùng file thường dùng const arrow không export).
+- Props destructure ngay ở parameter: `const Cart = ({ items, onRemove }) => { ... }`.
+- State đặt theo ngữ nghĩa: `const [quantity, setQuantity] = useState(1);` — KHÔNG dùng `useState({quantity:1, ...})` cho state đơn lẻ.
+- Side effects trong `useEffect` với dependency array **đầy đủ và chính xác**. Tránh dùng `// eslint-disable-next-line react-hooks/exhaustive-deps` trừ khi thật cần (xem `Checkout.jsx` có comment hợp lệ).
+- Cleanup trong `useEffect` return function khi subscribe event listener / timer / body overflow.
+- `useCallback` cho handler truyền xuống component con hoặc nằm trong dep array. `useMemo` cho derived data tốn computation.
+- Mỗi page/component lớn chia thành sub-component nội bộ (arrow const) ở đầu file khi giúp code dễ đọc (xem `ProductDetails.jsx` có `SpecsSection`, `ProductModal`).
+
+### Redux
+
+- **Mỗi slice** đặt trong `@app/store/slices/{name}.jsx` (lưu ý extension `.jsx` không phải `.js` — theo convention hiện tại).
+- Slice dùng `createSlice` + `createAsyncThunk` cho async actions (login, fetchCart, addItemToCart...).
+- Pattern: thunks → extraReducers xử lý `pending | fulfilled | rejected`; reducers đồng bộ dùng cho UI local.
+- Selector export theo state path: `export const selectCartItems = (state) => state.cartState.items;`
+- **Re-export** các thunks qua `@app/store/actions/{name}Action.js` (xem `cartAction.js`).
+- Tên state key trong rootReducer phải khớp với tên slice property: `cartState`, `authState`, `productState`, `categoryState`, `commonState`, `userState`.
+- Với cart: **persist localStorage** trong cả reducers và extraReducers. Local cart item dùng composite key `productId::variantId` (separator `::` vì UUID có dấu `-`).
+
+### Service layer (`@services/*.js`)
+
+- Mỗi service là object export named, methods trả Promise resolve `res.data` (unwrap sẵn):
+  ```js
+  export const productService = {
+    getAllProducts(params) { return httpClient.get(...).then(r => r.data); }
+  };
+  export const { getAllProducts } = productService;
+  ```
+- Dùng `ENDPOINTS` từ `@core/api/endpoints`. KHÔNG hardcode URL trong component.
+- Error handling: throw `err.response?.data` (đã là `ApiResponse` shape từ backend) hoặc `err.message`. KHÔNG swallow lỗi im lặng.
+- Với public endpoint (không cần auth) → dùng `publicClient` + `getAuthHeaders()` thủ công nếu cần. Với auth required → dùng `httpClient`.
+
+### API clients (`@core/api/`)
+
+- **`httpClient`**: auto-attach `Authorization: Bearer {token}` từ `getAccessToken()`. Tự refresh token khi 401 (gọi `/api/auth/refresh` với refreshToken trong body). Sau refresh fail → `clearTokens()` + redirect `/v1/login`.
+- **`publicClient`**: không auto-attach token; dùng `getAuthHeaders()` nếu cần. Đây là client cho những nơi muốn kiểm soát auth header (admin panel, một số cart service).
+- **CSRF**: tự động gắn `X-CSRF-Token` header cho POST/PUT/PATCH/DELETE qua `applyCsrfInterceptor` (đã gắn vào `httpClient`). Server set cookie `XSRF-TOKEN` không HttpOnly.
+- **`ENDPOINTS`**: object literal với string path hoặc function `(id) => \`/api/x/${id}\``. Khi thêm endpoint mới, thêm vào đây, không hardcode.
+
+### Routing
+
+- Dùng `createBrowserRouter` ở `@app/router.jsx`. Nested routes qua `children: []`.
+- Mỗi route cần `errorElement: <AppRouteError />` (ngoại trừ routes không có error riêng).
+- Protected route: bọc element trong `<ProtectedRoute requiredRole="ROLE_ADMIN">` (xem `@shared/components/ProtectdRouter/ProtectedRouter.jsx`).
+- Loader pattern: route có `loader: loaderProductBySlug` (xem `@features/catalog/routes/product.loader.js`). Loader throw `Response` với status để React Router render errorElement.
+- Navigate programmatic: `useNavigate()` từ `react-router-dom`.
+
+### Form
+
+- **react-hook-form** + `useForm({ defaultValues: {...} })`.
+- Dùng `Controller` cho custom input component (vd `PasswordInput`, MUI inputs).
+- Validation qua `register('field', { required, pattern, validate, minLength, ... })`.
+- Submit handler: `handleSubmit(onSubmit)`, `onSubmit` async có thể throw.
+
+### UI / Styling
+
+- **Tailwind utility classes** cho layout nhanh (`flex`, `min-h-screen`, `text-center`...) — xem `ErrorBoundary.jsx`, `OAuth2LoginCallback.jsx`.
+- **MUI components** cho interactive widgets (`Pagination`, `Stack`, `Dialog`).
+- **Custom CSS** theo feature với prefix cố định (BEM-like):
+  - `horizon-*` cho các page mới (vd `horizon-cart-page`, `horizon-plp`, `horizon-pdp`, `horizon-auth-card`).
+  - `kalles-shop*` cho flow checkout/cart summary (đã có sẵn).
+  - Class name dùng kebab-case và dấu `__` cho element con: `horizon-cart-page__header`.
+- **CSS file import trực tiếp** trong component: `import './Cart.css';` (không qua CSS modules).
+- Style nhỏ inline: dùng `style={{ ... }}` cho dynamic value, tránh dồn vào CSS file.
+- Icons: `react-icons/fi` (Feather) cho action icons (`FiArrowLeft`, `FiTrash2`, `FiLock`, `FiPlus`, `FiMinus`).
+- Format tiền: `formatPriceVND` từ `@shared/utils/price-format` cho cart/checkout; `formatDisplayPrice` cho nơi khác.
+
+### Error handling UX
+
+- Catch error từ API: `err.response?.data?.message` (backend `ApiResponse.message`) hoặc `err.response?.data?.errorCode` cho case cụ thể.
+- VD cho cart: `OUT_OF_STOCK` → extract `Available: N` từ message (xem `cart.jsx` slice).
+- Component state `error: string` cho inline message. Toast/toast UI chỉ dùng khi cần.
+- KHÔNG dùng `alert()` trừ trường hợp đặc biệt (`Login.jsx` có dùng cho invalid credentials — pattern này legacy, có thể giữ nhưng cân nhắc thay bằng toast).
+
+### Auth flow
+
+- `Login` / `Register` → dispatch login → `saveTokens(access, refresh)` → `cartService.mergeCart()` → `navigate('/')`.
+- `OAuth2LoginCallback`: gọi `/oauth2/tokens` để đọc token từ HttpOnly cookie, save và merge cart.
+- `Logout`: gọi logout API (FE gửi `refreshToken` qua body với `publicClient` + `withAuth()`), xoá tokens localStorage, navigate.
+- Token validity check: `isTokenValid(token)` từ `@shared/utils/jwt-helper` (decode + check `exp`).
+- `ProtectedRoute` check token trước, sau đó check role nếu có `requiredRole`.
+
+### Admin panel
+
+- File `@features/admin/pages/AdminPanel/AdminPanel.jsx` dùng **react-admin**. Khi thêm Resource mới, khai báo ở đây + tạo `*List` / `*Edit` / `*Create` components trong subfolder.
+- Custom data provider dùng `simpleRestProvider` từ `ra-data-simple-rest` + override `getList` để parse `Content-Range`.
+- Upload file qua lifecycle `beforeSave` của `withLifecycleCallbacks` (xem pattern hiện tại cho products).
+
+## Điều KHÔNG được làm
+
+- ❌ Hardcode URL API (luôn qua `@core/api/endpoints` + `@core/config/env`).
+- ❌ Hardcode secret/key, đặc biệt Stripe publishable key (phải qua `VITE_STRIPE_PUBLIC_KEY`).
+- ❌ Dùng đường dẫn tương đối dài kiểu `../../../services/cart.service` (luôn dùng alias `@services/...`).
+- ❌ `console.log` debug trong code production (chỉ `console.error` / `console.warn` khi cần). Pattern hiện tại có nhiều `console.log('[addItemToCart]...')` — **không nhân bản** khi viết code mới.
+- ❌ `localStorage.setItem` cho dữ liệu nhạy cảm ngoài `accessToken`/`refreshToken`/`cart`. Cart session ID do server HttpOnly quản lý — FE không đọc được.
+- ❌ Đổi typo `ProtectdRouter` thành `ProtectedRouter` (giữ nguyên để khỏi break import hiện tại, trừ khi user yêu cầu refactor).
+- ❌ Tự ý thêm dependency mới mà chưa hỏi user.
+- ❌ Disable ESLint rule trừ khi có comment giải thích hợp lý.
+- ❌ Tạo slice mới trong file `.js` (giữ convention `.jsx` cho slices — Redux Toolkit không yêu cầu JSX nhưng project đã chọn `.jsx`).
