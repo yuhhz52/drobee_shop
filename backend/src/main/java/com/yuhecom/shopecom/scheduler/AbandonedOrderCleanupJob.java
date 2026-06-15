@@ -3,8 +3,9 @@ package com.yuhecom.shopecom.scheduler;
 import com.yuhecom.shopecom.entity.Order;
 import com.yuhecom.shopecom.entity.OrderStatus;
 import com.yuhecom.shopecom.entity.PaymentStatus;
-import com.yuhecom.shopecom.reponsitory.OrderRepository;
-import com.yuhecom.shopecom.reponsitory.ProductVariantRepository;
+import com.yuhecom.shopecom.repository.OrderRepository;
+import com.yuhecom.shopecom.repository.ProductVariantRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

@@ -2,7 +2,7 @@ package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.entity.Order;
 import com.yuhecom.shopecom.entity.Payment;
-import com.yuhecom.shopecom.reponsitory.PaymentRepository;
+import com.yuhecom.shopecom.repository.PaymentRepository;
 import com.yuhecom.shopecom.service.VnPayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

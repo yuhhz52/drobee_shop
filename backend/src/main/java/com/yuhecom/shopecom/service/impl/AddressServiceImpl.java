@@ -7,7 +7,7 @@ import com.yuhecom.shopecom.entity.Address;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
-import com.yuhecom.shopecom.reponsitory.AddressRepository;
+import com.yuhecom.shopecom.repository.AddressRepository;
 import com.yuhecom.shopecom.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

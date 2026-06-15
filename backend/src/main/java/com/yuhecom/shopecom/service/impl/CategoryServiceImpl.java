@@ -8,7 +8,7 @@ import com.yuhecom.shopecom.entity.CategoryType;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.mapper.CategoryMapper;
-import com.yuhecom.shopecom.reponsitory.CategoryRepository;
+import com.yuhecom.shopecom.repository.CategoryRepository;
 import com.yuhecom.shopecom.service.CategoryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

@@ -15,7 +15,7 @@ import com.yuhecom.shopecom.mapper.OrderMapper;
 import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.mapper.ProductVariantMapper;
 import com.yuhecom.shopecom.mapper.UsersMapper;
-import com.yuhecom.shopecom.reponsitory.OrderRepository;
+import com.yuhecom.shopecom.repository.OrderRepository;
 import com.yuhecom.shopecom.service.CartService;
 import com.yuhecom.shopecom.service.CouponService;
 import com.yuhecom.shopecom.service.OrderService;
@@ -53,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
     private final UsersMapper usersMapper;
     private final AppProperties appProperties;
     private final HttpServletRequest httpServletRequest;
-    private final com.yuhecom.shopecom.reponsitory.ProductVariantRepository productVariantRepository;
+    private final com.yuhecom.shopecom.repository.ProductVariantRepository productVariantRepository;
     private final CartService cartService;
     private final CouponService couponService;
 

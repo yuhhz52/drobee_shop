@@ -3,7 +3,8 @@ package com.yuhecom.shopecom.service;
 import com.yuhecom.shopecom.entity.IdempotencyKey;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.ErrorCode;
-import com.yuhecom.shopecom.reponsitory.IdempotencyKeyRepository;
+import com.yuhecom.shopecom.repository.IdempotencyKeyRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

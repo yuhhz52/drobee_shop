@@ -2,7 +2,7 @@ package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.dto.CollectionDto;
 import com.yuhecom.shopecom.mapper.CollectionMapper;
-import com.yuhecom.shopecom.reponsitory.CollectionRepository;
+import com.yuhecom.shopecom.repository.CollectionRepository;
 import com.yuhecom.shopecom.service.CollectionService;
 import org.springframework.stereotype.Service;
 
