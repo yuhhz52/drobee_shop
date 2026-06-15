@@ -5,7 +5,7 @@ import com.yuhecom.shopecom.entity.Coupon;
 import com.yuhecom.shopecom.entity.CouponType;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.ErrorCode;
-import com.yuhecom.shopecom.reponsitory.CouponRepository;
+import com.yuhecom.shopecom.repository.CouponRepository;
 import com.yuhecom.shopecom.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
