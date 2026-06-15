@@ -1,21 +1,58 @@
 {
   "footer": {
-    "description": "Drobee Shop - Your trusted online store",
+    "brand": {
+      "name": "HORIZON",
+      "tagline": "Ride the Future. Today.",
+      "description": "Horizon Shop offers premium electric scooters that blend minimalist design, cutting-edge technology, and sustainability — empowering every green journey you take."
+    },
     "contact": {
-      "email": "contact@drobee.com",
-      "phone": "+84 123 456 789",
-      "address": "Ho Chi Minh City, Vietnam"
+      "email": "support@horizonshop.io.vn",
+      "phone": "+84 909 123 456",
+      "address": "5th Floor, Innovation Building, District 1, Ho Chi Minh City, Vietnam.",
+      "hours": "Mon - Sat: 8:30 - 21:00"
     },
-    "socialLinks": {
-      "facebook": "https://facebook.com/drobee",
-      "instagram": "https://instagram.com/drobee",
-      "twitter": "https://twitter.com/drobee"
+    "shop": {
+      "title": "Shop",
+      "links": [
+        { "label": "All Products", "path": "/products" },
+        { "label": "Electric Scooters", "path": "/collections/scooters" },
+        { "label": "Accessories", "path": "/collections/accessories" },
+        { "label": "New Arrivals", "path": "/collections/new" },
+        { "label": "Best Sellers", "path": "/collections/best-sellers" }
+      ]
     },
-    "links": [
-      { "name": "About Us", "url": "/about" },
-      { "name": "Contact", "url": "/contact" },
-      { "name": "Privacy Policy", "url": "/privacy" },
-      { "name": "Terms of Service", "url": "/terms" }
-    ]
+    "help": {
+      "title": "Help & Info",
+      "links": [
+        { "label": "About Us", "path": "/about" },
+        { "label": "Contact", "path": "/contact" },
+        { "label": "Shipping & Delivery", "path": "/shipping" },
+        { "label": "Returns & Warranty", "path": "/returns" },
+        { "label": "FAQ", "path": "/faq" },
+        { "label": "Privacy Policy", "path": "/privacy" },
+        { "label": "Terms of Service", "path": "/terms" }
+      ]
+    },
+    "socialLinks": [
+      { "name": "Facebook", "url": "https://facebook.com/horizonshop", "icon": "FaFacebookF" },
+      { "name": "Instagram", "url": "https://instagram.com/horizonshop", "icon": "FaInstagram" },
+      { "name": "YouTube", "url": "https://youtube.com/@horizonshop", "icon": "FaYoutube" },
+      { "name": "TikTok", "url": "https://tiktok.com/@horizonshop", "icon": "FaTiktok" }
+    ],
+    "paymentMethods": [
+      { "name": "Visa", "icon": "FaCcVisa" },
+      { "name": "Mastercard", "icon": "FaCcMastercard" },
+      { "name": "American Express", "icon": "FaCcAmex" },
+      { "name": "PayPal", "icon": "FaCcPaypal" },
+      { "name": "Stripe", "icon": "FaCcStripe" },
+      { "name": "VNPay", "icon": "FaMoneyBillWave" }
+    ],
+    "newsletter": {
+      "title": "NEWSLETTER",
+      "lead": "Join the Horizon Rider Family & Stay Informed",
+      "placeholder": "Your email address",
+      "buttonLabel": "Subscribe"
+    },
+    "copyright": "(c) 2026 Horizon Shop. All rights reserved. Powered by Drobee."
   }
 }

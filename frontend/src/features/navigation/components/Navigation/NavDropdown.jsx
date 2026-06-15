@@ -26,15 +26,6 @@ const NavDropdown = ({ menu, onNavigate }) => {
       <div className="horizon-dropdown__inner">
         {menu.columns.map((column, colIndex) => (
           <div key={column.key || column.title || colIndex} className="horizon-dropdown__col">
-            {column.title && (
-              <Link
-                to={column.to || menu.to}
-                className="horizon-dropdown__heading"
-                onClick={onNavigate}
-              >
-                {column.title}
-              </Link>
-            )}
             <ul>
               {column.links?.map((link) => (
                 <li key={link.key || link.label}>

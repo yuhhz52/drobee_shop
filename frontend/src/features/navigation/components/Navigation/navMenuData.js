@@ -68,9 +68,5 @@ export const buildNavMenus = (categories = []) => {
 
 export const languages = [
   'English',
-  'Français',
-  'Español',
-  'Italiano',
-  'Polski',
-  'Deutsch',
+  'Tiếng Việt',
 ];

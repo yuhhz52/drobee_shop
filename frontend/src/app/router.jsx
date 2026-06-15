@@ -19,6 +19,7 @@ import AdminPanel from '@features/admin/pages/AdminPanel/AdminPanel';
 import ShopPages from '@features/shop/pages/ShopPages/ShopPages';
 import Logouts from '@features/account/pages/Account/Logouts';
 import StripeReturnHandler from '@features/payment/pages/StripeReturnHandler/StripeReturnHandler';
+import Contact from '@features/contact/pages/Contact/Contact';
 import Page403 from '@shared/components/Page403';
 import AppRouteError from '@shared/components/AppRouteError';
 
@@ -71,6 +72,7 @@ export const router = createBrowserRouter([
         element: <ProductDetails />,
       },
       { path: 'shops', element: <ShopPages /> },
+      { path: 'contact', element: <Contact /> },
       { path: 'cart-items', element: <Cart /> },
       {
         path: 'login',

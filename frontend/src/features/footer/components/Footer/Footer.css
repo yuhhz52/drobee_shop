@@ -1,7 +1,7 @@
 .horizon-footer {
   background: #111;
   color: #fff;
-  padding: 3.5rem 15px 2rem;
+  padding: 3.5rem 15px 1.5rem;
 }
 
 .horizon-footer__inner {
@@ -12,33 +12,71 @@
 .horizon-footer__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-bottom: 2.5rem;
+  gap: 2.25rem;
+  margin-bottom: 2rem;
 }
 
-.horizon-footer__about h4,
-.horizon-footer__col h4,
-.horizon-footer__newsletter h4 {
+.horizon-footer__col h4 {
   margin: 0 0 1rem;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  color: #fff;
+  text-transform: uppercase;
 }
 
-.horizon-footer__lead {
-  font-weight: 600;
+/* Brand column */
+.horizon-footer__brand-name {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fff;
+}
+
+.horizon-footer__tagline {
   margin: 0 0 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--horizon-red, #e53935);
+  letter-spacing: 0.02em;
 }
 
-.horizon-footer__about p {
-  margin: 0;
+.horizon-footer__description {
+  margin: 0 0 1.25rem;
   font-size: 0.85rem;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.7);
   max-width: 320px;
 }
 
+/* Social icons */
+.horizon-footer__socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.horizon-footer__social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.horizon-footer__social-link:hover {
+  background: var(--horizon-red, #e53935);
+  border-color: var(--horizon-red, #e53935);
+  transform: translateY(-2px);
+}
+
+/* Link columns (Shop / Help) */
 .horizon-footer__col ul {
   list-style: none;
   margin: 0;
@@ -51,62 +89,170 @@
 
 .horizon-footer__col a {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
-  transition: color 0.2s;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.2s, padding-left 0.2s;
+  text-decoration: none;
 }
 
 .horizon-footer__col a:hover {
   color: #fff;
+  padding-left: 4px;
 }
 
-.horizon-footer__newsletter p {
+/* Contact column */
+.horizon-footer__contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.horizon-footer__contact-list a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.horizon-footer__contact-list a:hover {
+  color: #fff;
+}
+
+.horizon-footer__contact-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--horizon-red, #e53935);
+  font-size: 0.85rem;
+}
+
+/* Newsletter column */
+.horizon-footer__newsletter-lead {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0 0 1rem;
+  line-height: 1.6;
 }
 
 .horizon-footer__newsletter form {
+  margin-bottom: 1.5rem;
+}
+
+.horizon-footer__newsletter-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-width: 280px;
+  align-items: stretch;
+  max-width: 320px;
 }
 
 .horizon-footer__newsletter input {
+  flex: 1;
   height: 42px;
-  padding: 0 0.75rem;
+  padding: 0 0.85rem;
   border: none;
   font-size: 0.9rem;
+  background: #fff;
+  color: #111;
+  outline: none;
+}
+
+.horizon-footer__newsletter input::placeholder {
+  color: rgba(17, 17, 17, 0.5);
 }
 
 .horizon-footer__subscribe {
   height: 42px;
-  background: var(--horizon-red);
+  width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--horizon-red, #e53935);
   color: #fff;
   border: none;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .horizon-footer__subscribe:hover {
-  background: var(--horizon-red-hover);
+  background: var(--horizon-red-hover, #c62828);
+  transform: translateX(1px);
 }
 
+.horizon-footer__newsletter-status {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+}
+
+.horizon-footer__newsletter-status--success {
+  color: #4caf50;
+}
+
+.horizon-footer__newsletter-status--error {
+  color: #ff8a80;
+}
+
+/* Payment methods */
+.horizon-footer__payments-label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.6rem;
+}
+
+.horizon-footer__payments-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.horizon-footer__payment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 28px;
+  background: #fff;
+  color: #111;
+  font-size: 1.25rem;
+  border-radius: 3px;
+}
+
+/* Bottom */
 .horizon-footer__bottom {
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
 }
 
 .horizon-footer__bottom p {
   margin: 0;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.55);
 }
 
-@media (min-width: 768px) {
+/* Responsive: tablet */
+@media (min-width: 640px) {
   .horizon-footer__grid {
-    grid-template-columns: 1.2fr repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
+  }
+
+  .horizon-footer__col--newsletter {
+    grid-column: span 2;
+  }
+}
+
+/* Responsive: desktop */
+@media (min-width: 1024px) {
+  .horizon-footer__grid {
+    grid-template-columns: 1.4fr 1fr 1fr 1.2fr 1.3fr;
+    gap: 2.5rem;
+  }
+
+  .horizon-footer__col--newsletter {
+    grid-column: auto;
   }
 }

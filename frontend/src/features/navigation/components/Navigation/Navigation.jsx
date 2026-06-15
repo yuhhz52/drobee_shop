@@ -7,7 +7,6 @@ import {
   FiMenu,
   FiX,
   FiChevronDown,
-  FiMail,
   FiChevronRight,
 } from 'react-icons/fi';
 import BrandLogo from '@shared/components/BrandLogo/BrandLogo';
@@ -23,8 +22,6 @@ import { getPrimaryResourceUrl } from '@shared/utils/product-media';
 import NavDropdown from './NavDropdown';
 import { buildNavMenus, languages } from './navMenuData';
 import './Navigation.css';
-
-const topAnnouncement = 'MIỄN PHÍ VẬN CHUYỂN TOÀN QUỐC | MÃ: DROBEE 🔥';
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -126,16 +123,6 @@ const Navigation = () => {
 
   return (
     <div className="kalles-site-header">
-      <div className="horizon-topbar">
-        <div className="horizon-header__container horizon-topbar__inner">
-          <span className="horizon-topbar__promo">{topAnnouncement}</span>
-          <button type="button" className="horizon-topbar__btn">
-            <FiMail size={12} aria-hidden />
-            Subscribe
-          </button>
-        </div>
-      </div>
-
       <header className="horizon-header">
         <div className="horizon-header__container horizon-header__row">
           <BrandLogo linkClassName="horizon-logo" />
