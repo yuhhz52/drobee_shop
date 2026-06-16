@@ -9,6 +9,8 @@ export const ENDPOINTS = {
   cartItems: '/api/cart/items',
   cartItem: (itemId) => `/api/cart/items/${itemId}`,
   cartMerge: '/api/cart/merge',
+  banners: '/api/banners',
+  bannersActive: '/api/banners/active',
   auth: {
     login: '/api/auth/login',
     register: '/api/auth/register',
