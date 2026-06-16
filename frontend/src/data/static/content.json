@@ -34,10 +34,10 @@
       ]
     },
     "socialLinks": [
-      { "name": "Facebook", "url": "https://facebook.com/horizonshop", "icon": "FaFacebookF" },
-      { "name": "Instagram", "url": "https://instagram.com/horizonshop", "icon": "FaInstagram" },
-      { "name": "YouTube", "url": "https://youtube.com/@horizonshop", "icon": "FaYoutube" },
-      { "name": "TikTok", "url": "https://tiktok.com/@horizonshop", "icon": "FaTiktok" }
+      { "name": "Facebook", "url": "https://facebook.com/horizonshop04", "icon": "FaFacebookF" },
+      { "name": "Instagram", "url": "https://instagram.com/horizonshop04", "icon": "FaInstagram" },
+      { "name": "YouTube", "url": "https://youtube.com/@horizonshop04", "icon": "FaYoutube" },
+      { "name": "TikTok", "url": "https://tiktok.com/@horizonshop04", "icon": "FaTiktok" }
     ],
     "paymentMethods": [
       { "name": "Visa", "icon": "FaCcVisa" },
