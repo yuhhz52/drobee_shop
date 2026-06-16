@@ -33,6 +33,14 @@ public class ProductSpecification {
         return (root, query, cb) -> cb.equal(root.get("newArrival"), newArrival);
     }
 
+    public static Specification<Product> hasFeatured(Boolean featured) {
+        return (root, query, cb) -> cb.equal(root.get("featured"), featured);
+    }
+
+    public static Specification<Product> hasActive(Boolean active) {
+        return (root, query, cb) -> cb.equal(root.get("active"), active);
+    }
+
     public static Specification<Product> hasNameLike(String name) {
         return (root, query, criteriaBuilder) ->
             criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%");

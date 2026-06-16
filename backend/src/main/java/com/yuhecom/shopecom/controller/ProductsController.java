@@ -41,6 +41,7 @@ public class ProductsController {
             @RequestParam(required = false) String slug,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean newArrival,
+            @RequestParam(required = false) Boolean featured,
             @RequestParam(required = false) Integer minMaxSpeed,
             @RequestParam(required = false) Integer minRange,
             @RequestParam(required = false) Integer maxMotorPower,
@@ -51,15 +52,17 @@ public class ProductsController {
             @RequestParam(required = false) BigDecimal maxWheelSize,
             @RequestParam(required = false) Integer minMaxLoad,
             @RequestParam(required = false) Integer minMaxIncline,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             HttpServletResponse response
     ) {
         PagingResult<ProductDto> pageResult = productService.getProductsPage(
-                categoryId, typeIds, typeId, slug, name, newArrival,
+                categoryId, typeIds, typeId, slug, name, newArrival, featured,
                 minMaxSpeed, minRange, maxMotorPower, maxWeight,
                 minBatteryCapacity, minBatteryVoltage, removableBattery,
-                maxWheelSize, minMaxLoad, minMaxIncline, page, size);
+                maxWheelSize, minMaxLoad, minMaxIncline, sortBy, sortDir, page, size);
         response.setHeader("Content-Range", pageResult.contentRange());
         response.setHeader("Access-Control-Expose-Headers", "Content-Range");
 

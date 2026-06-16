@@ -27,10 +27,11 @@ public interface ProductService {
                                           int page, int size);
 
     PagingResult<ProductDto> getProductsPage(UUID categoryId, List<UUID> typeIds, UUID typeId, String slug, String name,
-                                      Boolean newArrival, Integer minMaxSpeed, Integer minRange,
+                                      Boolean newArrival, Boolean featured, Integer minMaxSpeed, Integer minRange,
                                       Integer maxMotorPower, BigDecimal maxWeight, BigDecimal minBatteryCapacity,
                                       BigDecimal minBatteryVoltage, Boolean removableBattery,
                                       BigDecimal maxWheelSize, Integer minMaxLoad, Integer minMaxIncline,
+                                      String sortBy, String sortDir,
                                       int page, int size);
 
     ProductDto getProductById(UUID id);

@@ -90,6 +90,20 @@ public class ProductServiceImpl implements ProductService {
                                          BigDecimal minBatteryVoltage, Boolean removableBattery,
                                          BigDecimal maxWheelSize, Integer minMaxLoad, Integer minMaxIncline,
                                          int page, int size) {
+        return getAllProduct(categoryId, typeIds, name, newArrival, null,
+                minMaxSpeed, minRange, maxMotorPower, maxWeight,
+                minBatteryCapacity, minBatteryVoltage, removableBattery,
+                maxWheelSize, minMaxLoad, minMaxIncline, null, null, page, size);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> getAllProduct(UUID categoryId, List<UUID> typeIds, String name, Boolean newArrival, Boolean featured,
+                                         Integer minMaxSpeed, Integer minRange, Integer maxMotorPower,
+                                         BigDecimal maxWeight, BigDecimal minBatteryCapacity,
+                                         BigDecimal minBatteryVoltage, Boolean removableBattery,
+                                         BigDecimal maxWheelSize, Integer minMaxLoad, Integer minMaxIncline,
+                                         String sortBy, String sortDir,
+                                         int page, int size) {
         Specification<Product> spec = (root, query, cb) -> cb.conjunction();
 
         if (categoryId != null) {
@@ -107,6 +121,13 @@ public class ProductServiceImpl implements ProductService {
         if (newArrival != null) {
             spec = spec.and(ProductSpecification.hasNewArrival(newArrival));
         }
+
+        if (featured != null) {
+            spec = spec.and(ProductSpecification.hasFeatured(featured));
+        }
+
+        // Always filter only active products
+        spec = spec.and(ProductSpecification.hasActive(true));
 
         if (minMaxSpeed != null) {
             spec = spec.and(ProductSpecification.hasMinMaxSpeed(minMaxSpeed));
@@ -139,20 +160,30 @@ public class ProductServiceImpl implements ProductService {
             spec = spec.and(ProductSpecification.hasMinMaxIncline(minMaxIncline));
         }
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = createPageable(sortBy, sortDir, page, size);
         Page<Product> productPage = productRepository.findAll(spec, pageable);
 
         productPage.getContent().forEach(this::initializeProductCollections);
         return productPage.map(productMapper::toDto);
     }
 
+    private Pageable createPageable(String sortBy, String sortDir, int page, int size) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            return PageRequest.of(page, size);
+        }
+        org.springframework.data.domain.Sort.Direction direction =
+            "desc".equalsIgnoreCase(sortDir) ? org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
+        return PageRequest.of(page, size, org.springframework.data.domain.Sort.by(direction, sortBy));
+    }
+
     @Override
     @Transactional(readOnly = true)
     public PagingResult<ProductDto> getProductsPage(UUID categoryId, List<UUID> typeIds, UUID typeId, String slug, String name,
-                                                    Boolean newArrival, Integer minMaxSpeed, Integer minRange,
+                                                    Boolean newArrival, Boolean featured, Integer minMaxSpeed, Integer minRange,
                                                     Integer maxMotorPower, BigDecimal maxWeight, BigDecimal minBatteryCapacity,
                                                     BigDecimal minBatteryVoltage, Boolean removableBattery,
                                                     BigDecimal maxWheelSize, Integer minMaxLoad, Integer minMaxIncline,
+                                                    String sortBy, String sortDir,
                                                     int page, int size) {
         if (StringUtils.isNotBlank(slug)) {
             ProductDto product = getProductBySlug(slug);
@@ -165,10 +196,10 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Page<ProductDto> productPage = getAllProduct(
-                categoryId, resolvedTypeIds, name, newArrival,
+                categoryId, resolvedTypeIds, name, newArrival, featured,
                 minMaxSpeed, minRange, maxMotorPower, maxWeight,
                 minBatteryCapacity, minBatteryVoltage, removableBattery,
-                maxWheelSize, minMaxLoad, minMaxIncline, page, size);
+                maxWheelSize, minMaxLoad, minMaxIncline, sortBy, sortDir, page, size);
         String contentRange = buildContentRange(page, size, productPage.getNumberOfElements(), productPage.getTotalElements());
         return new PagingResult<>(productPage.getContent(), contentRange);
     }

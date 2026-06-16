@@ -3,15 +3,19 @@ import { ENDPOINTS } from '@core/api/endpoints';
 import { extractList, extractTotalElements } from '@core/api/extractors';
 
 export const productService = {
-  async getAll({ categoryId, typeIds = [], name, newArrival,
+  async getAll({ categoryId, typeIds = [], name, newArrival, featured,
                  minMaxSpeed, minRange, maxMotorPower, maxWeight,
                  minBatteryCapacity, minBatteryVoltage, removableBattery,
                  maxWheelSize, minMaxLoad, minMaxIncline,
+                 sortBy, sortDir,
                  page = 0, size = 12 } = {}) {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
     if (categoryId) params.append('categoryId', categoryId);
     if (name) params.append('name', name);
-    if (newArrival) params.append('newArrival', String(newArrival));
+    if (newArrival !== undefined) params.append('newArrival', String(newArrival));
+    if (featured !== undefined) params.append('featured', String(featured));
+    if (sortBy) params.append('sortBy', sortBy);
+    if (sortDir) params.append('sortDir', sortDir);
     if (minMaxSpeed != null) params.append('minMaxSpeed', String(minMaxSpeed));
     if (minRange != null) params.append('minRange', String(minRange));
     if (maxMotorPower != null) params.append('maxMotorPower', String(maxMotorPower));
