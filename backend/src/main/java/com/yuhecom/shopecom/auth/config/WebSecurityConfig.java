@@ -96,7 +96,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_APIS).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/collections/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/collections/**", "/api/banners/**").permitAll()
                     .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JWTAuthentication(jwtTokenHelper, userDetailsService, tokenBlacklistService),
