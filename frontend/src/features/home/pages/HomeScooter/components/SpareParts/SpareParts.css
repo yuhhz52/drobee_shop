@@ -1,0 +1,23 @@
+.horizon-spare {
+  padding: 3rem 0;
+}
+
+.horizon-spare__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.horizon-spare h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+.horizon-spare p {
+  margin: 0;
+  max-width: 560px;
+  color: var(--kalles-muted);
+  line-height: 1.6;
+}

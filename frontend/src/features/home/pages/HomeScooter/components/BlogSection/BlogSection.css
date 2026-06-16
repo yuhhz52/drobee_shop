@@ -1,0 +1,31 @@
+.horizon-blog-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.horizon-blog-card img {
+  width: 100%;
+  aspect-ratio: 1.69;
+  object-fit: cover;
+  margin-bottom: 0.75rem;
+}
+
+.horizon-blog-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.horizon-blog-card__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--kalles-muted);
+}
+
+@media (min-width: 900px) {
+  .horizon-blog-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

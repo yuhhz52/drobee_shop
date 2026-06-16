@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { getPrimaryResourceUrl } from '@shared/utils/product-media';
-import './HorizonProductCard.css';
+import './ProductCard.css';
 
 const SpecBadge = ({ value, unit, label }) => {
   if (value == null) return null;
@@ -14,7 +14,7 @@ const SpecBadge = ({ value, unit, label }) => {
   );
 };
 
-const HorizonProductCard = ({
+const ProductCard = ({
   name,
   price,
   salePrice,
@@ -80,4 +80,4 @@ const HorizonProductCard = ({
   );
 };
 
-export default HorizonProductCard;
+export default ProductCard;

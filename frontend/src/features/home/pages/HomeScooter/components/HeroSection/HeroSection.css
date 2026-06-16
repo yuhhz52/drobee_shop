@@ -1,0 +1,89 @@
+.horizon-hero {
+  margin-bottom: 0;
+}
+
+.horizon-hero__slide {
+  display: block;
+  min-height: clamp(320px, 42vw, 580px);
+  position: relative;
+  background: #111;
+}
+
+.horizon-hero__slide img {
+  width: 100%;
+  height: clamp(320px, 42vw, 580px);
+  object-fit: cover;
+  object-position: center;
+}
+
+.horizon-hero .slick-dots {
+  bottom: 18px;
+}
+
+.horizon-hero .slick-dots li button:before {
+  color: #fff;
+  opacity: 0.45;
+  font-size: 9px;
+}
+
+.horizon-hero .slick-dots li.slick-active button:before {
+  opacity: 1;
+  color: #fff;
+}
+
+.horizon-hero__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--kalles-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.horizon-hero:hover .horizon-hero__nav,
+.horizon-hero__nav:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.horizon-hero__nav:hover {
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.horizon-hero__nav--prev {
+  left: 1rem;
+}
+
+.horizon-hero__nav--next {
+  right: 1rem;
+}
+
+@media (max-width: 768px) {
+  .horizon-hero__nav {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .horizon-hero__nav--prev {
+    left: 0.5rem;
+  }
+
+  .horizon-hero__nav--next {
+    right: 0.5rem;
+  }
+}

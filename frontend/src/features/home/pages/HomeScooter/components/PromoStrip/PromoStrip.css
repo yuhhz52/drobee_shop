@@ -1,0 +1,56 @@
+.horizon-promo-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.horizon-promo-strip__block {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.horizon-promo-strip__block p {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 500;
+  max-width: 420px;
+  line-height: 1.4;
+}
+
+.horizon-promo-strip__block--dark {
+  background: #111;
+}
+
+.horizon-promo-strip__block--red {
+  background: var(--horizon-red);
+}
+
+.horizon-promo-strip__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 140px;
+}
+
+.horizon-promo-strip__btn--red {
+  background: var(--horizon-red);
+  color: #fff;
+}
+
+.horizon-promo-strip__btn--dark {
+  background: #111;
+  color: #fff;
+}
+
+@media (min-width: 900px) {
+  .horizon-promo-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+}

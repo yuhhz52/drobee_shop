@@ -1,0 +1,36 @@
+.horizon-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.horizon-section-head--center {
+  justify-content: center;
+  text-align: center;
+}
+
+.horizon-section-head h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+}
+
+.horizon-section-sub {
+  margin: 0.5rem 0 0;
+  color: var(--kalles-muted);
+  font-size: 0.95rem;
+  max-width: 640px;
+}
+
+.horizon-link-red {
+  color: var(--horizon-red);
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.horizon-link-red:hover {
+  text-decoration: underline;
+}

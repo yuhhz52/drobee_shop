@@ -1,0 +1,55 @@
+.horizon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+  text-decoration: none;
+}
+
+.horizon-btn--black {
+  background: #111;
+  color: #fff;
+}
+
+.horizon-btn--black:hover {
+  background: #333;
+  color: #fff;
+}
+
+.horizon-btn--red {
+  background: var(--horizon-red);
+  color: #fff;
+}
+
+.horizon-btn--red:hover {
+  background: var(--horizon-red-hover);
+  color: #fff;
+}
+
+.horizon-btn--outline {
+  background: transparent;
+  border: 1px solid #111;
+  color: #111;
+}
+
+.horizon-btn--outline:hover {
+  background: #111;
+  color: #fff;
+}
+
+.horizon-btn--paypal {
+  background: #ffc439;
+  color: #003087;
+  margin-top: 0.5rem;
+  font-weight: 700;
+}
+
+.horizon-btn--full {
+  width: 100%;
+}

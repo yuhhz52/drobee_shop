@@ -2,6 +2,16 @@ import { publicClient } from '@core/api/publicClient';
 import { ENDPOINTS } from '@core/api/endpoints';
 
 export const collectionService = {
+  async getAll() {
+    try {
+      const { data } = await publicClient.get(ENDPOINTS.collections);
+      return data?.result || [];
+    } catch (err) {
+      console.error('[collectionService] getAll failed:', err?.message);
+      throw err;
+    }
+  },
+
   async getBySlug(slug) {
     try {
       const { data } = await publicClient.get(ENDPOINTS.collectionBySlug(slug));
@@ -16,4 +26,4 @@ export const collectionService = {
   },
 };
 
-export const { getBySlug: fetchCollectionBySlug } = collectionService;
+export const { getAll: fetchCollections, getBySlug: fetchCollectionBySlug } = collectionService;

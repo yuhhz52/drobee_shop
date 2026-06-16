@@ -1,0 +1,153 @@
+.horizon-section--experts {
+  padding: 4rem 0;
+}
+
+.horizon-experts {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
+
+.horizon-experts__track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 0.5rem;
+}
+
+.horizon-experts__track::-webkit-scrollbar {
+  display: none;
+}
+
+.horizon-experts__card {
+  flex: 0 0 calc((100% - 2rem) / 3);
+  color: inherit;
+}
+
+.horizon-experts__card {
+  color: inherit;
+}
+
+.horizon-experts__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #eee;
+  margin-bottom: 0.65rem;
+  overflow: hidden;
+}
+
+.horizon-experts__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.horizon-experts__play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 48px;
+  height: 34px;
+  background: var(--horizon-red);
+  border-radius: 8px;
+  opacity: 0.9;
+}
+
+.horizon-experts__play::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-35%, -50%);
+  border: 8px solid transparent;
+  border-left: 14px solid #fff;
+}
+
+.horizon-experts__card h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.horizon-experts__arrow {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--kalles-border);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--kalles-dark);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.horizon-experts__arrow--prev {
+  left: -22px;
+}
+
+.horizon-experts__arrow--next {
+  right: -22px;
+}
+
+.horizon-experts__arrow:hover:not(:disabled) {
+  background: var(--kalles-soft);
+  border-color: var(--kalles-dark);
+}
+
+.horizon-experts__arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .horizon-experts__arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+  
+  .horizon-experts__arrow--prev {
+    left: 0.5rem;
+  }
+  
+  .horizon-experts__arrow--next {
+    right: 0.5rem;
+  }
+}
+
+.horizon-experts__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.horizon-experts__dots button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #ccc;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.horizon-experts__dots button.is-active {
+  background: #333;
+  transform: scale(1.2);
+}

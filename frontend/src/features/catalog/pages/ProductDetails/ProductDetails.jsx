@@ -9,7 +9,7 @@ import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
 import { colorSelector } from '@shared/components/Filters/ColorFilter';
-import HorizonProductCard from '@features/home/pages/HomeScooter/HorizonProductCard';
+import { ProductCard } from '@features/home/pages/HomeScooter/components';
 import './ProductDetails.css';
 
 const SPEC_TABS = [
@@ -598,7 +598,7 @@ const ProductDetails = () => {
             </div>
             <div className="horizon-pdp__related-grid">
               {similarProducts.map((item) => (
-                <HorizonProductCard
+                <ProductCard
                   key={item.id}
                   {...item}
                   brand={inferBrandFromProduct(item)}

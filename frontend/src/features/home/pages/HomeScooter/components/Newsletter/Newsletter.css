@@ -1,0 +1,37 @@
+.horizon-mid-newsletter {
+  background: var(--kalles-soft);
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.horizon-mid-newsletter h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+}
+
+.horizon-mid-newsletter p {
+  margin: 0 0 1.25rem;
+  color: var(--kalles-muted);
+}
+
+.horizon-mid-newsletter form {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 480px;
+  margin: 0 auto;
+  gap: 0;
+}
+
+.horizon-mid-newsletter input {
+  flex: 1;
+  min-width: 200px;
+  height: 46px;
+  padding: 0 1rem;
+  border: 1px solid var(--kalles-border);
+  font-size: 0.9rem;
+}
+
+.horizon-mid-newsletter .horizon-btn {
+  height: 46px;
+  padding: 0 1.5rem;
+}

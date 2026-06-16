@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Slider from 'react-slick';
-import banner1 from '@assets/images/banner1.png';
-import banner2 from '@assets/images/banner2.png';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { fetchActiveBanners } from '@services/banner.service';
 
 const NextArrow = (props) => {
   const { onClick } = props;
@@ -32,36 +31,70 @@ const PrevArrow = (props) => {
 };
 
 const HeroSection = () => {
-  const banners = [banner1, banner2];
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const data = await fetchActiveBanners();
+      if (!cancelled) {
+        setBanners(Array.isArray(data) ? data : []);
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: banners.length > 1,
     speed: 1000,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: banners.length > 1,
     autoplaySpeed: 3000,
-    arrows: true,
+    arrows: banners.length > 1,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
   };
 
+  if (loading) {
+    return <div className="w-full h-[30vh] md:h-[40vh] lg:h-[70vh] bg-gray-100" aria-busy="true" />;
+  }
+
+  if (banners.length === 0) {
+    return null;
+  }
+
   return (
     <div className="relative w-full overflow-hidden">
-  <Slider {...settings}>
-    {banners.map((img, idx) => (
-      <div key={idx} className="!w-full">
-        <div
-          className="w-full h-[30vh] md:h-[40vh] lg:h-[70vh] bg-center bg-cover bg-no-repeat"
-          style={{ backgroundImage: `url(${img})` }}
-          tabIndex={-1}
-        ></div>
-      </div>
-    ))}
-  </Slider>
-</div>
-
+      <Slider {...settings}>
+        {banners.map((banner) => (
+          <div key={banner.id} className="!w-full">
+            {banner.linkUrl ? (
+              <a href={banner.linkUrl} aria-label={banner.altText || banner.title}>
+                <div
+                  className="w-full h-[30vh] md:h-[40vh] lg:h-[70vh] bg-center bg-cover bg-no-repeat"
+                  style={{ backgroundImage: `url(${banner.imageUrl})` }}
+                  tabIndex={-1}
+                />
+              </a>
+            ) : (
+              <div
+                className="w-full h-[30vh] md:h-[40vh] lg:h-[70vh] bg-center bg-cover bg-no-repeat"
+                style={{ backgroundImage: `url(${banner.imageUrl})` }}
+                role="img"
+                aria-label={banner.altText || banner.title}
+                tabIndex={-1}
+              />
+            )}
+          </div>
+        ))}
+      </Slider>
+    </div>
   );
 };
 

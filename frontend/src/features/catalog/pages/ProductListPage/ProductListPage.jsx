@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import HorizonProductCard from '@features/home/pages/HomeScooter/HorizonProductCard'
+import { ProductCard } from '@features/home/pages/HomeScooter/components'
 import { inferBrandFromProduct } from '@shared/utils/product-brand'
 import { useCollection } from '@hooks/api/useCollection'
 import CollectionFilterDrawer from './CollectionFilterDrawer.jsx'
@@ -535,7 +535,7 @@ const ProductListPage = ({
         {filteredProducts.length > 0 ? (
           <div className={`horizon-plp__grid horizon-plp__grid--${gridColumns}`}>
             {filteredProducts.map((item) => (
-              <HorizonProductCard
+              <ProductCard
                 key={item.id}
                 {...item}
                 brand={inferBrandFromProduct(item)}
