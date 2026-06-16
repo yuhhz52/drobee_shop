@@ -20,7 +20,7 @@ const PasswordInput = ({ innerRef, id, label = 'Password', isInvalid, ...props }
             setIsPasswordVisible(false);
             setLengthError(false);
         } else {
-            setLengthError(props.value.length < 5);
+            setLengthError(props.value.length < 8);
         }
     }, [props.value]);
 
@@ -56,7 +56,7 @@ const PasswordInput = ({ innerRef, id, label = 'Password', isInvalid, ...props }
             </div>
             {lengthError && (
                 <p className="mt-1 text-sm text-red-500">
-                    Mật khẩu phải có ít nhất 5 ký tự
+                    Mật khẩu phải có ít nhất 8 ký tự
                 </p>
             )}
 

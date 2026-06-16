@@ -108,6 +108,12 @@
   margin-bottom: 1.1rem;
 }
 
+.horizon-auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 .horizon-auth-field label {
   display: block;
   font-size: 0.8rem;

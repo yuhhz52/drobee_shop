@@ -32,4 +32,6 @@ public class RegistrationRequest {
 
     @Size(max = 30)
     private String phoneNumber;
+
+    private String confirmPassword;
 }

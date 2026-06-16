@@ -30,6 +30,13 @@ public class RegistrationService {
                     .build();
         }
 
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            return RegistrationResponse.builder()
+                    .code(400)
+                    .message("Passwords do not match")
+                    .build();
+        }
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
