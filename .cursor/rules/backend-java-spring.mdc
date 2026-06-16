@@ -28,7 +28,7 @@ com.yuhecom.shopecom
 ├── entity/              # JPA @Entity classes, mọi entity extends BaseEntity
 ├── exception/           # ErrorCode enum, AppException, BusinessException, GlobalExceptionHandler
 ├── mapper/              # MapStruct mapper interfaces
-├── reponsitory/         # "repository"
+├── repository/         # JPA repositories (@Repository extends JpaRepository<...>)
 ├── scheduler/           # @Scheduled jobs (CartCleanupJob, AbandonedOrderCleanupJob)
 └── service/             # Service interfaces + impl/ subpackage
 ```
@@ -41,7 +41,7 @@ com.yuhecom.shopecom
 - **Service impl**: `@Service` + `@RequiredArgsConstructor` + `@Slf4j`. Service interface KHÔNG cần annotation.
 - **Entity**: `@Entity` + `@Table(name = "snake_case", indexes = {...})` + Lombok `@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder`. Phải `extends BaseEntity`. Dùng `FetchType.LAZY` cho mọi quan hệ `@ManyToOne` / `@OneToMany` / `@OneToOne`. Đánh `@JsonIgnore` trên back-reference (vd `Order.user`).
 - **DTO**: Lombok `@Data` (hoặc `@Getter @Setter`) + `@NoArgsConstructor @AllArgsConstructor @Builder`. Validate với `jakarta.validation.constraints.*` (`@NotNull`, `@NotBlank`, `@Size`, ...). Dùng `Optional<T>` cho find-by-id.
-- **Repository**: `@Repository` extends `JpaRepository<Entity, UUID>`. Tất cả file mới phải nằm trong package `reponsitory` (typo cố ý).
+- **Repository**: `@Repository` extends `JpaRepository<Entity, UUID>`. Tất cả file mới phải nằm trong package `repository` (chính tả tiếng Anh, KHÔNG dùng typo).
 - **Mapper (MapStruct)**: `@Mapper(componentModel = "spring", uses = {OtherMapper.class})` + `@Mapping(source = "x", target = "y")` cho field khác tên.
 
 ### Transactions & locking (RẤT QUAN TRỌNG)
@@ -95,7 +95,7 @@ com.yuhecom.shopecom
 dto/ReviewRequest.java            # @Getter @Setter @Builder + validation
 dto/ReviewResponse.java
 entity/Review.java                # extends BaseEntity, UUID @Id
-reponsitory/ReviewRepository.java # @Repository extends JpaRepository<Review, UUID>
+repository/ReviewRepository.java  # @Repository extends JpaRepository<Review, UUID>
 service/ReviewService.java        # interface
 service/impl/ReviewServiceImpl.java  # @Service + @Transactional(rollbackFor = ...)
 controller/ReviewController.java  # @RestController + @RequestMapping("/api/reviews")
@@ -120,7 +120,7 @@ mapper/ReviewMapper.java          # MapStruct
 - ❌ Commit file `.env` hay `application-local.yaml` thật.
 - ❌ Thêm dependency mới mà chưa hỏi user.
 - ❌ Dùng `synchronized` thay vì pessimistic lock database cho cart/order.
-- ❌ Sửa typo `reponsitory` thành `repository`.
+- ❌ Thay đổi package `repository` thành tên khác (giữ đúng chính tả `repository`).
 - ❌ Trả về raw `Entity` từ controller (luôn qua DTO/MapStruct).
 - ❌ Log full session ID, JWT, password.
 - ❌ Tạo migration "fix" bằng cách sửa file cũ.

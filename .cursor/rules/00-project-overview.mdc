@@ -21,7 +21,7 @@ Có thêm `docker-compose.yml`, `README.md` ở root và `.github/` cho CI.
 
 ## Quy ước dùng chung (áp dụng cho cả backend & frontend)
 
-1. **Không sửa typo `reponsitory`** trong package `com.yuhecom.shopecom.reponsitory` — đây là convention có chủ đích của dự án, tất cả repositories đều nằm ở đây. Có thể thêm file mới vào đúng package này.
+1. **Package `repository`** (chính tả tiếng Anh) là convention chuẩn — tất cả JPA repositories phải nằm trong `com.yuhecom.shopecom.repository`. KHÔNG dùng typo `reponsitory` hay bất kỳ biến thể nào khác. Thêm file mới vào đúng package này.
 2. **Không commit secrets**. Mọi giá trị nhạy cảm (DB password, JWT secret, Stripe key, OAuth client secret, mail password, VNPay hash secret, Google client secret) **bắt buộc** qua biến môi trường, xem `backend/src/main/resources/application.yaml` để biết các key.
 3. **Idempotency cho payment/order**: mọi mutation tạo order/checkout phải hỗ trợ `X-Idempotency-Key` header (xem pattern trong `OrderController.createOrder`).
 4. **i18n / locale**: project dùng tiếng Anh làm ngôn ngữ chính cho UI; tiền tệ hiển thị qua `@shared/utils/price-format.js` (`formatPriceVND`).
