@@ -361,8 +361,3 @@ VALUES
     ('WELCOME10', '10% off for new customers', 'PERCENTAGE', 10.00, 0, 500000, NOW(), NOW() + INTERVAL '1 year', TRUE),
     ('SUMMER20', '20% off summer sale', 'PERCENTAGE', 20.00, 500000, 1000000, NOW(), NOW() + INTERVAL '3 months', TRUE),
     ('FLAT500K', '500,000 VND off', 'FIXED_AMOUNT', 500000, 1000000, NULL, NOW(), NOW() + INTERVAL '6 months', TRUE);
-
-
-INSERT INTO banners (title, image_url, link_url, alt_text, display_order, active)
-VALUES ('Banner 1', 'https://vepace.com/cdn/shop/files/dualtron_minimotors_cover_1c8edb5b-588d-44f0-844d-008069aa3e60.png?v=1753893881&width=2000', '/products', 'Slide 1', 1, true),
-       ('Banner 2', 'https://cdn.globber.com/content/2023/07/Globber-scooters-summer-fun.jpg', '/products', 'Slide 2', 2, true);
