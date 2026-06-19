@@ -8,6 +8,7 @@ import {
   FiX,
   FiChevronDown,
   FiChevronRight,
+  FiUser,
 } from 'react-icons/fi';
 import BrandLogo from '@shared/components/BrandLogo/BrandLogo';
 import { getAllProducts } from '@services/product.service';
@@ -26,6 +27,7 @@ import './Navigation.css';
 const Navigation = () => {
   const dispatch = useDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -45,6 +47,7 @@ const Navigation = () => {
 
   useEffect(() => {
     setMenuOpen(false);
+    setSearchOpen(false);
     setOpenDropdown(null);
     setMobileExpanded(null);
     setLangOpen(false);
@@ -221,7 +224,9 @@ const Navigation = () => {
             <Link to="/cart-items" className="horizon-cart">
               <span className="horizon-cart__icon-wrap">
                 <FiShoppingCart size={20} />
-                <span className="horizon-cart__badge">{cartLength}</span>
+                {cartLength > 0 && (
+                  <span className="horizon-cart__badge">{cartLength}</span>
+                )}
               </span>
               <span>Cart</span>
             </Link>
@@ -267,22 +272,47 @@ const Navigation = () => {
 
       <div className="kalles-mobile-bar">
         <div className="horizon-header__container kalles-mobile-bar__inner">
-          <div className="kalles-mobile-bar__left">
+          <button
+            className="kalles-nav__icon"
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            <FiMenu size={20} />
+          </button>
+
+          <BrandLogo linkClassName="kalles-nav__logo" />
+
+          <div className="kalles-nav__icons">
             <button
               className="kalles-nav__icon"
               type="button"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Open menu"
+              onClick={() => setSearchOpen(!searchOpen)}
+              aria-label="Search"
             >
-              <FiMenu size={20} />
+              <FiSearch size={18} />
             </button>
-            <BrandLogo linkClassName="kalles-nav__logo" />
-          </div>
-          <div className="kalles-nav__icons">
-            <Link className="kalles-nav__icon" to="/cart-items" aria-label="Cart">
+            <Link
+              className="kalles-nav__icon"
+              to={isLoggedIn ? '/account-details/profile' : '/v1/login'}
+              aria-label="Account"
+            >
+              {isLoggedIn ? (
+                avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="kalles-nav__avatar" />
+                ) : (
+                  <span className="kalles-nav__avatar-placeholder">
+                    {accountInitial}
+                  </span>
+                )
+              ) : (
+                <FiUser size={18} />
+              )}
+            </Link>
+            <Link className="kalles-nav__icon kalles-nav__icon--cart" to="/cart-items" aria-label="Cart">
               <FiShoppingCart size={18} />
               {cartLength > 0 && (
-                <span className="kalles-nav__cart-badge">{cartLength}</span>
+                <span className="horizon-cart__badge">{cartLength}</span>
               )}
             </Link>
           </div>
@@ -304,6 +334,20 @@ const Navigation = () => {
               </button>
             </div>
             <div className="kalles-mobile-links">
+              <div className="kalles-mobile-section kalles-mobile-section--account">
+                <Link
+                  to={isLoggedIn ? '/account-details/profile' : '/v1/login'}
+                  className="kalles-mobile-section__link kalles-mobile-section__link--account"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {isLoggedIn && avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="kalles-mobile-avatar" />
+                  ) : (
+                    <FiUser size={16} />
+                  )}
+                  <span>{isLoggedIn ? 'My Account' : 'Login / Signup'}</span>
+                </Link>
+              </div>
               {navMenus.map((menu) => {
                 const hasChildren = Boolean(menu.columns?.length);
                 const expanded = mobileExpanded === menu.label;
@@ -359,6 +403,67 @@ const Navigation = () => {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {searchOpen && (
+        <div className="kalles-mobile-search-overlay" onClick={() => setSearchOpen(false)}>
+          <div className="kalles-mobile-search-panel" onClick={(e) => e.stopPropagation()}>
+            <form
+              className="kalles-mobile-search-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchTerm.trim()) {
+                  navigate(`/products?name=${encodeURIComponent(searchTerm)}`);
+                  setSearchOpen(false);
+                }
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                autoFocus
+                aria-label="Search products"
+              />
+              <button type="submit" aria-label="Submit search">
+                <FiSearch size={20} />
+              </button>
+            </form>
+            {searchTerm && (
+              <div className="kalles-mobile-search-results">
+                {loadingSearch ? (
+                  <div className="kalles-mobile-search-empty">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.slice(0, 5).map((product) => {
+                    const imageUrl = getPrimaryResourceUrl(product?.productResources);
+                    return (
+                      <button
+                        key={product.id}
+                        className="kalles-mobile-search-result-item"
+                        type="button"
+                        onClick={() => handleSelectProduct(product.slug)}
+                      >
+                        {imageUrl && <img src={imageUrl} alt="" />}
+                        <span>{product.name}</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="kalles-mobile-search-empty">No matching products</div>
+                )}
+              </div>
+            )}
+            <button
+              className="kalles-mobile-search-close"
+              type="button"
+              onClick={() => setSearchOpen(false)}
+              aria-label="Close search"
+            >
+              <FiX size={24} />
+            </button>
           </div>
         </div>
       )}

@@ -426,27 +426,22 @@
 /* Mobile */
 .kalles-mobile-bar {
   display: none;
-  background: #fff;
-  border-bottom: 1px solid var(--kalles-border);
+  background: #111;
+  border-bottom: 1px solid #333;
+  position: relative;
+  z-index: 1000;
+  overflow: visible;
+  height: 72px;
 }
 
 .kalles-mobile-bar__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-}
-
-.kalles-mobile-bar__left {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 0.75rem;
-}
-
-.kalles-nav__icons {
-  display: flex;
-  align-items: center;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  height: 100%;
 }
 
 .kalles-nav__icon {
@@ -454,25 +449,172 @@
   border: none;
   cursor: pointer;
   position: relative;
-  color: #333;
+  color: #fff;
   display: inline-flex;
   align-items: center;
-  padding: 0;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 12px;
+  transition: background 0.2s;
+  font-size: 1.8rem;
 }
 
-.kalles-nav__cart-badge {
+.kalles-nav__icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.kalles-nav__icon--cart .horizon-cart__badge {
   position: absolute;
-  right: -8px;
-  top: -8px;
+  top: 4px;
+  right: 4px;
   background: var(--horizon-red);
   color: #fff;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 12px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 100;
+  line-height: 1;
+}
+
+/* Search Overlay */
+.kalles-mobile-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1200;
+  padding-top: 10vh;
+}
+
+.kalles-mobile-search-panel {
+  width: min(500px, 95vw);
+  position: relative;
+}
+
+.kalles-mobile-search-form {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.kalles-mobile-search-form input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1.1rem;
+  padding: 1rem 1rem;
+  color: #111;
+}
+
+.kalles-mobile-search-form button {
+  background: none;
+  border: none;
+  padding: 1rem;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.kalles-mobile-search-results {
+  background: #fff;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin-top: -2px;
+}
+
+.kalles-mobile-search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: #fff;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: #111;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--kalles-border);
+}
+
+.kalles-mobile-search-result-item:last-child {
+  border-bottom: none;
+}
+
+.kalles-mobile-search-result-item img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.kalles-mobile-search-result-item:hover {
+  background: var(--kalles-soft);
+}
+
+.kalles-mobile-search-empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--kalles-muted);
+  font-size: 0.9rem;
+  background: #fff;
+  border-radius: 0 0 8px 8px;
+}
+
+.kalles-mobile-search-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.kalles-nav__logo {
+  display: inline-block;
+  max-width: 160px;
+  height: auto;
+}
+
+.kalles-nav__logo .horizon-logo-mark {
+  color: #fff;
+}
+
+.kalles-nav__logo .horizon-logo-mark__v {
+  font-size: 2.1rem;
+}
+
+.kalles-nav__logo .horizon-logo-mark__text {
+  font-size: 1.4rem;
+}
+
+.kalles-nav__logo img,
+.kalles-nav__logo svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.kalles-nav__icons {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .kalles-mobile-menu {
@@ -502,6 +644,52 @@
 
 .kalles-mobile-links {
   padding: 0.5rem 0;
+}
+
+.kalles-mobile-section--account {
+  background: #111;
+  border-bottom: 1px solid #333;
+}
+
+.kalles-mobile-section__link--account {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 1rem 1.25rem;
+}
+
+.kalles-mobile-section__link--account:hover {
+  color: #fff !important;
+  opacity: 0.85;
+}
+
+.kalles-mobile-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.kalles-nav__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.kalles-nav__avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .kalles-mobile-section {
