@@ -175,8 +175,7 @@ const Orders = () => {
                         {order?.address?.name} - {order?.address?.phoneNumber}
                       </p>
                       <p>
-                        {order?.address?.street}, {order?.address?.city},{' '}
-                        {order?.address?.state} {order?.address?.zipCode}
+                        {order?.address?.street}, {order?.address?.wardName}, {order?.address?.provinceName}
                       </p>
                     </div>
 

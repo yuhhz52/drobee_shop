@@ -168,10 +168,9 @@ const OrderConfirmed = () => {
           <div className="kalles-order__address">
             <h3>Delivery address</h3>
             <p>{order.address.name}</p>
+            <p>{order.address.phoneNumber}</p>
             <p>{order.address.street}</p>
-            <p>
-              {order.address.city}, {order.address.state} {order.address.zipCode}
-            </p>
+            <p>{order.address.wardName}, {order.address.provinceName}</p>
           </div>
         )}
 

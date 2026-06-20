@@ -183,7 +183,7 @@ const Checkout = () => {
                           {address.name} — {address.phoneNumber}
                         </p>
                         <p className="detail">
-                          {address.street}, {address.city}, {address.state} {address.zipCode}
+                          {address.street}, {address.wardName}, {address.provinceName}
                         </p>
                       </div>
                     </label>
