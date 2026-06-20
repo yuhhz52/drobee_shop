@@ -26,16 +26,23 @@ public class Address extends BaseEntity {
     private String street;
 
     @Column(nullable = false)
-    private String city;
+    private String provinceCode;
 
     @Column(nullable = false)
-    private String state;
+    private String provinceName;
 
     @Column(nullable = false)
-    private String zipCode;
+    private String wardCode;
+
+    @Column(nullable = false)
+    private String wardName;
 
     @Column(nullable = false)
     private String phoneNumber;
+
+    @Column(name = "is_default", nullable = false)
+    @Builder.Default
+    private Boolean isDefault = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)

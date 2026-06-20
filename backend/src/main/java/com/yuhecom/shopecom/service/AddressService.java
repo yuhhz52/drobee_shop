@@ -10,5 +10,9 @@ public interface AddressService {
 
     Address createAddress(AddressRequest request, Principal principal);
 
+    Address updateAddress(UUID id, AddressRequest request, Principal principal);
+
+    Address setDefaultAddress(UUID id, Principal principal);
+
     void deleteAddress(@org.springframework.lang.NonNull UUID id, Principal principal);
 }

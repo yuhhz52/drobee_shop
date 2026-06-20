@@ -27,6 +27,23 @@ public class AddressController {
         return ResponseEntity.ok(ApiResponse.<Address>builder().result(address).build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Address>> updateAddress(
+            @PathVariable UUID id,
+            @Valid @RequestBody AddressRequest request,
+            Principal principal) {
+        Address address = addressService.updateAddress(id, request, principal);
+        return ResponseEntity.ok(ApiResponse.<Address>builder().result(address).build());
+    }
+
+    @PutMapping("/{id}/default")
+    public ResponseEntity<ApiResponse<Address>> setDefaultAddress(
+            @PathVariable UUID id,
+            Principal principal) {
+        Address address = addressService.setDefaultAddress(id, principal);
+        return ResponseEntity.ok(ApiResponse.<Address>builder().result(address).build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteAddress(
             @PathVariable UUID id,

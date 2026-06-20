@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,18 +22,19 @@ public class AddressRequest {
     private String street;
 
     @NotBlank
-    @Size(max = 100)
-    private String city;
+    private String provinceCode;
 
     @NotBlank
-    @Size(max = 100)
-    private String state;
+    private String provinceName;
 
     @NotBlank
-    @Size(max = 20)
-    private String zipCode;
+    private String wardCode;
 
     @NotBlank
+    private String wardName;
+
+    @NotBlank
+    @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "Invalid Vietnamese phone number")
     @Size(max = 30)
     private String phoneNumber;
 
