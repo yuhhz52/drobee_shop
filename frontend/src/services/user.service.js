@@ -20,6 +20,14 @@ export const userService = {
     return httpClient.delete(ENDPOINTS.addressById(id)).then(unwrap);
   },
 
+  updateAddress(id, data) {
+    return httpClient.put(ENDPOINTS.addressById(id), data).then(unwrap);
+  },
+
+  setDefaultAddress(id) {
+    return httpClient.put(`${ENDPOINTS.addressById(id)}/default`).then(unwrap);
+  },
+
   uploadAvatar(file) {
     const formData = new FormData();
     formData.append('avatar', file);
@@ -46,6 +54,8 @@ export const fetchUserDetails = userService.fetchUserDetails.bind(userService);
 export const deleteUserAPI = userService.deleteUser.bind(userService);
 export const addAddressAPI = userService.addAddress.bind(userService);
 export const deleteAddressAPI = userService.deleteAddress.bind(userService);
+export const updateAddressAPI = userService.updateAddress.bind(userService);
+export const setDefaultAddressAPI = userService.setDefaultAddress.bind(userService);
 export const uploadAvatar = userService.uploadAvatar.bind(userService);
 export const fetchOrderAPI = userService.fetchOrders.bind(userService);
 export const cancelOrderAPI = userService.cancelOrder.bind(userService);

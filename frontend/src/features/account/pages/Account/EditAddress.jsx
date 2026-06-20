@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addAddressAPI } from '@services/user.service';
+import { updateAddressAPI } from '@services/user.service';
 import { saveAddress } from '@app/store/slices/user.jsx';
 import { vietnamRegionService } from '@services/vietnam-region.service';
 import SearchableSelect from './SearchableSelect';
@@ -18,16 +18,16 @@ const validatePhone = (phone) => {
   return '';
 };
 
-const AddAddress = ({ onCancel, onSaved }) => {
+const EditAddress = ({ address, onCancel, onSaved }) => {
   const dispatch = useDispatch();
   const [values, setValues] = useState({
-    name: '',
-    phoneNumber: '',
-    street: '',
-    provinceCode: '',
-    provinceName: '',
-    wardCode: '',
-    wardName: ''
+    name: address?.name || '',
+    phoneNumber: address?.phoneNumber || '',
+    street: address?.street || '',
+    provinceCode: address?.provinceCode || '',
+    provinceName: address?.provinceName || '',
+    wardCode: address?.wardCode || '',
+    wardName: address?.wardName || ''
   });
   const [phoneError, setPhoneError] = useState('');
   const [error, setError] = useState('');
@@ -41,10 +41,19 @@ const AddAddress = ({ onCancel, onSaved }) => {
 
   useEffect(() => {
     vietnamRegionService.fetchProvinces()
-      .then(data => setProvinces(data))
+      .then(data => {
+        setProvinces(data);
+        if (values.provinceCode) {
+          setLoadingWards(true);
+          vietnamRegionService.fetchWards(values.provinceCode)
+            .then(w => setWards(w))
+            .catch(() => setError('Không thể tải danh sách phường/xã'))
+            .finally(() => setLoadingWards(false));
+        }
+      })
       .catch(() => setError('Không thể tải danh sách tỉnh/thành phố'))
       .finally(() => setLoadingProvinces(false));
-  }, []);
+  }, [values.provinceCode]);
 
   const handleProvinceSelect = useCallback((province) => {
     setValues(prev => ({
@@ -83,6 +92,10 @@ const AddAddress = ({ onCancel, onSaved }) => {
 
   const onSubmit = useCallback((evt) => {
     evt.preventDefault();
+    if (!address?.id) {
+      setError('Địa chỉ không hợp lệ');
+      return;
+    }
     const phoneErr = validatePhone(values.phoneNumber);
     if (phoneErr) {
       setPhoneError(phoneErr);
@@ -91,23 +104,23 @@ const AddAddress = ({ onCancel, onSaved }) => {
 
     setSaving(true);
     setError('');
-    addAddressAPI(values)
+    updateAddressAPI(address.id, values)
       .then((res) => {
         dispatch(saveAddress(res));
         const afterSave = onSaved || onCancel;
         afterSave && afterSave();
       })
       .catch(() => {
-        setError('Không thể thêm địa chỉ. Vui lòng thử lại.');
+        setError('Không thể cập nhật địa chỉ. Vui lòng thử lại.');
       })
       .finally(() => {
         setSaving(false);
       });
-  }, [dispatch, onCancel, onSaved, values]);
+  }, [dispatch, onCancel, onSaved, values, address.id]);
 
   return (
     <div className="address-form-card">
-      <h2 className="address-form-card__title">Thêm địa chỉ mới</h2>
+      <h2 className="address-form-card__title">Sửa địa chỉ</h2>
 
       <form onSubmit={onSubmit}>
         <div className="form-row">
@@ -201,7 +214,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
                 <span className="spinner spinner--small"></span>
                 Đang lưu...
               </>
-            ) : 'Lưu địa chỉ'}
+            ) : 'Lưu thay đổi'}
           </button>
         </div>
       </form>
@@ -209,4 +222,4 @@ const AddAddress = ({ onCancel, onSaved }) => {
   );
 };
 
-export default AddAddress;
+export default EditAddress;

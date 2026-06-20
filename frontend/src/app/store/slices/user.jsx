@@ -17,14 +17,30 @@ export const userSlice = createSlice({
         },
         saveAddress : (state,action)=>{
            const addresses = [...(state?.userInfo?.addressList ?? [])];
-            addresses.push(action?.payload);
-            return {
-                ...state,
-                userInfo:{
-                    ...state?.userInfo,
-                    addressList:addresses
-                }
-            }
+           const isNewDefault = action?.payload?.isDefault === true;
+
+           // Khi đặt địa chỉ mặc định mới, clear isDefault của các địa chỉ khác
+           if (isNewDefault) {
+               for (let i = 0; i < addresses.length; i++) {
+                   if (addresses[i].id !== action.payload.id) {
+                       addresses[i] = { ...addresses[i], isDefault: false };
+                   }
+               }
+           }
+
+           const idx = addresses.findIndex(a => a.id === action?.payload?.id);
+           if (idx >= 0) {
+               addresses[idx] = action.payload;
+           } else {
+               addresses.push(action.payload);
+           }
+           return {
+               ...state,
+               userInfo:{
+                   ...state?.userInfo,
+                   addressList:addresses
+               }
+           }
         },
         removeAddress:(state,action)=>{
             return {
