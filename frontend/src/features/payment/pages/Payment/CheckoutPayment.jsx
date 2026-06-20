@@ -34,7 +34,7 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
         console.error("Stripe confirm error:", error);
       }
     } catch (err) {
-      setError("Đã xảy ra lỗi khi xác nhận thanh toán.");
+      setError("An error occurred while confirming payment.");
     } finally {
       dispatch(setLoading(false));
     }
@@ -49,10 +49,10 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
         disabled={!stripe}
         className="w-full mt-4 bg-black text-white h-12 rounded hover:bg-gray-800"
       >
-        Thanh toán
+        Pay now
       </button>
       {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-      {success && <p className="text-green-600 text-sm mt-2">Thanh toán thành công!</p>}
+      {success && <p className="text-green-600 text-sm mt-2">Payment successful!</p>}
     </form>
   );
 };
