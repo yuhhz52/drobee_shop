@@ -12,3 +12,4 @@ target/
 .tmp_*.html
 .tmp_*.txt
 .docs
+.cursor
