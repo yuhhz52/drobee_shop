@@ -3,6 +3,7 @@ package com.yuhecom.shopecom.controller;
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.CheckoutRequest;
+import com.yuhecom.shopecom.dto.DirectCheckoutRequest;
 import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
 import com.yuhecom.shopecom.dto.PagingResult;
@@ -153,6 +154,59 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(result).build());
     }
 
+    /**
+     * Direct checkout for Buy Now flow - doesn't use cart.
+     * Creates order directly from provided items.
+     */
+    @PostMapping("/direct")
+    public ResponseEntity<ApiResponse<OrderResponse>> directCheckout(
+            @Valid @RequestBody DirectCheckoutRequest request,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
+            Principal principal,
+            HttpServletRequest httpRequest) throws Exception {
+
+        // Use header idempotency key or fall back to body
+        String key = idempotencyKey != null ? idempotencyKey : request.getIdempotencyKey();
+
+        // Check for duplicate request
+        if (key != null && !key.isBlank()) {
+            var existingResponse = idempotencyService.getExistingResponse(key);
+            if (existingResponse.isPresent()) {
+                log.info("Returning cached response for idempotency key: {}", key);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cached = existingResponse.get();
+                OrderResponse cachedOrder = OrderResponse.builder()
+                        .orderId(UUID.fromString((String) cached.get("orderId")))
+                        .paymentMethod((String) cached.get("paymentMethod"))
+                        .build();
+                @SuppressWarnings("unchecked")
+                Map<String, String> credentials = (Map<String, String>) cached.get("credentials");
+                if (credentials != null) {
+                    cachedOrder.setCredentials(credentials);
+                }
+                return ResponseEntity.ok(ApiResponse.<OrderResponse>builder()
+                        .result(cachedOrder)
+                        .message("Duplicate request - returning cached response")
+                        .build());
+            }
+        }
+
+        OrderResponse result = orderService.directCheckout(request, principal, httpRequest);
+
+        // Store response for idempotency
+        if (key != null && !key.isBlank()) {
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("orderId", result.getOrderId().toString());
+            responseMap.put("paymentMethod", result.getPaymentMethod());
+            if (result.getCredentials() != null) {
+                responseMap.put("credentials", result.getCredentials());
+            }
+            idempotencyService.completeKey(key, result.getOrderId(), responseMap);
+        }
+
+        return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(result).build());
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Boolean>> cancelOrder(
             @PathVariable UUID id,
@@ -181,6 +235,14 @@ public class OrderController {
     public ResponseEntity<ApiResponse<List<OrderDetails>>> getOrdersByUser(Principal principal) {
         List<OrderDetails> orders = orderService.getOrdersByUser(principal.getName());
         return ResponseEntity.ok(ApiResponse.<List<OrderDetails>>builder().result(orders).build());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<OrderDetails>> getOrderById(
+            @PathVariable UUID id,
+            Principal principal) {
+        OrderDetails order = orderService.getOrderById(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<OrderDetails>builder().result(order).build());
     }
 
     @GetMapping

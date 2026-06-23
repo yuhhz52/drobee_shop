@@ -2,6 +2,7 @@ package com.yuhecom.shopecom.service;
 
 import com.yuhecom.shopecom.auth.dto.OrderResponse;
 import com.yuhecom.shopecom.dto.CheckoutRequest;
+import com.yuhecom.shopecom.dto.DirectCheckoutRequest;
 import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
 import com.yuhecom.shopecom.dto.PagingResult;
@@ -28,6 +29,12 @@ public interface OrderService {
      */
     OrderResponse checkoutFromCart(CheckoutRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception;
 
+    /**
+     * Direct checkout for Buy Now flow - doesn't use cart.
+     * Creates order directly from provided items without modifying cart.
+     */
+    OrderResponse directCheckout(DirectCheckoutRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception;
+
     Map<String, String> updateStatus(String paymentIntentId, String status);
 
     boolean validateVnPayReturn(Map<String, String> params);
@@ -48,4 +55,9 @@ public interface OrderService {
      * Restore stock for an order - used when payment fails or order is cancelled.
      */
     void restoreOrderStock(UUID orderId);
+
+    /**
+     * Get order details by ID - validates ownership.
+     */
+    OrderDetails getOrderById(UUID id, String userEmail);
 }

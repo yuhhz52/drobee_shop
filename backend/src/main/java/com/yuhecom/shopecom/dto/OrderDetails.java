@@ -23,6 +23,7 @@ public class OrderDetails {
     private LocalDateTime orderDate;
     private Address address;
     private BigDecimal totalAmount;
+    private BigDecimal discount;
     private OrderStatus orderStatus;
     private String shipmentNumber;
     private LocalDateTime expectedDeliveryDate;

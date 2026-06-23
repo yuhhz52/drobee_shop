@@ -299,6 +299,120 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    /**
+     * Direct checkout for Buy Now flow - doesn't use cart.
+     * Creates order directly from provided items without modifying cart.
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public OrderResponse directCheckout(DirectCheckoutRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception {
+        User user = userRepository.findByEmailForProfile(principal.getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        // Validate address
+        Address address = user.getAddressList().stream()
+                .filter(a -> request.getAddressId().equals(a.getId()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found"));
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        BigDecimal subtotalAmount = BigDecimal.ZERO;
+
+        // Build order
+        Order order = Order.builder()
+                .user(user)
+                .address(address)
+                .totalAmount(BigDecimal.ZERO)
+                .orderDate(LocalDateTime.now())
+                .discount(BigDecimal.ZERO)
+                .paymentMethod(request.getPaymentMethod())
+                .orderStatus(OrderStatus.PENDING)
+                .orderDisplayCode(generateDisplayCode())
+                .build();
+
+        // Process each item with atomic stock deduction
+        for (DirectCheckoutRequest.DirectOrderItem itemReq : request.getItems()) {
+            Product product = productService.fetchProductById(itemReq.getProductId());
+            ProductVariant variant = productVariantRepository.findWithLockingById(itemReq.getProductVariantId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND,
+                            "Variant not found: " + itemReq.getProductVariantId()));
+
+            if (!variant.getProduct().getId().equals(product.getId())) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST, "Product variant does not belong to product");
+            }
+
+            // Validate stock
+            if (variant.getStockQuantity() < itemReq.getQuantity()) {
+                throw new AppException(ErrorCode.OUT_OF_STOCK,
+                        "Insufficient stock for variant: " + variant.getVariantName());
+            }
+
+            // Atomic stock deduction
+            int rowsAffected = productVariantRepository.deductStock(variant.getId(), itemReq.getQuantity());
+            if (rowsAffected == 0) {
+                throw new AppException(ErrorCode.OUT_OF_STOCK,
+                        "Insufficient stock for variant: " + variant.getVariantName());
+            }
+
+            // Calculate item price: base price + additional price from variant
+            BigDecimal itemPrice = product.getPrice();
+            if (variant.getAdditionalPrice() != null) {
+                itemPrice = itemPrice.add(variant.getAdditionalPrice());
+            }
+
+            orderItems.add(OrderItem.builder()
+                    .product(product)
+                    .productVariant(variant)
+                    .quantity(itemReq.getQuantity())
+                    .itemPrice(itemPrice)
+                    .order(order)
+                    .build());
+
+            subtotalAmount = subtotalAmount.add(itemPrice.multiply(BigDecimal.valueOf(itemReq.getQuantity())));
+        }
+
+        order.setOrderItemList(orderItems);
+        order.setTotalAmount(subtotalAmount);
+
+        // Create payment
+        Payment payment = new Payment();
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setOrder(order);
+        payment.setAmount(subtotalAmount);
+        payment.setPaymentMethod(request.getPaymentMethod());
+        order.setPayment(payment);
+
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Direct checkout order created: orderId={}, method={}, total={}",
+                savedOrder.getId(), request.getPaymentMethod(), subtotalAmount);
+
+        // Send order confirmation email (async, fire-and-forget)
+        try {
+            if (user != null) {
+                emailService.sendOrderConfirmation(user, savedOrder);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to dispatch order confirmation email for orderId={}", savedOrder.getId(), e);
+        }
+
+        OrderResponse response = OrderResponse.builder()
+                .paymentMethod(request.getPaymentMethod())
+                .orderId(savedOrder.getId())
+                .build();
+
+        if ("CARD".equals(request.getPaymentMethod())) {
+            response.setCredentials(stripeService.createPaymentIntent(order));
+        } else if ("VNPAY".equals(request.getPaymentMethod())) {
+            Map<String, String> credentials = new HashMap<>();
+            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, getClientIp()));
+            response.setCredentials(credentials);
+        }
+
+        return response;
+    }
+
     @Override
     @Transactional
     public Map<String, String> updateStatus(String paymentIntentId, String status) {
@@ -466,6 +580,7 @@ public class OrderServiceImpl implements OrderService {
                 .shipmentNumber(order.getShipmentTrackingNumber())
                 .address(order.getAddress())
                 .totalAmount(order.getTotalAmount())
+                .discount(order.getDiscount())
                 .orderItemList(getItemDetails(order.getOrderItemList()))
                 .expectedDeliveryDate(order.getExpectedDeliveryDate())
                 .paymentMethod(order.getPaymentMethod())
@@ -493,14 +608,48 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND, "Order not found: " + id));
 
+        // Verify ownership
         if (!order.getUser().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.FORBIDDEN, "Order does not belong to user");
         }
+
+        // Check if already cancelled
         if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+            log.warn("Order {} is already cancelled", id);
             return false;
         }
 
-        // ATOMIC STOCK RESTORE - prevents race conditions
+        // Business rules: Cannot cancel orders that are already in progress or beyond
+        if (order.getOrderStatus() == OrderStatus.IN_PROGRESS ||
+            order.getOrderStatus() == OrderStatus.SHIPPED ||
+            order.getOrderStatus() == OrderStatus.DELIVERED) {
+            throw new AppException(ErrorCode.BAD_REQUEST,
+                    "Orders that are being processed, shipped, or delivered cannot be cancelled. Please contact support.");
+        }
+
+        // Check payment status for prepaid orders
+        Payment payment = order.getPayment();
+        PaymentStatus paymentStatus = payment != null ? payment.getPaymentStatus() : PaymentStatus.PENDING;
+
+        // For prepaid orders (VNPAY, CARD) with completed payment, need refund first
+        if ("VNPAY".equals(order.getPaymentMethod()) || "CARD".equals(order.getPaymentMethod())) {
+            if (paymentStatus == PaymentStatus.COMPLETED) {
+                throw new AppException(ErrorCode.BAD_REQUEST,
+                        "This order has been paid. Please request a refund first, then cancel. Contact support for assistance.");
+            }
+            if (paymentStatus == PaymentStatus.REFUNDED) {
+                // Already refunded, can cancel normally
+                log.info("Order {} payment already refunded, proceeding with cancellation", id);
+            }
+        }
+
+        // COD orders can only be cancelled while payment is still pending
+        if ("COD".equals(order.getPaymentMethod()) && paymentStatus == PaymentStatus.COMPLETED) {
+            throw new AppException(ErrorCode.BAD_REQUEST,
+                    "COD order payment has been collected. Please contact support for assistance.");
+        }
+
+        // Restore stock (atomic operation)
         if (order.getOrderItemList() != null) {
             for (OrderItem item : order.getOrderItemList()) {
                 ProductVariant variant = item.getProductVariant();
@@ -511,13 +660,14 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
+        // Update order status
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        log.info("Order cancelled id={}", id);
+        log.info("Order cancelled id={} by user={}", id, user.getEmail());
 
-        // Notify user about cancellation (async, fire-and-forget)
+        // Send cancellation notification
         if (order.getUser() != null) {
-            emailService.sendPaymentFailure(order.getUser(), order, "Order cancelled by user");
+            emailService.sendOrderCancellationNotice(order.getUser(), order);
         }
         return true;
     }
@@ -576,5 +726,35 @@ public class OrderServiceImpl implements OrderService {
             return xRealIp;
         }
         return httpServletRequest.getRemoteAddr();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetails getOrderById(UUID id, String userEmail) {
+        User user = userRepository.findByEmailForProfile(userEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        Order order = orderRepository.findByIdWithItems(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND, "Order not found: " + id));
+
+        // Verify ownership
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You do not have permission to view this order");
+        }
+
+        return OrderDetails.builder()
+                .id(order.getId())
+                .orderDate(order.getOrderDate())
+                .orderStatus(order.getOrderStatus())
+                .shipmentNumber(order.getShipmentTrackingNumber())
+                .address(order.getAddress())
+                .totalAmount(order.getTotalAmount())
+                .discount(order.getDiscount())
+                .orderItemList(getItemDetails(order.getOrderItemList()))
+                .expectedDeliveryDate(order.getExpectedDeliveryDate())
+                .paymentMethod(order.getPaymentMethod())
+                .orderDisplayCode(order.getOrderDisplayCode())
+                .user(usersMapper.toDto(order.getUser()))
+                .build();
     }
 }

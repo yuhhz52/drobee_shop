@@ -57,4 +57,19 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             @Param("paymentStatus") PaymentStatus paymentStatus,
             @Param("cutoffTime") LocalDateTime cutoffTime
     );
+
+    /**
+     * Find order by ID with all items and related entities loaded.
+     */
+    @Query("""
+           SELECT DISTINCT o FROM Order o
+           LEFT JOIN FETCH o.user
+           LEFT JOIN FETCH o.address
+           LEFT JOIN FETCH o.payment
+           LEFT JOIN FETCH o.orderItemList items
+           LEFT JOIN FETCH items.product
+           LEFT JOIN FETCH items.productVariant
+           WHERE o.id = :id
+           """)
+    java.util.Optional<Order> findByIdWithItems(@Param("id") UUID id);
 }
