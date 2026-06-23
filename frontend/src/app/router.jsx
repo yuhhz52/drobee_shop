@@ -15,6 +15,7 @@ import Checkout from '@features/checkout/pages/Checkout/Checkout';
 import OrderConfirmed from '@features/order/pages/OrderComfirmed/OrderComfirmed';
 import Profile from '@features/account/pages/Account/Profile';
 import Orders from '@features/account/pages/Account/Orders';
+import OrderDetail from '@features/account/pages/Account/OrderDetail';
 import AdminPanel from '@features/admin/pages/AdminPanel/AdminPanel';
 import ShopPages from '@features/shop/pages/ShopPages/ShopPages';
 import Logouts from '@features/account/pages/Account/Logouts';
@@ -75,6 +76,10 @@ export const router = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'cart-items', element: <Cart /> },
       {
+        path: 'orders/:orderId',
+        element: <Navigate to="/account-details/orders/:orderId" replace />,
+      },
+      {
         path: 'login',
         element: <Navigate to="/v1/login" replace />,
       },
@@ -103,6 +108,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'orders/:orderId',
+            element: (
+              <ProtectedRoute>
+                <OrderDetail />
               </ProtectedRoute>
             ),
           },

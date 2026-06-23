@@ -45,6 +45,10 @@ export const userService = {
     return httpClient.get(ENDPOINTS.orderByUser).then(unwrap);
   },
 
+  fetchOrderById(id) {
+    return httpClient.get(ENDPOINTS.orderById(id)).then(unwrap);
+  },
+
   cancelOrder(id) {
     return httpClient.post(ENDPOINTS.orderCancel(id)).then(unwrap);
   },
@@ -58,4 +62,5 @@ export const updateAddressAPI = userService.updateAddress.bind(userService);
 export const setDefaultAddressAPI = userService.setDefaultAddress.bind(userService);
 export const uploadAvatar = userService.uploadAvatar.bind(userService);
 export const fetchOrderAPI = userService.fetchOrders.bind(userService);
+export const fetchOrderByIdAPI = userService.fetchOrderById.bind(userService);
 export const cancelOrderAPI = userService.cancelOrder.bind(userService);
