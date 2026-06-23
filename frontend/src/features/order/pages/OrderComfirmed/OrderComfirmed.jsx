@@ -43,7 +43,13 @@ const OrderConfirmed = () => {
         const found = orders.find((o) => String(o.id) === String(orderId))
         if (found) {
           setOrder(found)
-          dispatch(clearCart())
+          // Only clear cart if it wasn't a direct checkout
+          // (direct checkout doesn't modify cart, so no need to clear)
+          if (!sessionStorage.getItem('directCheckoutItem')) {
+            dispatch(clearCart())
+          } else {
+            sessionStorage.removeItem('directCheckoutItem')
+          }
         } else {
           setError('Order not found.')
         }

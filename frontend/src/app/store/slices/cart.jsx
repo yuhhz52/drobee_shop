@@ -37,7 +37,8 @@ const getInitialCart = () => {
 
 export const fetchCart = createAsyncThunk('cart/fetch', async () => {
   const res = await cartService.getCart();
-  return res.items || [];
+  // Return full cart object to get cartId
+  return res || { items: [] };
 });
 
 export const addItemToCart = createAsyncThunk(
@@ -138,7 +139,8 @@ export const clearCart = createAsyncThunk(
 
 export const syncCart = createAsyncThunk('cart/sync', async () => {
   const res = await cartService.getCart();
-  return res.items || [];
+  // Return full cart object to get cartId
+  return res || { items: [] };
 });
 
 const initialState = {
@@ -146,6 +148,7 @@ const initialState = {
   loading: false,
   error: null,
   synced: false,
+  cartId: null,
 };
 
 const cartSlice = createSlice({
@@ -202,9 +205,11 @@ const cartSlice = createSlice({
       .addCase(fetchCart.pending, (state) => { state.loading = true; })
       .addCase(fetchCart.fulfilled, (state, action) => {
         console.log('[fetchCart.fulfilled] payload:', action.payload);
-        // Backend returns cart object: { items: [...] } or array [...]
-        const items = action.payload?.items || action.payload || [];
+        // Backend returns cart object: { id, items, totalItems, totalAmount }
+        const cartData = action.payload || {};
+        const items = cartData.items || cartData || [];
         state.items = items;
+        state.cartId = cartData.id || null;
         state.loading = false;
         state.synced = true;
         localStorage.setItem('cart', JSON.stringify(state.items));
@@ -217,9 +222,11 @@ const cartSlice = createSlice({
       .addCase(addItemToCart.pending, (state) => { state.loading = true; })
       .addCase(addItemToCart.fulfilled, (state, action) => {
         console.log('[addItemToCart.fulfilled] backend items:', action.payload);
-        // Backend returns cart object: { items: [...] } or array [...]
-        const items = action.payload?.items || action.payload || [];
+        // Backend returns cart object: { id, items, totalItems, totalAmount }
+        const cartData = action.payload || {};
+        const items = cartData.items || cartData || [];
         state.items = items;
+        state.cartId = cartData.id || state.cartId;
         state.loading = false;
         state.synced = true;
         localStorage.setItem('cart', JSON.stringify(state.items));
@@ -322,6 +329,7 @@ const cartSlice = createSlice({
 
       .addCase(clearCart.fulfilled, (state) => {
         state.items = [];
+        state.cartId = null;
         state.synced = true;
         localStorage.removeItem('cart');
       })
@@ -352,5 +360,6 @@ export const countCartItems = (state) => state.cartState.items.length;
 export const selectCartItems = (state) => state.cartState.items;
 export const selectCartError = (state) => state.cartState.error;
 export const selectCartLoading = (state) => state.cartState.loading;
+export const selectCartId = (state) => state.cartState.cartId;
 
 export default cartSlice.reducer;

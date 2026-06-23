@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useLoaderData } from 'react-router-dom';
+import { Link, useLoaderData, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiMinus, FiPlus } from 'react-icons/fi';
 import _ from 'lodash';
@@ -170,6 +170,7 @@ const ProductModal = ({ title, open, onClose, children }) => {
 const ProductDetails = () => {
   const { product } = useLoaderData();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Cart state
   const cartError = useSelector(selectCartError);
@@ -366,6 +367,62 @@ const ProductDetails = () => {
     primaryImage,
   ]);
 
+  const handleBuyNow = useCallback(() => {
+    // Validate selections
+    if (hasVersions && !selectedVariantName) {
+      setError('Please select a version');
+      return;
+    }
+    if (availableColors.length > 0 && !selectedColor) {
+      setError('Please select an option');
+      return;
+    }
+    if (!selectedVariant && allVariants.length) {
+      setError('Please select product options');
+      return;
+    }
+    if (selectedVariant && (selectedVariant.stockQuantity ?? 0) <= 0) {
+      setError('Out of stock');
+      return;
+    }
+
+    const item = {
+      productId: product.id,
+      thumbnail: activeImage || primaryImage,
+      name: product.name,
+      variant: selectedVariant
+        ? { id: selectedVariant.id, variantName: selectedVariant.variantName, color: selectedVariant.color }
+        : { id: 'default', variantName: '', color: '' },
+      quantity,
+      price: displayPrice,
+    };
+    setError('');
+
+    // Save direct checkout item to sessionStorage (don't clear cart)
+    sessionStorage.setItem('directCheckoutItem', JSON.stringify(item));
+
+    // Add to cart for tracking (but don't clear existing cart)
+    dispatch(addToCart(item));
+    dispatch(addItemToCart(item));
+
+    // Navigate to checkout
+    navigate('/checkout');
+  }, [
+    dispatch,
+    navigate,
+    product,
+    selectedVariant,
+    selectedVariantName,
+    selectedColor,
+    hasVersions,
+    availableColors,
+    allVariants,
+    quantity,
+    displayPrice,
+    activeImage,
+    primaryImage,
+  ]);
+
   if (!product) {
     return <div className="horizon-pdp__empty">Product not found.</div>;
   }
@@ -521,8 +578,13 @@ const ProductDetails = () => {
             {inStock ? 'Add to cart' : 'Sold out'}
           </button>
 
-          <button type="button" className="horizon-pdp__paypal">
-            Pay with PayPal
+          <button
+            type="button"
+            className="horizon-pdp__paypal"
+            onClick={handleBuyNow}
+            disabled={!inStock}
+          >
+            Buy now
           </button>
 
           <button

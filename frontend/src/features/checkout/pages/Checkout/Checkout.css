@@ -177,3 +177,23 @@
   border: 1px solid var(--kalles-border);
   background: #fff;
 }
+
+/* Loading spinner for address section */
+.kalles-checkout__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kalles-checkout__loading-skeleton {
+  height: 80px;
+  background: linear-gradient(90deg, var(--kalles-soft) 25%, #e8e8e8 50%, var(--kalles-soft) 75%);
+  background-size: 200% 100%;
+  animation: kalles-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes kalles-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

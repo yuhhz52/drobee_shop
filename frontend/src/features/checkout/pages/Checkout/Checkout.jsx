@@ -1,13 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { selectCartItems } from '@app/store/slices/cart.jsx'
+import { selectCartItems, selectCartId, selectCartLoading, fetchCart } from '@app/store/slices/cart.jsx'
 import { fetchUserDetails } from '@services/user.service'
 import { setLoading } from '@app/store/slices/common.jsx'
 import { clearTokens } from '@shared/utils/jwt-helper'
 import Payment from '@features/payment/pages/Payment/Payment'
-import { placeOrderAPI } from '@services/order.service'
-import { createOrderRequest } from '@shared/utils/order-util'
+import { checkoutFromCartAPI, checkoutDirectAPI } from '@services/order.service'
 import { formatDisplayPrice } from '@shared/utils/price-format'
 import AddAddress from '@features/account/pages/Account/AddAddress'
 import '@shared/styles/kalles-shop.css';
@@ -39,6 +38,8 @@ const MESSAGES = {
 
 const Checkout = () => {
   const cartItems = useSelector(selectCartItems)
+  const cartId = useSelector(selectCartId)
+  const cartLoading = useSelector(selectCartLoading)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [userInfo, setUserInfo] = useState()
@@ -48,27 +49,39 @@ const Checkout = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null)
   const [submittingMethod, setSubmittingMethod] = useState('')
 
+  // Check for direct checkout item from Buy Now flow
+  const directCheckoutItem = useMemo(() => {
+    const item = sessionStorage.getItem('directCheckoutItem')
+    return item ? JSON.parse(item) : null
+  }, [])
+
+  // If direct checkout, use that item instead of cart
+  const displayItems = directCheckoutItem ? [directCheckoutItem] : cartItems
+  const isDirectCheckout = !!directCheckoutItem
+
   const subTotal = useMemo(() => {
     let value = 0
-    cartItems?.forEach((el) => {
-      value += el?.subTotal || 0
+    displayItems?.forEach((el) => {
+      value += el?.subTotal || (el?.price * el?.quantity) || 0
     })
     return value
-  }, [cartItems])
+  }, [displayItems])
 
   const itemCount = useMemo(
-    () => cartItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
-    [cartItems]
+    () => displayItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+    [displayItems]
   )
 
-  const refetchUser = () => {
+  const refetchUser = useCallback(() => {
     setAddressLoading(true)
     setProfileError('')
     return fetchUserDetails()
       .then((res) => {
         setUserInfo(res)
+        // Auto-select default address or first address
         if (res?.addressList?.length > 0) {
-          setSelectedAddressId(res.addressList[0].id)
+          const defaultAddr = res.addressList.find((a) => a.isDefault)
+          setSelectedAddressId(defaultAddr?.id || res.addressList[0].id)
         }
       })
       .catch((err) => {
@@ -82,11 +95,15 @@ const Checkout = () => {
         setProfileError('Could not load your profile. Please refresh or sign in again.')
       })
       .finally(() => setAddressLoading(false))
-  }
+  }, [navigate])
 
   useEffect(() => {
     dispatch(setLoading(false))
-    refetchUser()
+    // Fetch cart and user profile in parallel for better performance
+    Promise.all([
+      dispatch(fetchCart()),
+      refetchUser(),
+    ])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -97,10 +114,35 @@ const Checkout = () => {
     }
     try {
       setSubmittingMethod('COD')
-      const orderRequest = createOrderRequest(cartItems, userInfo?.id, selectedAddressId)
-      orderRequest.paymentMethod = 'COD'
-      const res = await placeOrderAPI(orderRequest)
-      navigate(`/orderConfirmed?orderId=${res?.orderId}`)
+      let res
+      if (isDirectCheckout) {
+        // Direct checkout - don't require cartId
+        res = await checkoutDirectAPI({
+          addressId: selectedAddressId,
+          paymentMethod: 'COD',
+          items: displayItems.map((item) => ({
+            productId: item.productId,
+            productVariantId: item.variant?.id === 'default' ? null : item.variant?.id,
+            quantity: item.quantity,
+          })),
+        })
+      } else {
+        if (!cartId) {
+          alert('Cart not found. Please refresh the page.')
+          return
+        }
+        res = await checkoutFromCartAPI({
+          cartId,
+          addressId: selectedAddressId,
+          paymentMethod: 'COD',
+        })
+      }
+      if (res?.orderId) {
+        sessionStorage.removeItem('directCheckoutItem')
+        navigate(`/orderConfirmed?orderId=${res.orderId}`)
+      } else {
+        alert(MESSAGES.ORDER_FAILED)
+      }
     } catch {
       alert(MESSAGES.ORDER_FAILED)
     } finally {
@@ -115,11 +157,32 @@ const Checkout = () => {
     }
     try {
       setSubmittingMethod('VNPAY')
-      const orderRequest = createOrderRequest(cartItems, userInfo?.id, selectedAddressId)
-      orderRequest.paymentMethod = 'VNPAY'
-      const res = await placeOrderAPI(orderRequest)
+      let res
+      if (isDirectCheckout) {
+        // Direct checkout - don't require cartId
+        res = await checkoutDirectAPI({
+          addressId: selectedAddressId,
+          paymentMethod: 'VNPAY',
+          items: displayItems.map((item) => ({
+            productId: item.productId,
+            productVariantId: item.variant?.id === 'default' ? null : item.variant?.id,
+            quantity: item.quantity,
+          })),
+        })
+      } else {
+        if (!cartId) {
+          alert('Cart not found. Please refresh the page.')
+          return
+        }
+        res = await checkoutFromCartAPI({
+          cartId,
+          addressId: selectedAddressId,
+          paymentMethod: 'VNPAY',
+        })
+      }
       const paymentUrl = res?.credentials?.paymentUrl
       if (paymentUrl) {
+        sessionStorage.removeItem('directCheckoutItem')
         window.location.href = paymentUrl
       } else {
         alert(MESSAGES.VNPAY_URL_MISSING)
@@ -132,9 +195,10 @@ const Checkout = () => {
     }
   }
 
-  const isBusy = addressLoading || submittingMethod !== ''
+  const isBusy = addressLoading || cartLoading || submittingMethod !== ''
 
-  if (!cartItems?.length) {
+  // Don't redirect to cart if we're in direct checkout (Buy Now) flow
+  if (!displayItems?.length) {
     return <Navigate to="/cart-items" replace />
   }
 
@@ -157,11 +221,27 @@ const Checkout = () => {
             <section className="kalles-checkout__section">
               <h2 className="kalles-checkout__section-title">Delivery address</h2>
               {addressLoading ? (
-                <p className="kalles-checkout__empty-hint">Loading addresses…</p>
+                <div className="kalles-checkout__loading">
+                  <div className="kalles-checkout__loading-skeleton"></div>
+                  <div className="kalles-checkout__loading-skeleton"></div>
+                </div>
               ) : profileError ? (
-                <p className="kalles-checkout__empty-hint" style={{ color: '#c62828' }}>
-                  {profileError}
-                </p>
+                <div className="kalles-checkout__empty-hint" style={{ color: '#c62828' }}>
+                  <p style={{ margin: '0 0 0.75rem' }}>{profileError}</p>
+                  <button
+                    type="button"
+                    onClick={() => refetchUser()}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'var(--kalles-dark)',
+                      color: '#fff',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Retry
+                  </button>
+                </div>
               ) : userInfo?.addressList?.length > 0 ? (
                 <div className="kalles-checkout__address-list">
                   {userInfo.addressList.map((address) => (
@@ -191,10 +271,25 @@ const Checkout = () => {
                 </div>
               ) : (
                 <div className="kalles-checkout__empty-hint">
-                  <p style={{ margin: '0 0 1rem' }}>
+                  <p style={{ margin: '0 0 0.75rem' }}>
                     You have no saved address. Add one to continue checkout.
                   </p>
-                  <AddAddress onSaved={refetchUser} />
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <AddAddress onSaved={refetchUser} />
+                    <button
+                      type="button"
+                      onClick={() => refetchUser()}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'transparent',
+                        color: 'var(--kalles-dark)',
+                        border: '1px solid var(--kalles-border)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Refresh
+                    </button>
+                  </div>
                 </div>
               )}
             </section>
@@ -258,7 +353,7 @@ const Checkout = () => {
           <aside className="kalles-checkout__summary kalles-shop__summary">
             <h2>Your order ({itemCount})</h2>
             <div style={{ marginBottom: '1rem' }}>
-              {cartItems.map((item, index) => (
+              {displayItems.map((item, index) => (
                 <div key={index} className="kalles-checkout__order-item">
                   <img src={item.thumbnail} alt={item.name} />
                   <div className="info">
@@ -270,7 +365,7 @@ const Checkout = () => {
                     </p>
                     <p className="qty">Qty: {item.quantity}</p>
                   </div>
-                  <span className="price">{formatDisplayPrice(item.subTotal)}</span>
+                  <span className="price">{formatDisplayPrice(item.subTotal || (item.price * item.quantity))}</span>
                 </div>
               ))}
             </div>
