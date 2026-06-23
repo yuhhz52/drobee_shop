@@ -24,12 +24,14 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String sender;
 
-    @Value("${app.base-url:http://localhost:3000}")
+    @Value("${app.base-url}")
     private String baseUrl;
+
+    @Value("${app.mail.sender-name}")
+    private String senderName;
 
     public String sendMail(User user) {
         String subject = "Verify your email";
-        String senderName = "ShopEcom";
         String mailContent = "Hello " + user.getUsername() + ",\n";
         mailContent += "Your verification code is: " + user.getVerificationCode() + "\n";
         mailContent += "Please enter this code to verify your email.";
@@ -58,7 +60,7 @@ public class EmailService {
                     + "Your payment of " + formatVnd(order.getTotalAmount())
                     + " for order #" + order.getId() + " has been received.\n"
                     + "We are now processing your order.\n\n"
-                    + "ShopEcom";
+                    + senderName;
             send(user.getEmail(), subject, body);
         } catch (Exception e) {
             log.error("Failed to send payment success for orderId={}", order.getId(), e);
@@ -74,7 +76,7 @@ public class EmailService {
                     + " for order #" + order.getId() + ".\n"
                     + "Reason: " + (reason != null ? reason : "Unknown")
                     + "\nPlease try again or contact support.\n\n"
-                    + "ShopEcom";
+                    + senderName;
             send(user.getEmail(), subject, body);
         } catch (Exception e) {
             log.error("Failed to send payment failure for orderId={}", order.getId(), e);
@@ -87,8 +89,8 @@ public class EmailService {
             String subject = "Order Shipped - #" + order.getId();
             String body = "Hello " + user.getUsername() + ",\n\n"
                     + "Your order #" + order.getId() + " has been shipped.\n"
-                    + "Track your order at: " + baseUrl + "/orders/" + order.getId() + "\n\n"
-                    + "ShopEcom";
+                    + "Track your order at: " + baseUrl + "/account-details/orders/" + order.getId() + "\n\n"
+                    + senderName;
             send(user.getEmail(), subject, body);
         } catch (Exception e) {
             log.error("Failed to send shipped notification for orderId={}", order.getId(), e);
@@ -102,10 +104,26 @@ public class EmailService {
             String body = "Hello " + user.getUsername() + ",\n\n"
                     + "Your order #" + order.getId() + " has been delivered.\n"
                     + "Thank you for shopping with us!\n\n"
-                    + "ShopEcom";
+                    + senderName;
             send(user.getEmail(), subject, body);
         } catch (Exception e) {
             log.error("Failed to send delivered notification for orderId={}", order.getId(), e);
+        }
+    }
+
+    @Async
+    public void sendOrderCancellationNotice(User user, Order order) {
+        try {
+            String subject = "Order Cancelled - #" + order.getId();
+            String body = "Hello " + user.getUsername() + ",\n\n"
+                    + "Your order #" + order.getId() + " has been cancelled.\n"
+                    + "Order Total: " + formatVnd(order.getTotalAmount()) + "\n"
+                    + "Payment Method: " + (order.getPayment() != null ? order.getPayment().getPaymentMethod() : "N/A") + "\n\n"
+                    + "If you have any questions, please contact our support team.\n\n"
+                    + senderName;
+            send(user.getEmail(), subject, body);
+        } catch (Exception e) {
+            log.error("Failed to send cancellation notice for orderId={}", order.getId(), e);
         }
     }
 
@@ -116,8 +134,8 @@ public class EmailService {
                 + "Total: " + formatVnd(order.getTotalAmount()) + "\n"
                 + "Payment Method: " + (order.getPayment() != null ? order.getPayment().getPaymentMethod() : "N/A") + "\n"
                 + "Status: " + (order.getOrderStatus() != null ? order.getOrderStatus() : "PENDING") + "\n\n"
-                + "View your order: " + baseUrl + "/orders/" + order.getId() + "\n\n"
-                + "ShopEcom";
+                + "View your order: " + baseUrl + "/account-details/orders/" + order.getId() + "\n\n"
+                + senderName;
     }
 
     private String formatVnd(BigDecimal amount) {

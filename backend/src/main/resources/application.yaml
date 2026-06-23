@@ -188,6 +188,9 @@ jwt:
 
 # ── App Custom ────────────────────────────────────────────────────
 app:
+  base-url: ${APP_BASE_URL}
+  mail:
+    sender-name: ${APP_MAIL_SENDER_NAME}
   oauth2:
     # Custom Domain: horizonshop.io.vn
     # Frontend: https://horizonshop.io.vn
