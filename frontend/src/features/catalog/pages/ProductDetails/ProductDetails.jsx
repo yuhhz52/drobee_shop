@@ -8,6 +8,7 @@ import { addItemToCart, addToCart, selectCartError, selectCartLoading } from '@a
 import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
+import { writeDirectCheckoutItem } from '@shared/utils/direct-checkout';
 import { colorSelector } from '@shared/components/Filters/ColorFilter';
 import { ProductCard } from '@features/home/pages/HomeScooter/components';
 import './ProductDetails.css';
@@ -398,15 +399,14 @@ const ProductDetails = () => {
     };
     setError('');
 
-    // Save direct checkout item to sessionStorage (don't clear cart)
-    sessionStorage.setItem('directCheckoutItem', JSON.stringify(item));
+    // Save the Buy Now item to sessionStorage via the shared helper so the
+    // Buy Now checkout page can read it consistently. The cart is NEVER
+    // touched by Buy Now — it remains exactly as the user left it.
+    writeDirectCheckoutItem(item);
 
-    // Add to cart for tracking (but don't clear existing cart)
-    dispatch(addToCart(item));
-    dispatch(addItemToCart(item));
-
-    // Navigate to checkout
-    navigate('/checkout');
+    // Navigate to the dedicated Buy Now checkout page — never to the
+    // shared /checkout route.
+    navigate('/buy-now/checkout');
   }, [
     dispatch,
     navigate,

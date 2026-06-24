@@ -1,16 +1,15 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { selectCartItems, selectCartId, selectCartLoading, fetchCart } from '@app/store/slices/cart.jsx'
-import { fetchUserDetails } from '@services/user.service'
-import { setLoading } from '@app/store/slices/common.jsx'
-import { clearTokens } from '@shared/utils/jwt-helper'
-import Payment from '@features/payment/pages/Payment/Payment'
-import { checkoutFromCartAPI, checkoutDirectAPI } from '@services/order.service'
-import { formatDisplayPrice } from '@shared/utils/price-format'
-import AddAddress from '@features/account/pages/Account/AddAddress'
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { fetchUserDetails } from '@services/user.service';
+import { checkoutDirectAPI } from '@services/directCheckout.service';
+import { formatDisplayPrice } from '@shared/utils/price-format';
+import {
+  readDirectCheckoutItem,
+  clearDirectCheckoutItem,
+} from '@shared/utils/direct-checkout';
+import AddAddress from '@features/account/pages/Account/AddAddress';
 import '@shared/styles/kalles-shop.css';
-import './Checkout.css'
+import './BuyNowCheckout.css';
 
 const Chevron = () => (
   <span className="kalles-shop__chevron">
@@ -21,185 +20,151 @@ const Chevron = () => (
       />
     </svg>
   </span>
-)
+);
 
 const PAYMENT_OPTIONS = [
   { id: 'COD', label: 'Cash on delivery (COD)' },
   { id: 'VNPAY', label: 'VNPay' },
   { id: 'CARD', label: 'Credit card (Stripe)' },
-]
+];
 
 const MESSAGES = {
   ADDRESS_REQUIRED: 'Please select a delivery address.',
   ORDER_FAILED: 'Order failed. Please try again.',
   VNPAY_FAILED: 'VNPay failed. Please try again.',
   VNPAY_URL_MISSING: 'Payment URL not received. Please try again.',
-}
+};
 
-const Checkout = () => {
-  const cartItems = useSelector(selectCartItems)
-  const cartId = useSelector(selectCartId)
-  const cartLoading = useSelector(selectCartLoading)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const [userInfo, setUserInfo] = useState()
-  const [addressLoading, setAddressLoading] = useState(true)
-  const [profileError, setProfileError] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('')
-  const [selectedAddressId, setSelectedAddressId] = useState(null)
-  const [submittingMethod, setSubmittingMethod] = useState('')
+/**
+ * Buy Now checkout page.
+ *
+ * <p>Strictly reads its single item from {@code sessionStorage.directCheckoutItem}.
+ * It never:
+ *   - touches the Redux cart
+ *   - calls the cart API
+ *   - uses selectedCartItems
+ *
+ * <p>If no Buy Now payload exists, the user is bounced to the home page
+ * (there is no cart fallback — that is the cart checkout page's job).
+ */
+const BuyNowCheckout = () => {
+  const navigate = useNavigate();
+  const directItem = useMemo(() => readDirectCheckoutItem(), []);
 
-  // Check for direct checkout item from Buy Now flow
-  const directCheckoutItem = useMemo(() => {
-    const item = sessionStorage.getItem('directCheckoutItem')
-    return item ? JSON.parse(item) : null
-  }, [])
-
-  // If direct checkout, use that item instead of cart
-  const displayItems = directCheckoutItem ? [directCheckoutItem] : cartItems
-  const isDirectCheckout = !!directCheckoutItem
+  const [userInfo, setUserInfo] = useState();
+  const [addressLoading, setAddressLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [submittingMethod, setSubmittingMethod] = useState('');
 
   const subTotal = useMemo(() => {
-    let value = 0
-    displayItems?.forEach((el) => {
-      value += el?.subTotal || (el?.price * el?.quantity) || 0
-    })
-    return value
-  }, [displayItems])
-
-  const itemCount = useMemo(
-    () => displayItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
-    [displayItems]
-  )
+    if (!directItem) return 0;
+    return (directItem.price || 0) * (directItem.quantity || 0);
+  }, [directItem]);
 
   const refetchUser = useCallback(() => {
-    setAddressLoading(true)
-    setProfileError('')
+    setAddressLoading(true);
+    setProfileError('');
     return fetchUserDetails()
       .then((res) => {
-        setUserInfo(res)
-        // Auto-select default address or first address
+        setUserInfo(res);
         if (res?.addressList?.length > 0) {
-          const defaultAddr = res.addressList.find((a) => a.isDefault)
-          setSelectedAddressId(defaultAddr?.id || res.addressList[0].id)
+          const defaultAddr = res.addressList.find((a) => a.isDefault);
+          setSelectedAddressId(defaultAddr?.id || res.addressList[0].id);
         }
       })
       .catch((err) => {
-        console.error('Failed to fetch user info:', err)
-        const status = err?.response?.status
-        if (status === 401 || status === 403) {
-          clearTokens()
-          navigate('/v1/login', { replace: true, state: { from: '/checkout' } })
-          return
-        }
-        setProfileError('Could not load your profile. Please refresh or sign in again.')
+        console.error('Failed to fetch user info:', err);
+        setProfileError('Could not load your profile. Please refresh or sign in again.');
       })
-      .finally(() => setAddressLoading(false))
-  }, [navigate])
+      .finally(() => setAddressLoading(false));
+  }, []);
 
   useEffect(() => {
-    dispatch(setLoading(false))
-    // Fetch cart and user profile in parallel for better performance
-    Promise.all([
-      dispatch(fetchCart()),
-      refetchUser(),
-    ])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    refetchUser();
+  }, [refetchUser]);
 
-  const handleCODPayment = async () => {
+  const buildOrderItems = useCallback(() => {
+    if (!directItem) return [];
+    const variantId = directItem.variant?.id && directItem.variant.id !== 'default'
+      ? directItem.variant.id
+      : null;
+    return [
+      {
+        productId: directItem.productId,
+        productVariantId: variantId,
+        quantity: directItem.quantity,
+      },
+    ];
+  }, [directItem]);
+
+  const handlePlaceOrder = useCallback(async (method) => {
     if (!selectedAddressId) {
-      alert(MESSAGES.ADDRESS_REQUIRED)
-      return
+      alert(MESSAGES.ADDRESS_REQUIRED);
+      return;
     }
     try {
-      setSubmittingMethod('COD')
-      let res
-      if (isDirectCheckout) {
-        // Direct checkout - don't require cartId
-        res = await checkoutDirectAPI({
-          addressId: selectedAddressId,
-          paymentMethod: 'COD',
-          items: displayItems.map((item) => ({
-            productId: item.productId,
-            productVariantId: item.variant?.id === 'default' ? null : item.variant?.id,
-            quantity: item.quantity,
-          })),
-        })
-      } else {
-        if (!cartId) {
-          alert('Cart not found. Please refresh the page.')
-          return
-        }
-        res = await checkoutFromCartAPI({
-          cartId,
-          addressId: selectedAddressId,
-          paymentMethod: 'COD',
-        })
-      }
-      if (res?.orderId) {
-        sessionStorage.removeItem('directCheckoutItem')
-        navigate(`/orderConfirmed?orderId=${res.orderId}`)
-      } else {
-        alert(MESSAGES.ORDER_FAILED)
-      }
-    } catch {
-      alert(MESSAGES.ORDER_FAILED)
-    } finally {
-      setSubmittingMethod('')
-    }
-  }
+      setSubmittingMethod(method);
+      const res = await checkoutDirectAPI({
+        addressId: selectedAddressId,
+        paymentMethod: method,
+        items: buildOrderItems(),
+      });
 
-  const handleVNPayPayment = async () => {
-    if (!selectedAddressId) {
-      alert(MESSAGES.ADDRESS_REQUIRED)
-      return
-    }
-    try {
-      setSubmittingMethod('VNPAY')
-      let res
-      if (isDirectCheckout) {
-        // Direct checkout - don't require cartId
-        res = await checkoutDirectAPI({
-          addressId: selectedAddressId,
-          paymentMethod: 'VNPAY',
-          items: displayItems.map((item) => ({
-            productId: item.productId,
-            productVariantId: item.variant?.id === 'default' ? null : item.variant?.id,
-            quantity: item.quantity,
-          })),
-        })
-      } else {
-        if (!cartId) {
-          alert('Cart not found. Please refresh the page.')
-          return
+      if (method === 'VNPAY') {
+        const paymentUrl = res?.credentials?.paymentUrl;
+        if (!paymentUrl) {
+          alert(MESSAGES.VNPAY_URL_MISSING);
+          return;
         }
-        res = await checkoutFromCartAPI({
-          cartId,
-          addressId: selectedAddressId,
-          paymentMethod: 'VNPAY',
-        })
+        // We DON'T clear sessionStorage here — VNPay may fail, in which case
+        // we want to give the user another chance. OrderConfirmedPage handles
+        // cleanup on success.
+        window.location.href = paymentUrl;
+        return;
       }
-      const paymentUrl = res?.credentials?.paymentUrl
-      if (paymentUrl) {
-        sessionStorage.removeItem('directCheckoutItem')
-        window.location.href = paymentUrl
-      } else {
-        alert(MESSAGES.VNPAY_URL_MISSING)
+
+      // COD and CARD (Stripe) both end up here. CARD gets credentials back
+      // and is handled by the embedded Payment component; COD navigates
+      // straight to the confirmation page.
+      if (method === 'COD') {
+        if (res?.orderId) {
+          navigate(`/order-confirmed/${res.orderId}?status=success`);
+          return;
+        }
+        alert(MESSAGES.ORDER_FAILED);
+      } else if (method === 'CARD') {
+        // Stripe credentials are exposed by the backend; the existing
+        // Payment component handles the Stripe Elements flow. We hand off
+        // the client_secret via a tiny localStorage bridge so the component
+        // can pick it up.
+        if (res?.credentials?.client_secret && res?.orderId) {
+          sessionStorage.setItem(
+            'stripePendingOrder',
+            JSON.stringify({
+              orderId: res.orderId,
+              clientSecret: res.credentials.client_secret,
+            }),
+          );
+          navigate(`/buy-now/checkout/stripe?orderId=${res.orderId}`);
+          return;
+        }
+        alert(MESSAGES.ORDER_FAILED);
       }
     } catch (err) {
-      console.error('VNPay error', err)
-      alert(MESSAGES.VNPAY_FAILED)
+      console.error(`${method} error`, err);
+      alert(method === 'VNPAY' ? MESSAGES.VNPAY_FAILED : MESSAGES.ORDER_FAILED);
     } finally {
-      setSubmittingMethod('')
+      setSubmittingMethod('');
     }
-  }
+  }, [selectedAddressId, buildOrderItems, navigate]);
 
-  const isBusy = addressLoading || cartLoading || submittingMethod !== ''
+  const isBusy = addressLoading || submittingMethod !== '';
 
-  // Don't redirect to cart if we're in direct checkout (Buy Now) flow
-  if (!displayItems?.length) {
-    return <Navigate to="/cart-items" replace />
+  // No Buy Now payload → redirect away. We never fall back to cart here.
+  if (!directItem) {
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -208,11 +173,11 @@ const Checkout = () => {
         <nav className="kalles-shop__breadcrumb" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <Chevron />
-          <Link to="/cart-items">Shopping Cart</Link>
+          <Link to={`/product/${directItem.slug || ''}`}>{directItem.name}</Link>
           <Chevron />
-          <span className="is-current">Checkout</span>
+          <span className="is-current">Buy Now Checkout</span>
         </nav>
-        <h1 className="kalles-shop__title">Checkout</h1>
+        <h1 className="kalles-shop__title">Buy Now Checkout</h1>
       </header>
 
       <div className="kalles-shop__container">
@@ -317,19 +282,13 @@ const Checkout = () => {
                 ))}
               </div>
 
-              {paymentMethod === 'CARD' && selectedAddressId && (
-                <div className="kalles-checkout__stripe">
-                  <Payment userId={userInfo?.id} addressId={selectedAddressId} />
-                </div>
-              )}
-
               <div className="kalles-checkout__actions">
                 {paymentMethod === 'COD' && (
                   <button
                     type="button"
                     className="kalles-shop__btn kalles-shop__btn--primary"
                     style={{ width: 'auto', minWidth: '200px' }}
-                    onClick={handleCODPayment}
+                    onClick={() => handlePlaceOrder('COD')}
                     disabled={!selectedAddressId || isBusy}
                   >
                     {submittingMethod === 'COD' ? 'Placing order...' : 'Place order'}
@@ -340,10 +299,21 @@ const Checkout = () => {
                     type="button"
                     className="kalles-shop__btn kalles-shop__btn--vnpay"
                     style={{ width: 'auto', minWidth: '200px' }}
-                    onClick={handleVNPayPayment}
+                    onClick={() => handlePlaceOrder('VNPAY')}
                     disabled={!selectedAddressId || isBusy}
                   >
                     {submittingMethod === 'VNPAY' ? 'Redirecting...' : 'Pay with VNPay'}
+                  </button>
+                )}
+                {paymentMethod === 'CARD' && (
+                  <button
+                    type="button"
+                    className="kalles-shop__btn kalles-shop__btn--primary"
+                    style={{ width: 'auto', minWidth: '200px' }}
+                    onClick={() => handlePlaceOrder('CARD')}
+                    disabled={!selectedAddressId || isBusy}
+                  >
+                    {submittingMethod === 'CARD' ? 'Preparing payment...' : 'Pay with card'}
                   </button>
                 )}
               </div>
@@ -351,23 +321,25 @@ const Checkout = () => {
           </div>
 
           <aside className="kalles-checkout__summary kalles-shop__summary">
-            <h2>Your order ({itemCount})</h2>
+            <h2>Buy Now order</h2>
             <div style={{ marginBottom: '1rem' }}>
-              {displayItems.map((item, index) => (
-                <div key={index} className="kalles-checkout__order-item">
-                  <img src={item.thumbnail} alt={item.name} />
-                  <div className="info">
-                    <h4>{item.name}</h4>
+              <div className="kalles-checkout__order-item">
+                {directItem.thumbnail && (
+                  <img src={directItem.thumbnail} alt={directItem.name} />
+                )}
+                <div className="info">
+                  <h4>{directItem.name}</h4>
+                  {directItem.variant && (
                     <p>
-                      {item.variant?.color}
-                      {item.variant?.color && item.variant?.variantName ? ', ' : ''}
-                      {item.variant?.variantName}
+                      {directItem.variant.color}
+                      {directItem.variant.color && directItem.variant.variantName ? ', ' : ''}
+                      {directItem.variant.variantName}
                     </p>
-                    <p className="qty">Qty: {item.quantity}</p>
-                  </div>
-                  <span className="price">{formatDisplayPrice(item.subTotal || (item.price * item.quantity))}</span>
+                  )}
+                  <p className="qty">Qty: {directItem.quantity}</p>
                 </div>
-              ))}
+                <span className="price">{formatDisplayPrice(subTotal)}</span>
+              </div>
             </div>
             <div className="kalles-shop__summary-row">
               <span>Subtotal</span>
@@ -381,18 +353,25 @@ const Checkout = () => {
               <span>Total</span>
               <span className="amount">{formatDisplayPrice(subTotal)}</span>
             </div>
-            <Link
-              to="/cart-items"
+            <p className="kalles-checkout__buy-now-note">
+              Buy Now doesn't touch your cart. Other items will remain in your cart.
+            </p>
+            <button
+              type="button"
               className="kalles-cart__continue"
-              style={{ display: 'block', marginTop: '1rem' }}
+              style={{ display: 'block', marginTop: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              onClick={() => {
+                clearDirectCheckoutItem();
+                navigate('/');
+              }}
             >
-              ← Back to cart
-            </Link>
+              ← Cancel Buy Now
+            </button>
           </aside>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Checkout
+export default BuyNowCheckout;

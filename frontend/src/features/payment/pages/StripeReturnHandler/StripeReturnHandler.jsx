@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Spinner from '@shared/components/Spinner/Spinner.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { confirmPaymentAPI } from '@services/order.service';
-import { clearCart } from '@app/store/actions/cartAction';
 import { setLoading } from '@app/store/slices/common.jsx';
+import { clearDirectCheckoutItem } from '@shared/utils/direct-checkout';
 
 const StripeReturnHandler = () => {
-  const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -16,58 +15,63 @@ const StripeReturnHandler = () => {
   const isLoading = useSelector((state) => state?.commonState?.loading);
   const hasProcessedRef = useRef(false);
 
- useEffect(() => {
-  const query = new URLSearchParams(location.search);
-  const redirectStatus = query.get('redirect_status');
-  const paymentIntentId = query.get('payment_intent');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirectStatus = params.get('redirect_status');
+    const paymentIntentId = params.get('payment_intent');
 
-  if (!paymentIntentId || !redirectStatus) {
-    setErrorMessage('Thiếu thông tin thanh toán từ Stripe.');
-    return;
-  }
-
-    if (redirectStatus === 'succeeded' && !hasProcessedRef.current) {
-      hasProcessedRef.current = true;
-      dispatch(setLoading(true));
-      setStatusMessage('Đang xác nhận thanh toán...');
-
-      // Retry logic: attempt confirmPaymentAPI up to 3 times with backoff
-      const maxAttempts = 3;
-      const attemptConfirm = async (attempt = 1) => {
-        try {
-          const res = await confirmPaymentAPI({ paymentIntentId, status: redirectStatus });
-          const orderId = res?.result?.orderId;
-          const amount = res?.result?.amount;
-          if (!orderId) {
-            throw new Error('Missing orderId from payment confirmation');
-          }
-          dispatch(clearCart());
-          dispatch(setLoading(false));
-          navigate(`/orderConfirmed?orderId=${orderId}&amount=${amount}&status=success`);
-        } catch (err) {
-          console.error(`confirmPayment attempt ${attempt} failed`, err);
-          if (attempt < maxAttempts) {
-            setStatusMessage(`Xác nhận thất bại. Đang thử lại lần ${attempt + 1}/${maxAttempts}...`);
-            // exponential backoff
-            const delay = 500 * Math.pow(2, attempt - 1);
-            setTimeout(() => attemptConfirm(attempt + 1), delay);
-          } else {
-            dispatch(setLoading(false));
-            setErrorMessage('Có lỗi xảy ra khi xác nhận thanh toán. Vui lòng liên hệ support.');
-          }
-        }
-      };
-
-      attemptConfirm();
-    } else if (redirectStatus !== 'succeeded') {
-      setErrorMessage('Thanh toán thất bại - ' + redirectStatus);
+    if (!paymentIntentId || !redirectStatus) {
+      setErrorMessage('Missing payment information from Stripe.');
+      return;
     }
-}, [dispatch, location.search, navigate]);
 
+    if (redirectStatus !== 'succeeded') {
+      setErrorMessage(`Payment failed - ${redirectStatus}`);
+      return;
+    }
+
+    if (hasProcessedRef.current) return;
+    hasProcessedRef.current = true;
+
+    dispatch(setLoading(true));
+    setStatusMessage('Confirming payment...');
+
+    const maxAttempts = 3;
+    const attemptConfirm = async (attempt = 1) => {
+      try {
+        const res = await confirmPaymentAPI({ paymentIntentId, status: redirectStatus });
+        const orderId = res?.orderId;
+        const amount = res?.amount;
+        if (!orderId) {
+          throw new Error('Missing orderId from payment confirmation');
+        }
+        // Cart cleanup (for cart checkouts) was performed server-side when
+        // the order was originally created. Buy Now never touched the cart.
+        // The only client-side cleanup we need is the Buy Now sessionStorage
+        // payload, which OrderConfirmedPage will also clear on render.
+        clearDirectCheckoutItem();
+        sessionStorage.removeItem('stripePendingOrder');
+        dispatch(setLoading(false));
+        navigate(`/order-confirmed/${orderId}${amount ? `?amount=${amount}&status=success` : '?status=success'}`);
+      } catch (err) {
+        console.error(`confirmPayment attempt ${attempt} failed`, err);
+        if (attempt < maxAttempts) {
+          setStatusMessage(`Confirmation failed. Retrying ${attempt + 1}/${maxAttempts}...`);
+          const delay = 500 * Math.pow(2, attempt - 1);
+          setTimeout(() => attemptConfirm(attempt + 1), delay);
+        } else {
+          dispatch(setLoading(false));
+          setErrorMessage('An error occurred while confirming payment. Please contact support.');
+        }
+      }
+    };
+
+    attemptConfirm();
+  }, [dispatch, navigate]);
 
   return (
     <div className="p-8 text-center">
-      <h1 className="text-lg font-medium mb-2">Xử lý thanh toán...</h1>
+      <h1 className="text-lg font-medium mb-2">Processing payment...</h1>
       {statusMessage && <p className="text-gray-600">{statusMessage}</p>}
       {errorMessage && <p className="text-red-600">{errorMessage}</p>}
       {isLoading && <Spinner />}
@@ -78,14 +82,14 @@ const StripeReturnHandler = () => {
             onClick={() => navigate('/account-details/orders')}
             className="px-4 py-2 rounded border border-gray-300"
           >
-            Xem đơn hàng
+            View orders
           </button>
           <button
             type="button"
-            onClick={() => navigate('/checkout')}
+            onClick={() => navigate('/cart-items')}
             className="px-4 py-2 rounded bg-black text-white"
           >
-            Thử lại
+            Back to cart
           </button>
         </div>
       )}

@@ -38,7 +38,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Set<String> CHECKOUT_PATHS = Set.of(
             "/api/orders/checkout",
-            "/api/orders/create"
+            "/api/orders/direct",
+            "/api/orders/create",
+            "/api/checkout/cart",
+            "/api/checkout/direct"
     );
 
     private static final Set<String> CART_PATHS = Set.of(

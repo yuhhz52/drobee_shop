@@ -29,6 +29,9 @@ public enum ErrorCode {
     CART_NOT_FOUND(2011, "cart not found", HttpStatus.NOT_FOUND),
     CART_EMPTY(2012, "cart is empty", HttpStatus.BAD_REQUEST),
     CART_ITEM_UNAVAILABLE(2013, "cart item is no longer available", HttpStatus.BAD_REQUEST),
+    BUY_NOW_PAYLOAD_INVALID(2014, "buy-now checkout payload is missing or invalid", HttpStatus.BAD_REQUEST),
+    CHECKOUT_PAYMENT_METHOD_INVALID(2015, "payment method is not supported for this checkout flow", HttpStatus.BAD_REQUEST),
+    CHECKOUT_QUANTITY_INVALID(2016, "quantity must be greater than zero", HttpStatus.BAD_REQUEST),
 
     PAYMENT_FAILED(4001, "payment failed", HttpStatus.BAD_REQUEST),
     PAYMENT_TIMEOUT(4002, "payment timeout", HttpStatus.BAD_REQUEST),

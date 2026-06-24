@@ -4,5 +4,7 @@ export { collectionService, fetchCollectionBySlug } from './collection.service';
 export { authService, loginAPI, registerAPI, verifyAPI, getProfileAPI, logoutAPI } from './auth.service';
 export { userService, fetchUserDetails, fetchOrderAPI, cancelOrderAPI, addAddressAPI, deleteAddressAPI } from './user.service';
 export { orderService, placeOrderAPI, confirmPaymentAPI } from './order.service';
+export { cartCheckoutService, checkoutFromCartAPI } from './cartCheckout.service';
+export { directCheckoutService, checkoutDirectAPI } from './directCheckout.service';
 export { uploadService, fileUploadAPI } from './upload.service';
 export { cartService } from './cart.service';

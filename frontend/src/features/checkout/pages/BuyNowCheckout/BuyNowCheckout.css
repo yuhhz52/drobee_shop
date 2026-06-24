@@ -1,0 +1,14 @@
+/* Buy Now checkout — visual styling shared with cart checkout.
+ * Most layout is inherited from kalles-shop.css + the existing checkout
+ * markup class names. This file only adds Buy Now-specific tweaks.
+ */
+
+.kalles-checkout__buy-now-note {
+  font-size: 0.85rem;
+  color: var(--kalles-muted, #666);
+  background: #f6f6f6;
+  border-left: 3px solid #2e7d32;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+  border-radius: 0 4px 4px 0;
+}

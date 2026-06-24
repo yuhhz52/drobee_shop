@@ -33,5 +33,8 @@ export const ENDPOINTS = {
   orderById: (id) => `/api/orders/${id}`,
   orderCancel: (id) => `/api/orders/${id}`,
   orderUpdatePayment: '/api/orders/payments',
+  // New dedicated checkout endpoints. Each maps to a single use case.
+  checkoutCart: '/api/checkout/cart',
+  checkoutDirect: '/api/checkout/direct',
   fileUpload: '/api/file',
 };

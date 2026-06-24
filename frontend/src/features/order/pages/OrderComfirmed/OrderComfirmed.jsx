@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { fetchOrderAPI } from '@services/user.service'
-import { useSelector, useDispatch } from 'react-redux'
-import { clearCart } from '@app/store/actions/cartAction'
-import Spinner from '@shared/components/Spinner/Spinner.jsx'
-import { formatDisplayPrice } from '@shared/utils/price-format'
-import { getPrimaryResourceUrl } from '@shared/utils/product-media'
+import React, { useEffect, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { fetchOrderAPI } from '@services/user.service';
+import { useSelector } from 'react-redux';
+import Spinner from '@shared/components/Spinner/Spinner.jsx';
+import { formatDisplayPrice } from '@shared/utils/price-format';
+import { getPrimaryResourceUrl } from '@shared/utils/product-media';
+import { clearDirectCheckoutItem } from '@shared/utils/direct-checkout';
 import '@shared/styles/kalles-shop.css';
-import './OrderConfirmed.css'
+import './OrderConfirmed.css';
 
 const Chevron = () => (
   <span className="kalles-shop__chevron">
@@ -18,44 +18,67 @@ const Chevron = () => (
       />
     </svg>
   </span>
-)
+);
 
+/**
+ * Order confirmation page.
+ *
+ * <p>Strict responsibilities:
+ *   - Display order info, payment status, and shipping address.
+ *   - Clean up {@code sessionStorage.directCheckoutItem} if present
+ *     (the Buy Now flow has now ended successfully).
+ *
+ * <p>This page NEVER:
+ *   - Calls the checkout API.
+ *   - Calls {@code clearCart}.
+ *   - Refreshes the cart.
+ *   - Creates a new order.
+ *
+ * <p>Refreshing the page is safe — it just re-fetches the order by id.
+ */
 const OrderConfirmed = () => {
-  const location = useLocation()
-  const [order, setOrder] = useState(null)
-  const [error, setError] = useState('')
-  const isLoading = useSelector((state) => state.commonState.loading)
-  const dispatch = useDispatch()
+  const { orderId: pathOrderId } = useParams();
+  const [searchParams] = useSearchParams();
+  const status = searchParams.get('status');
+  const paymentError = searchParams.get('error');
 
-  const { orderId, status, paymentError } = useMemo(() => {
-    const query = new URLSearchParams(location.search)
-    return {
-      orderId: query.get('orderId'),
-      status: query.get('status'),
-      paymentError: query.get('error'),
-    }
-  }, [location.search])
+  const [order, setOrder] = useState(null);
+  const [error, setError] = useState('');
+  const isLoading = useSelector((state) => state.commonState.loading);
+
+  // Path param takes precedence; fall back to query param for backward
+  // compatibility with any old links still floating around.
+  const orderId = pathOrderId || searchParams.get('orderId');
 
   useEffect(() => {
-    if (!orderId) return
+    if (!orderId) {
+      setError('Missing order id.');
+      return;
+    }
+
+    let cancelled = false;
     fetchOrderAPI()
       .then((orders) => {
-        const found = orders.find((o) => String(o.id) === String(orderId))
+        if (cancelled) return;
+        const found = orders.find((o) => String(o.id) === String(orderId));
         if (found) {
-          setOrder(found)
-          // Only clear cart if it wasn't a direct checkout
-          // (direct checkout doesn't modify cart, so no need to clear)
-          if (!sessionStorage.getItem('directCheckoutItem')) {
-            dispatch(clearCart())
-          } else {
-            sessionStorage.removeItem('directCheckoutItem')
-          }
+          setOrder(found);
+          // Buy Now cleanup: if the sessionStorage payload still exists, the
+          // user reached us via the Buy Now flow — clear it now that the
+          // order has been placed. Cart cleanup (if applicable) was already
+          // performed by the backend in the same transaction as order creation.
+          clearDirectCheckoutItem();
+          sessionStorage.removeItem('stripePendingOrder');
         } else {
-          setError('Order not found.')
+          setError('Order not found.');
         }
       })
-      .catch(() => setError('Failed to load order details.'))
-  }, [orderId, dispatch])
+      .catch(() => {
+        if (!cancelled) setError('Failed to load order details.');
+      });
+
+    return () => { cancelled = true; };
+  }, [orderId]);
 
   if (isLoading) {
     return (
@@ -64,7 +87,7 @@ const OrderConfirmed = () => {
           <Spinner />
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -72,16 +95,20 @@ const OrderConfirmed = () => {
       <div className="kalles-shop">
         <div className="kalles-shop__container">
           <p className="kalles-order__error">{error}</p>
-          <Link to="/products" className="kalles-shop__btn kalles-shop__btn--primary" style={{ width: 'auto', display: 'inline-flex' }}>
+          <Link
+            to="/products"
+            className="kalles-shop__btn kalles-shop__btn--primary"
+            style={{ width: 'auto', display: 'inline-flex' }}
+          >
             Continue shopping
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const isPaymentSuccess = status === 'success' || !status
-  const isPaymentFail = status === 'fail'
+  const isPaymentSuccess = status === 'success' || !status;
+  const isPaymentFail = status === 'fail';
 
   return (
     <div className="kalles-shop">
@@ -95,14 +122,23 @@ const OrderConfirmed = () => {
       </header>
 
       <div className="kalles-shop__container" style={{ maxWidth: '800px' }}>
-        <div className={`kalles-order__success ${isPaymentFail ? 'kalles-order__success--fail' : ''}`}
+        <div
+          className={`kalles-order__success ${isPaymentFail ? 'kalles-order__success--fail' : ''}`}
           style={isPaymentFail ? { borderColor: '#ffcdd2', background: '#fff5f5', color: '#c62828' } : undefined}
         >
           <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             {isPaymentFail ? (
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             ) : (
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             )}
           </svg>
           <div>
@@ -150,10 +186,9 @@ const OrderConfirmed = () => {
           <div className="kalles-order__items">
             {order?.orderItemList?.map((item, idx) => {
               const variant = item?.product?.variants?.find(
-                (v) => String(v.id) === String(item.productVariantId)
-              )
-              const image = getPrimaryResourceUrl(item?.product?.productResources)
-
+                (v) => String(v.id) === String(item.productVariantId),
+              );
+              const image = getPrimaryResourceUrl(item?.product?.productResources);
               return (
                 <article key={idx} className="kalles-order__item">
                   {image && <img src={image} alt={item?.product?.name} />}
@@ -165,7 +200,7 @@ const OrderConfirmed = () => {
                     {variant?.variantName && <p>Version: {variant.variantName}</p>}
                   </div>
                 </article>
-              )
+              );
             })}
           </div>
         </div>
@@ -181,16 +216,24 @@ const OrderConfirmed = () => {
         )}
 
         <div className="kalles-order__actions">
-          <Link to="/products" className="kalles-shop__btn kalles-shop__btn--primary" style={{ width: 'auto' }}>
+          <Link
+            to="/products"
+            className="kalles-shop__btn kalles-shop__btn--primary"
+            style={{ width: 'auto' }}
+          >
             Continue shopping
           </Link>
-          <Link to="/account-details/orders" className="kalles-shop__btn kalles-shop__btn--outline" style={{ width: 'auto' }}>
+          <Link
+            to="/account-details/orders"
+            className="kalles-shop__btn kalles-shop__btn--outline"
+            style={{ width: 'auto' }}
+          >
             View my orders
           </Link>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OrderConfirmed
+export default OrderConfirmed;

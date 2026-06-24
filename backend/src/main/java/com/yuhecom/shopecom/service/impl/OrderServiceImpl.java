@@ -16,8 +16,9 @@ import com.yuhecom.shopecom.mapper.ProductMapper;
 import com.yuhecom.shopecom.mapper.ProductVariantMapper;
 import com.yuhecom.shopecom.mapper.UsersMapper;
 import com.yuhecom.shopecom.repository.OrderRepository;
-import com.yuhecom.shopecom.service.CartService;
+import com.yuhecom.shopecom.service.CartCheckoutService;
 import com.yuhecom.shopecom.service.CouponService;
+import com.yuhecom.shopecom.service.DirectCheckoutService;
 import com.yuhecom.shopecom.service.OrderService;
 import com.yuhecom.shopecom.service.ProductService;
 import com.yuhecom.shopecom.service.StripeService;
@@ -29,7 +30,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.security.Principal;
@@ -52,10 +52,10 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final UsersMapper usersMapper;
     private final AppProperties appProperties;
-    private final HttpServletRequest httpServletRequest;
     private final com.yuhecom.shopecom.repository.ProductVariantRepository productVariantRepository;
-    private final CartService cartService;
     private final CouponService couponService;
+    private final CartCheckoutService cartCheckoutService;
+    private final DirectCheckoutService directCheckoutService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -151,7 +151,7 @@ public class OrderServiceImpl implements OrderService {
             response.setCredentials(stripeService.createPaymentIntent(order));
         } else if ("VNPAY".equals(request.getPaymentMethod())) {
             Map<String, String> credentials = new HashMap<>();
-            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, getClientIp()));
+            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, getClientIp(httpRequest)));
             response.setCredentials(credentials);
         }
 
@@ -159,258 +159,25 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * Checkout from cart - validates and uses cart items for order creation.
-     * This is the preferred checkout method as it ensures proper stock validation.
+     * Cart-based checkout. Delegates to {@link CartCheckoutService} so the
+     * cart flow logic lives in exactly one place. Kept on OrderService for
+     * backward compatibility with existing {@code POST /api/orders/checkout}.
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse checkoutFromCart(CheckoutRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception {
-        User user = userRepository.findByEmailForProfile(principal.getName())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
-
-        // Get cart with pessimistic lock
-        Cart cart = cartService.getCartForCheckout(user, request.getCartId());
-
-        // Validate cart before proceeding
-        CartCheckoutValidation validation = cartService.validateCartForCheckout(cart);
-
-        // Check if all items are valid
-        boolean allItemsValid = validation.getItems().stream()
-                .allMatch(item -> item.isInStock() && item.isActive());
-
-        if (!allItemsValid) {
-            throw new AppException(ErrorCode.CART_ITEM_UNAVAILABLE,
-                    "Some items in your cart are no longer available or out of stock");
-        }
-
-        // Validate and calculate coupon discount
-        BigDecimal discountAmount = BigDecimal.ZERO;
-        Coupon appliedCoupon = null;
-        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
-            CouponDto couponDto = couponService.validateAndCalculateDiscount(
-                    request.getCouponCode(), validation.getTotalAmount());
-            discountAmount = couponDto.getCalculatedDiscount();
-            
-            // Load full coupon entity for storage
-            appliedCoupon = new Coupon();
-            appliedCoupon.setId(couponDto.getId());
-            appliedCoupon.setCode(couponDto.getCode());
-            log.info("Coupon applied: code={}, discount={}", couponDto.getCode(), discountAmount);
-        }
-
-        // Get address
-        Address address = user.getAddressList().stream()
-                .filter(a -> request.getAddressId().equals(a.getId()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found"));
-
-        List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal subtotalAmount = BigDecimal.ZERO;
-
-        Order order = Order.builder()
-                .user(user)
-                .address(address)
-                .totalAmount(BigDecimal.ZERO)
-                .orderDate(LocalDateTime.now())
-                .discount(discountAmount)
-                .coupon(appliedCoupon)
-                .paymentMethod(request.getPaymentMethod())
-                .orderStatus(OrderStatus.PENDING)
-                .orderDisplayCode(generateDisplayCode())
-                .build();
-
-        // Process each cart item with atomic stock deduction
-        for (CartItem cartItem : cart.getItems()) {
-            ProductVariant variant = cartItem.getProductVariant();
-            if (variant == null) {
-                continue;
-            }
-
-            // Atomic stock deduction with pessimistic lock
-            int rowsAffected = productVariantRepository.deductStock(variant.getId(), cartItem.getQuantity());
-            if (rowsAffected == 0) {
-                throw new AppException(ErrorCode.OUT_OF_STOCK,
-                        String.format("Insufficient stock for %s", cartItem.getProductSnapshotName()));
-            }
-
-            orderItems.add(OrderItem.builder()
-                    .product(cartItem.getProduct())
-                    .productVariant(variant)
-                    .quantity(cartItem.getQuantity())
-                    .itemPrice(cartItem.getUnitPrice())
-                    .order(order)
-                    .build());
-
-            subtotalAmount = subtotalAmount.add(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
-        }
-
-        order.setOrderItemList(orderItems);
-        
-        // Calculate final total: subtotal - discount
-        BigDecimal finalTotal = subtotalAmount.subtract(discountAmount);
-        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
-            finalTotal = BigDecimal.ZERO;
-        }
-        order.setTotalAmount(finalTotal);
-
-        Payment payment = new Payment();
-        payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setPaymentDate(LocalDateTime.now());
-        payment.setOrder(order);
-        payment.setAmount(finalTotal);
-        payment.setPaymentMethod(request.getPaymentMethod());
-        order.setPayment(payment);
-
-        Order savedOrder = orderRepository.save(order);
-
-        // Increment coupon usage after successful order
-        if (appliedCoupon != null) {
-            couponService.incrementUsage(appliedCoupon.getId());
-        }
-
-        // Clear cart after successful order creation
-        cartService.clearCartAfterCheckout(cart.getId());
-
-        log.info("Order created from cart: orderId={}, cartId={}, method={}, subtotal={}, discount={}, total={}",
-                savedOrder.getId(), cart.getId(), request.getPaymentMethod(), subtotalAmount, discountAmount, finalTotal);
-
-        // Send order confirmation email (async, fire-and-forget)
-        try {
-            if (user != null) {
-                emailService.sendOrderConfirmation(user, savedOrder);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to dispatch order confirmation email for orderId={}", savedOrder.getId(), e);
-        }
-
-        OrderResponse response = OrderResponse.builder()
-                .paymentMethod(request.getPaymentMethod())
-                .orderId(savedOrder.getId())
-                .build();
-
-        if ("CARD".equals(request.getPaymentMethod())) {
-            response.setCredentials(stripeService.createPaymentIntent(order));
-        } else if ("VNPAY".equals(request.getPaymentMethod())) {
-            Map<String, String> credentials = new HashMap<>();
-            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, getClientIp()));
-            response.setCredentials(credentials);
-        }
-
-        return response;
+        return cartCheckoutService.checkout(request, principal.getName(), getClientIp(httpRequest));
     }
 
     /**
-     * Direct checkout for Buy Now flow - doesn't use cart.
-     * Creates order directly from provided items without modifying cart.
+     * Buy Now / direct checkout. Delegates to {@link DirectCheckoutService}.
+     * This flow NEVER touches the cart. Kept on OrderService for backward
+     * compatibility with existing {@code POST /api/orders/direct}.
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse directCheckout(DirectCheckoutRequest request, Principal principal, HttpServletRequest httpRequest) throws Exception {
-        User user = userRepository.findByEmailForProfile(principal.getName())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found"));
-
-        // Validate address
-        Address address = user.getAddressList().stream()
-                .filter(a -> request.getAddressId().equals(a.getId()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found"));
-
-        List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal subtotalAmount = BigDecimal.ZERO;
-
-        // Build order
-        Order order = Order.builder()
-                .user(user)
-                .address(address)
-                .totalAmount(BigDecimal.ZERO)
-                .orderDate(LocalDateTime.now())
-                .discount(BigDecimal.ZERO)
-                .paymentMethod(request.getPaymentMethod())
-                .orderStatus(OrderStatus.PENDING)
-                .orderDisplayCode(generateDisplayCode())
-                .build();
-
-        // Process each item with atomic stock deduction
-        for (DirectCheckoutRequest.DirectOrderItem itemReq : request.getItems()) {
-            Product product = productService.fetchProductById(itemReq.getProductId());
-            ProductVariant variant = productVariantRepository.findWithLockingById(itemReq.getProductVariantId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND,
-                            "Variant not found: " + itemReq.getProductVariantId()));
-
-            if (!variant.getProduct().getId().equals(product.getId())) {
-                throw new BusinessException(ErrorCode.BAD_REQUEST, "Product variant does not belong to product");
-            }
-
-            // Validate stock
-            if (variant.getStockQuantity() < itemReq.getQuantity()) {
-                throw new AppException(ErrorCode.OUT_OF_STOCK,
-                        "Insufficient stock for variant: " + variant.getVariantName());
-            }
-
-            // Atomic stock deduction
-            int rowsAffected = productVariantRepository.deductStock(variant.getId(), itemReq.getQuantity());
-            if (rowsAffected == 0) {
-                throw new AppException(ErrorCode.OUT_OF_STOCK,
-                        "Insufficient stock for variant: " + variant.getVariantName());
-            }
-
-            // Calculate item price: base price + additional price from variant
-            BigDecimal itemPrice = product.getPrice();
-            if (variant.getAdditionalPrice() != null) {
-                itemPrice = itemPrice.add(variant.getAdditionalPrice());
-            }
-
-            orderItems.add(OrderItem.builder()
-                    .product(product)
-                    .productVariant(variant)
-                    .quantity(itemReq.getQuantity())
-                    .itemPrice(itemPrice)
-                    .order(order)
-                    .build());
-
-            subtotalAmount = subtotalAmount.add(itemPrice.multiply(BigDecimal.valueOf(itemReq.getQuantity())));
-        }
-
-        order.setOrderItemList(orderItems);
-        order.setTotalAmount(subtotalAmount);
-
-        // Create payment
-        Payment payment = new Payment();
-        payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setPaymentDate(LocalDateTime.now());
-        payment.setOrder(order);
-        payment.setAmount(subtotalAmount);
-        payment.setPaymentMethod(request.getPaymentMethod());
-        order.setPayment(payment);
-
-        Order savedOrder = orderRepository.save(order);
-
-        log.info("Direct checkout order created: orderId={}, method={}, total={}",
-                savedOrder.getId(), request.getPaymentMethod(), subtotalAmount);
-
-        // Send order confirmation email (async, fire-and-forget)
-        try {
-            if (user != null) {
-                emailService.sendOrderConfirmation(user, savedOrder);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to dispatch order confirmation email for orderId={}", savedOrder.getId(), e);
-        }
-
-        OrderResponse response = OrderResponse.builder()
-                .paymentMethod(request.getPaymentMethod())
-                .orderId(savedOrder.getId())
-                .build();
-
-        if ("CARD".equals(request.getPaymentMethod())) {
-            response.setCredentials(stripeService.createPaymentIntent(order));
-        } else if ("VNPAY".equals(request.getPaymentMethod())) {
-            Map<String, String> credentials = new HashMap<>();
-            credentials.put("paymentUrl", vnPayService.createPaymentUrl(order, getClientIp()));
-            response.setCredentials(credentials);
-        }
-
-        return response;
+        return directCheckoutService.checkout(request, principal.getName(), getClientIp(httpRequest));
     }
 
     @Override
@@ -511,17 +278,32 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * Builds the FE redirect target after a payment provider returns control
+     * to the backend. The URL is the OrderConfirmed page with the orderId
+     * as a path parameter. Optional status / error are passed as query
+     * parameters so the FE can render success vs. failure states.
+     */
     private String buildRedirectUrl(String orderId, String status, String error) {
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromUriString(appProperties.getOrderConfirmedUrl())
-                .queryParam("status", status);
-        if (orderId != null && !orderId.isBlank()) {
-            builder.queryParam("orderId", orderId);
+        String base = appProperties.getOrderConfirmedUrl();
+        if (orderId == null || orderId.isBlank()) {
+            // Without an order id we can't deep-link; send user to a neutral page.
+            return appProperties.getOrderConfirmedUrl().replaceFirst("/order-confirmed.*", "/account-details/orders");
         }
-        if (error != null && !error.isBlank()) {
-            builder.queryParam("error", error);
+        StringBuilder url = new StringBuilder(base);
+        if (!base.endsWith("/")) {
+            url.append('/');
         }
-        return builder.build(true).toUriString();
+        url.append(orderId);
+        if (status != null && !status.isBlank()) {
+            url.append("?status=").append(status);
+            if (error != null && !error.isBlank()) {
+                url.append("&error=").append(error);
+            }
+        } else if (error != null && !error.isBlank()) {
+            url.append("?error=").append(error);
+        }
+        return url.toString();
     }
 
     private String extractOrderId(String orderInfo) {
@@ -716,16 +498,19 @@ public class OrderServiceImpl implements OrderService {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-    private String getClientIp() {
-        String xForwardedFor = httpServletRequest.getHeader("X-Forwarded-For");
+    private String getClientIp(HttpServletRequest httpRequest) {
+        if (httpRequest == null) {
+            return null;
+        }
+        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isBlank()) {
             return xForwardedFor.split(",")[0].trim();
         }
-        String xRealIp = httpServletRequest.getHeader("X-Real-IP");
+        String xRealIp = httpRequest.getHeader("X-Real-IP");
         if (xRealIp != null && !xRealIp.isBlank()) {
             return xRealIp;
         }
-        return httpServletRequest.getRemoteAddr();
+        return httpRequest.getRemoteAddr();
     }
 
     @Override

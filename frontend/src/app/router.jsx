@@ -11,7 +11,12 @@ import OAuth2LoginCallback from '@features/auth/pages/OAuth2LoginCallback';
 import Cart from '@features/cart/pages/Cart/Cart';
 import Account from '@features/account/pages/Account/Account';
 import ProtectedRoute from '@shared/components/ProtectdRouter/ProtectedRouter';
-import Checkout from '@features/checkout/pages/Checkout/Checkout';
+// Split checkout into two dedicated pages — one per use case. The previous
+// /checkout route is removed; both pages are independent components with no
+// shared `if (isDirect)` branching.
+import CartCheckout from '@features/checkout/pages/CartCheckout/CartCheckout';
+import BuyNowCheckout from '@features/checkout/pages/BuyNowCheckout/BuyNowCheckout';
+import StripePaymentPage from '@features/checkout/pages/StripePayment/StripePaymentPage';
 import OrderConfirmed from '@features/order/pages/OrderComfirmed/OrderComfirmed';
 import Profile from '@features/account/pages/Account/Profile';
 import Orders from '@features/account/pages/Account/Orders';
@@ -75,6 +80,21 @@ export const router = createBrowserRouter([
       { path: 'shops', element: <ShopPages /> },
       { path: 'contact', element: <Contact /> },
       { path: 'cart-items', element: <Cart /> },
+      // Cart-based checkout — reads ONLY from the cart.
+      { path: 'cart/checkout', element: <CartCheckout /> },
+      // Stripe payment confirmation for cart checkout.
+      { path: 'cart/checkout/stripe', element: <StripePaymentPage /> },
+      // Buy Now checkout — reads ONLY from sessionStorage.directCheckoutItem.
+      { path: 'buy-now/checkout', element: <BuyNowCheckout /> },
+      // Stripe payment confirmation for Buy Now.
+      { path: 'buy-now/checkout/stripe', element: <StripePaymentPage /> },
+      // Order confirmation — pure display, no order creation.
+      { path: 'order-confirmed/:orderId', element: <OrderConfirmed /> },
+      // Backward-compat: old query-param URL still resolves.
+      {
+        path: 'orderConfirmed',
+        element: <OrderConfirmed />,
+      },
       {
         path: 'orders/:orderId',
         element: <Navigate to="/account-details/orders/:orderId" replace />,
@@ -129,8 +149,6 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      { path: 'checkout', element: <Checkout /> },
-      { path: '/orderConfirmed', element: <OrderConfirmed /> },
       { path: '/403', element: <Page403 /> },
     ],
   },

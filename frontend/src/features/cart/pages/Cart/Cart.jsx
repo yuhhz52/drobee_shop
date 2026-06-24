@@ -230,7 +230,7 @@ const Cart = () => {
             <button
               type="button"
               className="horizon-cart-btn horizon-cart-btn--primary"
-              onClick={() => navigate('/checkout')}
+              onClick={() => navigate('/cart/checkout')}
             >
               Proceed to checkout
             </button>
