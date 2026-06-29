@@ -101,7 +101,7 @@ public class CheckoutController {
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder().result(result).build());
     }
 
-    private ResponseEntity<ApiResponse<OrderResponse>> cachedResponse(
+    private ApiResponse<OrderResponse> cachedResponse(
             Map<String, Object> cached, String flowName) {
         log.info("Returning cached response for idempotency key ({}): orderId={}",
                 flowName, cached.get("orderId"));
@@ -114,10 +114,10 @@ public class CheckoutController {
         if (credentials != null) {
             cachedOrder.setCredentials(credentials);
         }
-        return ResponseEntity.ok(ApiResponse.<OrderResponse>builder()
+        return ApiResponse.<OrderResponse>builder()
                 .result(cachedOrder)
                 .message("Duplicate request - returning cached response")
-                .build());
+                .build();
     }
 
     private Map<String, Object> toResponseMap(OrderResponse result) {
