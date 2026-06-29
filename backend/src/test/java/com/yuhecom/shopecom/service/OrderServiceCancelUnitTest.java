@@ -15,7 +15,6 @@ import com.yuhecom.shopecom.repository.OrderRepository;
 import com.yuhecom.shopecom.repository.ProductVariantRepository;
 import com.yuhecom.shopecom.service.impl.OrderServiceImpl;
 import com.yuhecom.shopecom.config.AppProperties;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,13 +67,13 @@ public class OrderServiceCancelUnitTest {
     private AppProperties appProperties;
 
     @Mock
-    private HttpServletRequest httpServletRequest;
-
-    @Mock
     private ProductVariantRepository productVariantRepository;
 
     @Mock
-    private CartService cartService;
+    private CartCheckoutService cartCheckoutService;
+
+    @Mock
+    private DirectCheckoutService directCheckoutService;
 
     @Mock
     private CouponService couponService;
@@ -95,10 +94,10 @@ public class OrderServiceCancelUnitTest {
                 orderMapper,
                 usersMapper,
                 appProperties,
-                httpServletRequest,
                 productVariantRepository,
-                cartService,
-                couponService
+                couponService,
+                cartCheckoutService,
+                directCheckoutService
         );
     }
 
