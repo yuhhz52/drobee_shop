@@ -14,55 +14,55 @@ import { ProductCard } from '@features/home/pages/HomeScooter/components';
 import './ProductDetails.css';
 
 const SPEC_TABS = [
-  { key: 'overview', label: 'Tổng quan' },
-  { key: 'battery', label: 'Pin & Sạc' },
-  { key: 'chassis', label: 'Khung & Phanh' },
-  { key: 'dimensions', label: 'Kích thước' },
-  { key: 'extra', label: 'Khác' },
+  { key: 'overview', label: 'Overview' },
+  { key: 'battery', label: 'Battery & Charging' },
+  { key: 'chassis', label: 'Frame & Brakes' },
+  { key: 'dimensions', label: 'Dimensions' },
+  { key: 'extra', label: 'Extras' },
 ];
 
 const SPEC_GROUPS = {
   overview: [
-    { key: 'maxSpeedKmh', label: 'Tốc độ tối đa', unit: 'km/h' },
-    { key: 'rangeKm', label: 'Quãng đường', unit: 'km' },
-    { key: 'motorPowerW', label: 'Công suất', unit: 'W' },
-    { key: 'peakPowerW', label: 'Công suất đỉnh', unit: 'W' },
-    { key: 'weightKg', label: 'Trọng lượng', unit: 'kg' },
-    { key: 'maxLoadKg', label: 'Tải trọng tối đa', unit: 'kg' },
-    { key: 'maxInclinePercent', label: 'Độ dốc tối đa', unit: '%' },
+    { key: 'maxSpeedKmh', label: 'Top speed', unit: 'km/h' },
+    { key: 'rangeKm', label: 'Range', unit: 'km' },
+    { key: 'motorPowerW', label: 'Motor power', unit: 'W' },
+    { key: 'peakPowerW', label: 'Peak power', unit: 'W' },
+    { key: 'weightKg', label: 'Weight', unit: 'kg' },
+    { key: 'maxLoadKg', label: 'Max load', unit: 'kg' },
+    { key: 'maxInclinePercent', label: 'Max incline', unit: '%' },
   ],
   battery: [
-    { key: 'batteryCapacityAh', label: 'Dung lượng pin', unit: 'Ah' },
-    { key: 'batteryVoltageV', label: 'Điện áp pin', unit: 'V' },
-    { key: 'batteryType', label: 'Loại pin', unit: '' },
-    { key: 'chargingTimeHours', label: 'Thời gian sạc', unit: 'h' },
-    { key: 'removableBattery', label: 'Pin rời', unit: '' },
+    { key: 'batteryCapacityAh', label: 'Battery capacity', unit: 'Ah' },
+    { key: 'batteryVoltageV', label: 'Battery voltage', unit: 'V' },
+    { key: 'batteryType', label: 'Battery type', unit: '' },
+    { key: 'chargingTimeHours', label: 'Charging time', unit: 'h' },
+    { key: 'removableBattery', label: 'Removable battery', unit: '' },
   ],
   chassis: [
-    { key: 'frameMaterial', label: 'Chất liệu khung', unit: '' },
-    { key: 'wheelSizeInch', label: 'Kích thước bánh', unit: 'inch' },
-    { key: 'tireType', label: 'Loại lốp', unit: '' },
-    { key: 'brakeFront', label: 'Phanh trước', unit: '' },
-    { key: 'brakeRear', label: 'Phanh sau', unit: '' },
-    { key: 'suspensionFront', label: 'Giảm xóc trước', unit: '' },
-    { key: 'suspensionRear', label: 'Giảm xóc sau', unit: '' },
+    { key: 'frameMaterial', label: 'Frame material', unit: '' },
+    { key: 'wheelSizeInch', label: 'Wheel size', unit: 'inch' },
+    { key: 'tireType', label: 'Tire type', unit: '' },
+    { key: 'brakeFront', label: 'Front brake', unit: '' },
+    { key: 'brakeRear', label: 'Rear brake', unit: '' },
+    { key: 'suspensionFront', label: 'Front suspension', unit: '' },
+    { key: 'suspensionRear', label: 'Rear suspension', unit: '' },
   ],
   dimensions: [
-    { key: 'lengthCm', label: 'Dài', unit: 'cm' },
-    { key: 'widthCm', label: 'Rộng', unit: 'cm' },
-    { key: 'heightCm', label: 'Cao', unit: 'cm' },
-    { key: 'foldedLengthCm', label: 'Dài (gấp)', unit: 'cm' },
-    { key: 'foldedWidthCm', label: 'Rộng (gấp)', unit: 'cm' },
-    { key: 'foldedHeightCm', label: 'Cao (gấp)', unit: 'cm' },
+    { key: 'lengthCm', label: 'Length', unit: 'cm' },
+    { key: 'widthCm', label: 'Width', unit: 'cm' },
+    { key: 'heightCm', label: 'Height', unit: 'cm' },
+    { key: 'foldedLengthCm', label: 'Length (folded)', unit: 'cm' },
+    { key: 'foldedWidthCm', label: 'Width (folded)', unit: 'cm' },
+    { key: 'foldedHeightCm', label: 'Height (folded)', unit: 'cm' },
   ],
   extra: [
-    { key: 'maxSpeedUnlockedKmh', label: 'Tốc độ mở khóa', unit: 'km/h' },
-    { key: 'lights', label: 'Đèn', unit: '' },
-    { key: 'displayType', label: 'Màn hình', unit: '' },
-    { key: 'connectivity', label: 'Kết nối', unit: '' },
-    { key: 'waterResistanceRating', label: 'Chống nước', unit: '' },
-    { key: 'warrantyMonths', label: 'Bảo hành', unit: 'tháng' },
-    { key: 'certifications', label: 'Chứng nhận', unit: '' },
+    { key: 'maxSpeedUnlockedKmh', label: 'Unlocked top speed', unit: 'km/h' },
+    { key: 'lights', label: 'Lights', unit: '' },
+    { key: 'displayType', label: 'Display', unit: '' },
+    { key: 'connectivity', label: 'Connectivity', unit: '' },
+    { key: 'waterResistanceRating', label: 'Water resistance', unit: '' },
+    { key: 'warrantyMonths', label: 'Warranty', unit: 'months' },
+    { key: 'certifications', label: 'Certifications', unit: '' },
   ],
 };
 
@@ -73,14 +73,14 @@ const fmt = (val, unit) => {
   if (unit === 'Ah' || unit === 'V') return `${n}`;
   if (unit === 'h') return `${n.toFixed(1)}h`;
   if (unit === 'inch') return `${n.toFixed(1)}"`;
-  if (['km/h', 'km', 'W', 'kg', '%', 'tháng'].includes(unit)) return `${n}`;
+  if (['km/h', 'km', 'W', 'kg', '%', 'months'].includes(unit)) return `${n}`;
   if (unit === 'cm') return `${n}`;
   return val;
 };
 
 const boolLabel = (v) => {
-  if (v === true) return 'Có';
-  if (v === false) return 'Không';
+  if (v === true) return 'Yes';
+  if (v === false) return 'No';
   return null;
 };
 
@@ -97,7 +97,7 @@ const SpecsSection = ({ product }) => {
 
   return (
     <section className="horizon-pdp__specs horizon-pdp__container">
-      <h2>Thông số kỹ thuật</h2>
+      <h2>Specifications</h2>
       <div className="horizon-pdp__specs-tabs">
         {SPEC_TABS.map((tab) => {
           const hasData = SPEC_GROUPS[tab.key].some(
@@ -580,7 +580,7 @@ const ProductDetails = () => {
 
           <button
             type="button"
-            className="horizon-pdp__paypal"
+            className="horizon-pdp__buynow"
             onClick={handleBuyNow}
             disabled={!inStock}
           >

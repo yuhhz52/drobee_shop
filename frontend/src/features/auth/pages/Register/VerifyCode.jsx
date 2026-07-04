@@ -47,19 +47,19 @@ const VerifyCode = ({ email }) => {
     setError('');
     const finalCode = code.join('');
     if (finalCode.length !== 6) {
-      setError('Vui lòng nhập đủ 6 chữ số');
+      setError('Please enter all 6 digits');
       return;
     }
 
     dispatch(setLoading(true));
     verifyAPI({ userName: email, code: finalCode })
       .then(() => {
-        sessionStorage.setItem('verifiedSuccess', 'true'); 
-        navigate('/v1/login'); // chuyển đến login
+        sessionStorage.setItem('verifiedSuccess', 'true');
+        navigate('/v1/login'); // redirect to login
       })
       .catch(() => {
-        // Thông báo lỗi và giữ nguyên trang
-        setError('Mã xác thực không đúng hoặc đã hết hạn.');
+        // Show error and keep user on the page
+        setError('Verification code is incorrect or has expired.');
       })
       .finally(() => {
         dispatch(setLoading(false));
@@ -69,9 +69,9 @@ const VerifyCode = ({ email }) => {
   return (
     <div className="min-h-screen flex justify-center items-center bg-cover bg-center">
       <div className="bg-white shadow-xl rounded-lg p-8 w-[400px] z-10 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Cần Được Xác Thực</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Verification Required</h2>
         <p className="text-gray-600 mb-2">
-          Nhập mã chúng tôi đã gửi đến <span className="font-semibold">{email.replace(/(?<=.).(?=.*@)/g, '*')}</span>
+          Enter the 6-digit code we sent to <span className="font-semibold">{email.replace(/(?<=.).(?=.*@)/g, '*')}</span>
         </p>
 
         <form onSubmit={onSubmit} className="flex flex-col items-center gap-4 mt-4">
@@ -93,15 +93,15 @@ const VerifyCode = ({ email }) => {
           </div>
           <br />
           <button type="submit" className="bg-black text-white h-12 w-full rounded hover:bg-gray-800 transition">
-            Xác thực
+            Verify
           </button>
 
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </form>
 
         <div className="mt-6">
-          <button className="text-blue-600 hover:underline text-sm">Gửi lại mã</button>
-          <p className="text-xs text-gray-500 mt-1">Không thể truy cập địa chỉ email đó?</p>
+          <button className="text-blue-600 hover:underline text-sm">Resend code</button>
+          <p className="text-xs text-gray-500 mt-1">Can't access that email address?</p>
         </div>
       </div>
     </div>

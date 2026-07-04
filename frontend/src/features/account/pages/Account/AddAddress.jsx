@@ -10,10 +10,10 @@ import './Profile.css';
 const VIETNAM_PHONE_REGEX = /^(0|\+84)[0-9]{9}$/;
 
 const validatePhone = (phone) => {
-  if (!phone) return 'Vui lòng nhập số điện thoại';
+  if (!phone) return 'Please enter a phone number';
   const cleaned = phone.replace(/\s/g, '');
   if (!VIETNAM_PHONE_REGEX.test(cleaned)) {
-    return 'Số điện thoại không hợp lệ (VD: 0912345678 hoặc +84912345678)';
+    return 'Invalid phone number (e.g. 0912345678 or +84912345678)';
   }
   return '';
 };
@@ -42,7 +42,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
   useEffect(() => {
     vietnamRegionService.fetchProvinces()
       .then(data => setProvinces(data))
-      .catch(() => setError('Không thể tải danh sách tỉnh/thành phố'))
+      .catch(() => setError('Could not load provinces/cities list'))
       .finally(() => setLoadingProvinces(false));
   }, []);
 
@@ -60,7 +60,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
     setLoadingWards(true);
     vietnamRegionService.fetchWards(province.code)
       .then(data => setWards(data))
-      .catch(() => setError('Không thể tải danh sách phường/xã'))
+      .catch(() => setError('Could not load wards/communes list'))
       .finally(() => setLoadingWards(false));
   }, []);
 
@@ -98,7 +98,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
         afterSave && afterSave();
       })
       .catch(() => {
-        setError('Không thể thêm địa chỉ. Vui lòng thử lại.');
+        setError('Could not add address. Please try again.');
       })
       .finally(() => {
         setSaving(false);
@@ -107,32 +107,32 @@ const AddAddress = ({ onCancel, onSaved }) => {
 
   return (
     <div className="address-form-card">
-      <h2 className="address-form-card__title">Thêm địa chỉ mới</h2>
+      <h2 className="address-form-card__title">Add new address</h2>
 
       <form onSubmit={onSubmit}>
         <div className="form-row">
           <div className="form-field">
-            <label className="form-label">Họ và tên</label>
+            <label className="form-label">Full name</label>
             <input
               type="text"
               name="name"
               value={values.name}
               onChange={handleOnChange}
-              placeholder="Nhập họ và tên"
+              placeholder="Enter your full name"
               className="form-input"
               required
             />
           </div>
 
           <div className="form-field">
-            <label className="form-label">Số điện thoại</label>
+            <label className="form-label">Phone number</label>
             <input
               type="tel"
               name="phoneNumber"
               value={values.phoneNumber}
               onChange={handleOnChange}
               onBlur={() => setPhoneError(validatePhone(values.phoneNumber))}
-              placeholder="0912345678 hoặc +84912345678"
+              placeholder="0912345678 or +84912345678"
               className="form-input"
               required
             />
@@ -141,13 +141,13 @@ const AddAddress = ({ onCancel, onSaved }) => {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Tỉnh / Thành phố</label>
+          <label className="form-label">Province / City</label>
           <SearchableSelect
             options={provinces}
             value={values.provinceCode}
             displayName={values.provinceName}
             onSelect={handleProvinceSelect}
-            placeholder="Tìm kiếm tỉnh/thành phố..."
+            placeholder="Search province/city..."
             disabled={loadingProvinces}
             loading={loadingProvinces}
             filterFn={vietnamRegionService.searchProvinces}
@@ -155,13 +155,13 @@ const AddAddress = ({ onCancel, onSaved }) => {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Phường / Xã</label>
+          <label className="form-label">Ward / Commune</label>
           <SearchableSelect
             options={wards}
             value={values.wardCode}
             displayName={values.wardName}
             onSelect={handleWardSelect}
-            placeholder="Tìm kiếm phường/xã..."
+            placeholder="Search ward/commune..."
             disabled={!values.provinceCode || loadingWards}
             loading={loadingWards}
             filterFn={vietnamRegionService.searchWards}
@@ -169,13 +169,13 @@ const AddAddress = ({ onCancel, onSaved }) => {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Địa chỉ cụ thể</label>
+          <label className="form-label">Street address</label>
           <input
             type="text"
             name="street"
             value={values.street}
             onChange={handleOnChange}
-            placeholder="Số nhà, tên đường, tòa nhà, tầng..."
+            placeholder="House number, street, building, floor..."
             className="form-input"
             required
           />
@@ -189,7 +189,7 @@ const AddAddress = ({ onCancel, onSaved }) => {
             onClick={onCancel}
             className="btn btn--outline"
           >
-            Hủy
+            Cancel
           </button>
           <button
             type="submit"
@@ -199,9 +199,9 @@ const AddAddress = ({ onCancel, onSaved }) => {
             {saving ? (
               <>
                 <span className="spinner spinner--small"></span>
-                Đang lưu...
+                Saving...
               </>
-            ) : 'Lưu địa chỉ'}
+            ) : 'Save address'}
           </button>
         </div>
       </form>

@@ -300,11 +300,11 @@
   cursor: not-allowed;
 }
 
-.horizon-pdp__paypal {
+.horizon-pdp__buynow {
   width: 100%;
   height: 48px;
-  background: #ffc439;
-  color: #003087;
+  background: #111;
+  color: #fff;
   border: none;
   font-size: 0.9rem;
   font-weight: 700;

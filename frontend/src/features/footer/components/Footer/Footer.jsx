@@ -8,7 +8,6 @@ import {
   FaCcVisa,
   FaCcMastercard,
   FaCcAmex,
-  FaCcPaypal,
   FaCcStripe,
   FaEnvelope,
   FaPhoneAlt,
@@ -30,7 +29,6 @@ const PAYMENT_ICON_MAP = {
   FaCcVisa,
   FaCcMastercard,
   FaCcAmex,
-  FaCcPaypal,
   FaCcStripe,
   FaMoneyBillWave,
 };

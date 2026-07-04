@@ -334,7 +334,7 @@ const CartCheckout = () => {
                       {item.variant?.color && item.variant?.variantName ? ', ' : ''}
                       {item.variant?.variantName}
                     </p>
-                    <p className="qty">Qty: {item.quantity}</p>
+                    <p className="qty">Quantity: {item.quantity}</p>
                   </div>
                   <span className="price">
                     {formatDisplayPrice(item.subTotal || item.price * item.quantity)}

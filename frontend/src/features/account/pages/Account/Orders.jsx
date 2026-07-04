@@ -65,7 +65,7 @@ const Orders = () => {
   }, []);
 
   const onCancelOrder = useCallback((id) => {
-    if (!window.confirm('Bạn có chắc muốn huỷ đơn này?')) return;
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
     dispatch(setLoading(true));
     cancelOrderAPI(id)
       .then(() => {
@@ -76,12 +76,12 @@ const Orders = () => {
           )
         );
         dispatch(cancelOrderAction(id));
-        alert('Đã huỷ đơn hàng thành công.');
+        alert('Order cancelled successfully.');
       })
       .catch((err) => {
         console.error('Cancel order failed', err);
         // Show specific error message from backend
-        const errorMsg = err?.response?.data?.message || err?.message || 'Huỷ đơn không thành công. Vui lòng thử lại.';
+        const errorMsg = err?.response?.data?.message || err?.message || 'Could not cancel the order. Please try again.';
         alert(errorMsg);
       })
       .finally(() => {
@@ -95,15 +95,15 @@ const Orders = () => {
       {orders.length > 0 && (
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Đơn hàng của tôi</h1>
+            <h1 className="text-2xl font-bold">My orders</h1>
             <select
               className="border border-gray-300 rounded px-4 py-2"
               value={selectedFilter}
               onChange={handleOnChange}
             >
-              <option value="ACTIVE">Đang xử lý</option>
-              <option value="CANCELLED">Đã huỷ</option>
-              <option value="COMPLETED">Hoàn thành</option>
+              <option value="ACTIVE">Processing</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="COMPLETED">Completed</option>
             </select>
           </div>
 
@@ -116,10 +116,10 @@ const Orders = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-lg font-semibold text-gray-800">
-                      Đơn hàng: <span className="text-blue-700 font-bold">#{order.orderDisplayCode || order.id}</span>
+                      Order: <span className="text-blue-700 font-bold">#{order.orderDisplayCode || order.id}</span>
                     </p>
                     <p className="text-sm text-gray-500">
-                      Ngày đặt: {moment(order?.orderDate).format('DD/MM/YYYY')}
+                      Order date: {moment(order?.orderDate).format('DD/MM/YYYY')}
                     </p>
                   </div>
                   <div className="text-right">
@@ -138,12 +138,12 @@ const Orders = () => {
                       onClick={() => navigate(`/account-details/orders/${order.id}`)}
                       className="text-blue-600 text-sm mt-1 hover:underline"
                     >
-                      Xem chi tiết
+                      View details
                     </button>
                   </div>
                 </div>
 
-                {/* Preview Sản phẩm */}
+                {/* Product preview */}
                 <div className="flex items-center gap-4 mt-4 border-t border-gray-100 pt-4">
                   {order.items?.slice(0, 3).map((item, idx) => (
                     <img
@@ -154,7 +154,7 @@ const Orders = () => {
                     />
                   ))}
                   {order.items?.length > 3 && (
-                    <span className="text-gray-500 text-sm">+{order.items.length - 3} sản phẩm</span>
+                    <span className="text-gray-500 text-sm">+{order.items.length - 3} more items</span>
                   )}
                   <div className="ml-auto">
                     <p className="font-bold text-lg">{formatDisplayPrice(order?.totalAmount)}</p>

@@ -177,7 +177,7 @@ const Cart = () => {
                       aria-label="Remove"
                     >
                       <FiTrash2 size={16} />
-                      Xóa
+                      Remove
                     </button>
                   </div>
 
@@ -233,9 +233,6 @@ const Cart = () => {
               onClick={() => navigate('/cart/checkout')}
             >
               Proceed to checkout
-            </button>
-            <button type="button" className="horizon-cart-btn horizon-cart-btn--paypal">
-              Pay with PayPal
             </button>
             <p className="horizon-cart-summary__secure">
               <FiLock size={14} aria-hidden />

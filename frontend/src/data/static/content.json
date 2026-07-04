@@ -43,7 +43,6 @@
       { "name": "Visa", "icon": "FaCcVisa" },
       { "name": "Mastercard", "icon": "FaCcMastercard" },
       { "name": "American Express", "icon": "FaCcAmex" },
-      { "name": "PayPal", "icon": "FaCcPaypal" },
       { "name": "Stripe", "icon": "FaCcStripe" },
       { "name": "VNPay", "icon": "FaMoneyBillWave" }
     ],

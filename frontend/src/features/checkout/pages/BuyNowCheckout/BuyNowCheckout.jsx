@@ -336,7 +336,7 @@ const BuyNowCheckout = () => {
                       {directItem.variant.variantName}
                     </p>
                   )}
-                  <p className="qty">Qty: {directItem.quantity}</p>
+                  <p className="qty">Quantity: {directItem.quantity}</p>
                 </div>
                 <span className="price">{formatDisplayPrice(subTotal)}</span>
               </div>

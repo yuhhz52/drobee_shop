@@ -194,7 +194,7 @@ const OrderConfirmed = () => {
                   {image && <img src={image} alt={item?.product?.name} />}
                   <div>
                     <h4>{item?.product?.name}</h4>
-                    <p>Qty: {item?.quantity}</p>
+                    <p>Quantity: {item?.quantity}</p>
                     <p>Price: {formatDisplayPrice(item?.product?.price)}</p>
                     {variant?.color && <p>Color: {variant.color}</p>}
                     {variant?.variantName && <p>Version: {variant.variantName}</p>}

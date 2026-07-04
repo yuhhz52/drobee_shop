@@ -61,10 +61,10 @@ const ProductCard = ({
         </Link>
         {hasSpecs && (
           <div className="horizon-product-card__specs">
-            <SpecBadge value={maxSpeedKmh} unit="km/h" label="Tốc độ tối đa" />
-            <SpecBadge value={rangeKm} unit="km" label="Quãng đường" />
-            <SpecBadge value={motorPowerW} unit="W" label="Công suất" />
-            <SpecBadge value={weightKg ? Math.round(Number(weightKg)) : null} unit="kg" label="Trọng lượng" />
+            <SpecBadge value={maxSpeedKmh} unit="km/h" label="Top speed" />
+            <SpecBadge value={rangeKm} unit="km" label="Range" />
+            <SpecBadge value={motorPowerW} unit="W" label="Motor power" />
+            <SpecBadge value={weightKg ? Math.round(Number(weightKg)) : null} unit="kg" label="Weight" />
           </div>
         )}
         <div className="horizon-product-card__price">

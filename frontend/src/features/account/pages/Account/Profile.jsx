@@ -56,12 +56,12 @@ const Profile = () => {
     setAvatarError('');
 
     if (!file.type?.startsWith('image/')) {
-      setAvatarError('Vui lòng chọn file ảnh hợp lệ.');
+      setAvatarError('Please select a valid image file.');
       event.target.value = '';
       return;
     }
     if (file.size > MAX_AVATAR_UPLOAD_SIZE) {
-      setAvatarError('Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+      setAvatarError('Image is too large. Please select an image smaller than 5MB.');
       event.target.value = '';
       return;
     }
@@ -76,7 +76,7 @@ const Profile = () => {
         const message =
           error?.response?.data?.message ||
           error?.response?.data?.error ||
-          'Không thể cập nhật avatar. Vui lòng thử lại.';
+          'Could not update avatar. Please try again.';
         setAvatarError(message);
       })
       .finally(() => {
@@ -87,11 +87,11 @@ const Profile = () => {
 
   const avatarUrl = resolveAvatarUrl(userInfo?.avatarUrl);
 
-  const fullName = [userInfo?.firstName, userInfo?.lastName].filter(Boolean).join(' ') || 'Chưa cập nhật';
+  const fullName = [userInfo?.firstName, userInfo?.lastName].filter(Boolean).join(' ') || 'Not updated yet';
 
   return (
     <div className="profile-page">
-      <h1 className="page-title">Tài khoản của tôi</h1>
+      <h1 className="page-title">My account</h1>
 
       {!addAddress && !editingAddress && (
         <div className="profile-content">
@@ -130,9 +130,9 @@ const Profile = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/>
                     </svg>
-                    Số điện thoại
+                    Phone number
                   </span>
-                  <span className="profile-info-value">{userInfo?.phoneNumber || 'Chưa cập nhật'}</span>
+                  <span className="profile-info-value">{userInfo?.phoneNumber || 'Not updated yet'}</span>
                 </div>
                 <div className="profile-info-item">
                   <span className="profile-info-label">
@@ -142,7 +142,7 @@ const Profile = () => {
                     </svg>
                     Email
                   </span>
-                  <span className="profile-info-value">{userInfo?.email || 'Chưa cập nhật'}</span>
+                  <span className="profile-info-value">{userInfo?.email || 'Not updated yet'}</span>
                 </div>
               </div>
             </div>
@@ -151,7 +151,7 @@ const Profile = () => {
           {/* Addresses Section */}
           <div className="addresses-section">
             <div className="addresses-header">
-              <h3 className="addresses-title">Địa chỉ giao hàng</h3>
+              <h3 className="addresses-title">Shipping addresses</h3>
               <button
                 type="button"
                 className="btn btn--primary"
@@ -161,7 +161,7 @@ const Profile = () => {
                   <line x1="12" y1="5" x2="12" y2="19"/>
                   <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                Thêm địa chỉ mới
+                Add new address
               </button>
             </div>
 
@@ -173,7 +173,7 @@ const Profile = () => {
                     className={`address-card ${address.isDefault ? 'address-card--default' : ''}`}
                   >
                     {address.isDefault && (
-                      <div className="address-card__badge">Mặc định</div>
+                      <div className="address-card__badge">Default</div>
                     )}
                     <div className="address-card__body">
                       <div className="address-card__contact">
@@ -196,14 +196,14 @@ const Profile = () => {
                           {settingDefault === address?.id ? (
                             <>
                               <span className="spinner spinner--small"></span>
-                              Đang xử lý...
+                              Processing...
                             </>
                           ) : (
                             <>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polyline points="20 6 9 17 4 12"/>
                               </svg>
-                              Đặt làm mặc định
+                              Set as default
                             </>
                           )}
                         </button>
@@ -218,7 +218,7 @@ const Profile = () => {
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                           </svg>
-                          Sửa
+                          Edit
                         </button>
                         <button
                           type="button"
@@ -229,7 +229,7 @@ const Profile = () => {
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                           </svg>
-                          Xóa
+                          Remove
                         </button>
                       </div>
                     </div>
@@ -244,8 +244,8 @@ const Profile = () => {
                     <circle cx="12" cy="10" r="3"/>
                   </svg>
                 </div>
-                <p className="addresses-empty__text">Bạn chưa có địa chỉ giao hàng nào</p>
-                <p className="addresses-empty__hint">Thêm địa chỉ để tiện cho việc đặt hàng</p>
+                <p className="addresses-empty__text">You don't have any shipping address yet</p>
+                <p className="addresses-empty__hint">Add an address to make checkout faster</p>
                 <button
                   type="button"
                   className="btn btn--primary btn--large"
@@ -255,7 +255,7 @@ const Profile = () => {
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
                   </svg>
-                  Thêm địa chỉ mới
+                  Add new address
                 </button>
               </div>
             )}
@@ -289,9 +289,9 @@ const Profile = () => {
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
             </div>
-            <h3 className="modal__title">Xóa địa chỉ</h3>
+            <h3 className="modal__title">Delete address</h3>
             <p className="modal__message">
-              Bạn có chắc muốn xóa địa chỉ này? Hành động này không thể hoàn tác.
+              Are you sure you want to delete this address? This action cannot be undone.
             </p>
             <div className="modal__actions">
               <button
@@ -299,7 +299,7 @@ const Profile = () => {
                 className="btn btn--outline"
                 onClick={() => setShowDeleteConfirm(null)}
               >
-                Hủy
+                Cancel
               </button>
               <button
                 type="button"
@@ -310,9 +310,9 @@ const Profile = () => {
                 {deletingId === showDeleteConfirm.id ? (
                   <>
                     <span className="spinner spinner--small"></span>
-                    Đang xóa...
+                    Deleting...
                   </>
-                ) : 'Xóa'}
+                ) : 'Delete'}
               </button>
             </div>
           </div>

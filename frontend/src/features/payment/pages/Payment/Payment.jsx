@@ -32,8 +32,8 @@ const PaymentPage = ({ userId, addressId }) => {
       setClientSecret(res.credentials.client_secret);
       setOrderId(res.orderId);
     } catch (error) {
-      console.error("Lỗi khi tạo đơn hàng:", error);
-      setInitError('Không thể khởi tạo thanh toán. Vui lòng thử lại.');
+      console.error("Failed to create order:", error);
+      setInitError('Could not initialize payment. Please try again.');
     } finally {
       setIsPreparing(false);
     }
@@ -66,7 +66,7 @@ const PaymentPage = ({ userId, addressId }) => {
           className="mt-2 px-3 py-2 rounded border border-gray-300"
           disabled={isPreparing}
         >
-          Thử lại
+          Try again
         </button>
       </div>
     )}
@@ -75,7 +75,7 @@ const PaymentPage = ({ userId, addressId }) => {
         <CheckoutForm clientSecret={clientSecret} orderId={orderId} />
       </Elements>
     ) : (
-      <p>{isPreparing ? 'Đang xử lý thanh toán...' : 'Đang chuẩn bị thanh toán...'}</p>
+      <p>{isPreparing ? 'Processing payment...' : 'Preparing payment...'}</p>
     )}
   </div>
   );

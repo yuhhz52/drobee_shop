@@ -36,16 +36,16 @@ const OrderDetail = () => {
   }, [fetchOrder]);
 
   const onCancelOrder = useCallback((id) => {
-    if (!window.confirm('Bạn có chắc muốn huỷ đơn này?')) return;
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
     dispatch(setLoading(true));
     cancelOrderAPI(id)
       .then(() => {
-        alert('Đã huỷ đơn hàng thành công.');
+        alert('Order cancelled successfully.');
         fetchOrder(); // Refresh order data
       })
       .catch((err) => {
         console.error('Cancel order failed', err);
-        const errorMsg = err?.response?.data?.message || err?.message || 'Huỷ đơn không thành công. Vui lòng thử lại.';
+        const errorMsg = err?.response?.data?.message || err?.message || 'Could not cancel the order. Please try again.';
         alert(errorMsg);
       })
       .finally(() => {
@@ -57,13 +57,13 @@ const OrderDetail = () => {
     return (
       <div className="p-8 max-w-2xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-semibold text-red-700 mb-2">Không thể tải đơn hàng</h2>
+          <h2 className="text-xl font-semibold text-red-700 mb-2">Unable to load order</h2>
           <p className="text-red-600 mb-4">{error}</p>
           <Link
             to="/account-details/orders"
             className="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
           >
-            Quay lại danh sách đơn hàng
+            Back to order list
           </Link>
         </div>
       </div>
@@ -73,7 +73,7 @@ const OrderDetail = () => {
   if (!order) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">Đang tải...</p>
+        <p className="text-gray-500">Loading...</p>
       </div>
     );
   }
@@ -115,9 +115,9 @@ const OrderDetail = () => {
           </svg>
         </button>
         <div>
-          <h1 className="text-2xl font-bold">Chi tiết đơn hàng</h1>
+          <h1 className="text-2xl font-bold">Order details</h1>
           <p className="text-gray-500">
-            Mã đơn: <span className="font-semibold text-blue-700">#{displayOrder.orderDisplayCode || displayOrder.id}</span>
+            Order ID: <span className="font-semibold text-blue-700">#{displayOrder.orderDisplayCode || displayOrder.id}</span>
           </p>
         </div>
       </div>
@@ -127,10 +127,10 @@ const OrderDetail = () => {
         <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-sm text-gray-500">
-              Ngày đặt: {moment(displayOrder?.orderDate).format('DD/MM/YYYY HH:mm')}
+              Order date: {moment(displayOrder?.orderDate).format('DD/MM/YYYY HH:mm')}
             </p>
             <p className="text-sm text-gray-500">
-              Phương thức thanh toán: <span className="font-medium">{displayOrder.paymentMethod}</span>
+              Payment method: <span className="font-medium">{displayOrder.paymentMethod}</span>
             </p>
           </div>
           <div className="text-right">
@@ -141,11 +141,11 @@ const OrderDetail = () => {
                   ? 'text-green-600'
                   : 'text-yellow-600'
             }`}>
-              {displayOrder.orderStatus === 'PENDING' ? 'Chờ xác nhận' :
-               displayOrder.orderStatus === 'IN_PROGRESS' ? 'Đang xử lý' :
-               displayOrder.orderStatus === 'SHIPPED' ? 'Đang giao hàng' :
-               displayOrder.orderStatus === 'DELIVERED' ? 'Đã giao hàng' :
-               displayOrder.orderStatus === 'CANCELLED' ? 'Đã hủy' :
+              {displayOrder.orderStatus === 'PENDING' ? 'Pending confirmation' :
+               displayOrder.orderStatus === 'IN_PROGRESS' ? 'Processing' :
+               displayOrder.orderStatus === 'SHIPPED' ? 'Shipping' :
+               displayOrder.orderStatus === 'DELIVERED' ? 'Delivered' :
+               displayOrder.orderStatus === 'CANCELLED' ? 'Cancelled' :
                displayOrder.orderStatus}
             </p>
           </div>
@@ -161,7 +161,7 @@ const OrderDetail = () => {
 
       {/* Products */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Sản phẩm</h2>
+        <h2 className="text-lg font-semibold mb-4">Products</h2>
         <div className="space-y-4">
           {displayOrder.items?.map((item, idx) => (
             <div key={idx} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
@@ -177,7 +177,7 @@ const OrderDetail = () => {
                 >
                   {item.name}
                 </Link>
-                <p className="text-sm text-gray-500">Số lượng: {item.quantity}</p>
+                <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
               </div>
               <p className="font-semibold">{formatDisplayPrice(item.price)}</p>
             </div>
@@ -187,17 +187,17 @@ const OrderDetail = () => {
         {/* Totals */}
         <div className="border-t border-gray-200 mt-4 pt-4">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-600">Tạm tính</span>
+            <span className="text-gray-600">Subtotal</span>
             <span>{formatDisplayPrice(displayOrder.totalAmount + (displayOrder.discount || 0))}</span>
           </div>
           {displayOrder.discount > 0 && (
             <div className="flex justify-between text-sm mb-2 text-green-600">
-              <span>Giảm giá</span>
+              <span>Discount</span>
               <span>-{formatDisplayPrice(displayOrder.discount)}</span>
             </div>
           )}
           <div className="flex justify-between text-lg font-bold">
-            <span>Tổng cộng</span>
+            <span>Total</span>
             <span>{formatDisplayPrice(displayOrder.totalAmount)}</span>
           </div>
         </div>
@@ -205,7 +205,7 @@ const OrderDetail = () => {
 
       {/* Shipping Address */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Địa chỉ giao hàng</h2>
+        <h2 className="text-lg font-semibold mb-4">Shipping address</h2>
         <div className="text-gray-700">
           <p className="font-medium">{displayOrder.address?.name}</p>
           <p>{displayOrder.address?.phoneNumber}</p>
@@ -221,7 +221,7 @@ const OrderDetail = () => {
           onClick={() => navigate('/account-details/orders')}
           className="text-blue-600 hover:text-blue-700"
         >
-          Quay lại danh sách đơn hàng
+          Back to order list
         </button>
 
         {canCancel && (
@@ -229,7 +229,7 @@ const OrderDetail = () => {
             onClick={() => onCancelOrder(displayOrder.id)}
             className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700"
           >
-            Huỷ đơn
+            Cancel order
           </button>
         )}
       </div>

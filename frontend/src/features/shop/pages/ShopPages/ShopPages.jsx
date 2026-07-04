@@ -45,7 +45,7 @@ const ShopPages = () => {
   return (
     <>
       <div className=" py-10 px-5 md:px-12 lg:px-15 my-10">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-10">Cửa hàng của chúng tôi</h2>
+        <h2 className="text-3xl font-bold text-gray-800 text-center mb-10">Our stores</h2>
         <div className="flex flex-wrap justify-center gap-6">
           {shops.map((shop, index) => (
             <a
