@@ -8,6 +8,7 @@ import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrand } from '@shared/utils/product-brand';
 import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-media';
 import { colorSelector } from '@shared/components/Filters/ColorFilter';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './FeaturedProduct.css';
 
 const CDN = 'https://horizon.com/cdn/shop/files';
@@ -15,6 +16,7 @@ const CDN = 'https://horizon.com/cdn/shop/files';
 const FeaturedProduct = ({ product }) => {
   const dispatch = useDispatch();
   const cartError = useSelector(selectCartError);
+  const { t } = useTranslation();
   const [activeThumb, setActiveThumb] = useState(0);
   const [qty, setQty] = useState(1);
   const [selectedColor, setSelectedColor] = useState('');
@@ -56,17 +58,17 @@ const FeaturedProduct = ({ product }) => {
   const handleAddToCart = useCallback(() => {
     setFeedback({ type: '', message: '' });
     if (requiresColor && !selectedColor) {
-      setFeedback({ type: 'error', message: 'Please select a color' });
+      setFeedback({ type: 'error', message: t('product.feedback.selectColor') });
       return;
     }
     if (selectedVariant && (selectedVariant.stockQuantity ?? 0) <= 0) {
-      setFeedback({ type: 'error', message: 'Out of stock' });
+      setFeedback({ type: 'error', message: t('product.feedback.outOfStock') });
       return;
     }
 
     // When no variant is selected but variants exist, ensure at least one has stock
     if (!selectedVariant && allVariants.length > 0 && !allVariants.some((v) => (v.stockQuantity ?? 1) > 0)) {
-      setFeedback({ type: 'error', message: 'Out of stock' });
+      setFeedback({ type: 'error', message: t('product.feedback.outOfStock') });
       return;
     }
 
@@ -89,19 +91,19 @@ const FeaturedProduct = ({ product }) => {
     dispatch(addToCart(item));
     // Async backend sync
     dispatch(addItemToCart(item));
-    setFeedback({ type: 'success', message: 'Added to cart' });
-  }, [dispatch, product, selectedVariant, selectedColor, qty, displayPrice, mainImage, requiresColor]);
+    setFeedback({ type: 'success', message: t('product.feedback.added') });
+  }, [dispatch, product, selectedVariant, selectedColor, qty, displayPrice, mainImage, requiresColor, t]);
 
   return (
     <section className="horizon-section horizon-section--featured">
       <div className="horizon-container">
         <div className="horizon-section-head">
-          <h2>Featured Electric Scooter</h2>
+          <h2>{t('featuredProduct.title')}</h2>
           <Link
             to={product ? `/product/${product.slug}` : '/products'}
             className="horizon-link-red"
           >
-            View details
+            {t('common.viewDetails')}
           </Link>
         </div>
         <div className="horizon-featured">
@@ -121,21 +123,21 @@ const FeaturedProduct = ({ product }) => {
             <div className="horizon-featured__main">
               <img
                 src={mainImage}
-                alt={product?.name || 'Featured scooter'}
+                alt={product?.name || t('featuredProduct.featuredScooter')}
               />
               <p className="horizon-featured__zoom-hint">
-                Roll over image to zoom in
+                {t('featuredProduct.rollOver')}
               </p>
             </div>
           </div>
           <div className="horizon-featured__info">
-            <h3>{product?.name || 'Featured Electric Scooter'}</h3>
+            <h3>{product?.name || t('featuredProduct.title')}</h3>
             <div className="horizon-featured__badges">
               {product?.newArrival && (
                 <span className="badge badge--blue">NEW</span>
               )}
               {product?.featured && (
-                <span className="badge badge--green">Featured</span>
+                <span className="badge badge--green">{t('product.featuredBadge')}</span>
               )}
               {product?.salePrice && (
                 <span className="badge badge--red">Sale</span>
@@ -149,7 +151,7 @@ const FeaturedProduct = ({ product }) => {
                 {'★'.repeat(Math.round(product.rating))}
                 {'☆'.repeat(5 - Math.round(product.rating))}
                 {' '}
-                {product.rating} ({product.totalSold || 0} sold)
+                {product.rating} ({product.totalSold || 0} {t('product.sold')})
               </div>
             )}
             {product?.shortDescription && (
@@ -158,7 +160,7 @@ const FeaturedProduct = ({ product }) => {
               </p>
             )}
             <div className="horizon-featured__price">
-              <span className="label">Price:</span>
+              <span className="label">{t('featuredProduct.price')}</span>
               <span className="sale">
                 {formatPriceVND(displayPrice)}
               </span>
@@ -172,7 +174,7 @@ const FeaturedProduct = ({ product }) => {
             {requiresColor && (
               <div className="horizon-featured__colors">
                 <p className="horizon-featured__variant-label">
-                  Color: <strong>{selectedColor || 'Select an option'}</strong>
+                  {t('product.color')} <strong>{selectedColor || t('product.selectAnOption')}</strong>
                 </p>
                 <div className="horizon-featured__variants">
                   {availableColors.map((color) => (
@@ -191,7 +193,7 @@ const FeaturedProduct = ({ product }) => {
             )}
 
             <div className="horizon-featured__qty">
-              <span>Quantity:</span>
+              <span>{t('product.quantity')}</span>
               <div className="horizon-qty">
                 <button
                   type="button"
@@ -217,13 +219,13 @@ const FeaturedProduct = ({ product }) => {
               onClick={handleAddToCart}
               disabled={!inStock}
             >
-              {inStock ? 'Add to cart' : 'Sold out'}
+              {inStock ? t('product.addToCart') : t('product.soldOut')}
             </button>
             <Link
               to={product ? `/product/${product.slug}` : '/products'}
               className="horizon-featured__view-details"
             >
-              View full details →
+              {t('common.viewFullDetails')} →
             </Link>
 
             {feedback.message && (

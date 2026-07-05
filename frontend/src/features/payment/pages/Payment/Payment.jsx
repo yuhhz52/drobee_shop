@@ -8,11 +8,13 @@ import { selectCartItems } from '@app/store/slices/cart.jsx';
 import { placeOrderAPI } from '@services/order.service';
 import { createOrderRequest } from '@shared/utils/order-util';
 import { env } from '@core/config/env';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const stripePublicKey = env.stripePublicKey;
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
 
 const PaymentPage = ({ userId, addressId }) => {
+  const { t } = useTranslation();
   const cartItems = useSelector(selectCartItems);
   const [clientSecret, setClientSecret] = useState(null);
   const [orderId, setOrderId] = useState(null);
@@ -21,7 +23,7 @@ const PaymentPage = ({ userId, addressId }) => {
 
   const initPayment = useCallback(async () => {
     if (!stripePublicKey) {
-      setInitError('Stripe public key is not configured.');
+      setInitError(t('payment.stripeNotConfigured'));
       return;
     }
     try {
@@ -32,12 +34,12 @@ const PaymentPage = ({ userId, addressId }) => {
       setClientSecret(res.credentials.client_secret);
       setOrderId(res.orderId);
     } catch (error) {
-      console.error("Failed to create order:", error);
-      setInitError('Could not initialize payment. Please try again.');
+      console.error(t('payment.creatingOrder'), error);
+      setInitError(t('payment.initFailed'));
     } finally {
       setIsPreparing(false);
     }
-  }, [cartItems, userId, addressId]);
+  }, [cartItems, userId, addressId, t]);
 
   useEffect(() => {
     if (!userId || !addressId || !cartItems?.length || !stripePublicKey) return;
@@ -45,7 +47,7 @@ const PaymentPage = ({ userId, addressId }) => {
   }, [cartItems, userId, addressId, initPayment]);
 
   if (!stripePromise) {
-    return <p>Stripe public key is not configured.</p>;
+    return <p>{t('payment.stripeNotConfigured')}</p>;
   }
 
   const options = {
@@ -66,7 +68,7 @@ const PaymentPage = ({ userId, addressId }) => {
           className="mt-2 px-3 py-2 rounded border border-gray-300"
           disabled={isPreparing}
         >
-          Try again
+          {t('payment.tryAgain')}
         </button>
       </div>
     )}
@@ -75,7 +77,7 @@ const PaymentPage = ({ userId, addressId }) => {
         <CheckoutForm clientSecret={clientSecret} orderId={orderId} />
       </Elements>
     ) : (
-      <p>{isPreparing ? 'Processing payment...' : 'Preparing payment...'}</p>
+      <p>{isPreparing ? t('payment.processing') : t('payment.preparing')}</p>
     )}
   </div>
   );

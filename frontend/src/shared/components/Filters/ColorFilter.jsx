@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 export const colorSelector = {
   "Purple": "#8434E1",
@@ -18,6 +19,7 @@ export const colorSelector = {
 };
 
 const ColorFilter = ({ colors, onChange, selectedColor: controlledColor }) => {
+  const { t } = useTranslation();
   const [internalColor, setInternalColor] = useState('');
   const selectedColor = controlledColor !== undefined ? controlledColor : internalColor;
 
@@ -29,7 +31,7 @@ const ColorFilter = ({ colors, onChange, selectedColor: controlledColor }) => {
 
   return (
     <div className='flex flex-col mb-4'>
-      <p className='text-base font-medium text-gray-800 mb-4'>Colors</p>
+      <p className='text-base font-medium text-gray-800 mb-4'>{t('filter.colors')}</p>
       <div className='grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 gap-3 px-2'>
         {colors?.map(item => (
           <div key={item} className='flex flex-col items-center'>

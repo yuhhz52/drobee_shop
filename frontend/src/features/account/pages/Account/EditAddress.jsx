@@ -5,21 +5,23 @@ import { saveAddress } from '@app/store/slices/user.jsx';
 import { vietnamRegionService } from '@services/vietnam-region.service';
 import SearchableSelect from './SearchableSelect';
 import './SearchableSelect.css';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './Profile.css';
 
 const VIETNAM_PHONE_REGEX = /^(0|\+84)[0-9]{9}$/;
 
-const validatePhone = (phone) => {
-  if (!phone) return 'Please enter a phone number';
+const validatePhone = (phone, t) => {
+  if (!phone) return t('addressForm.phoneRequired');
   const cleaned = phone.replace(/\s/g, '');
   if (!VIETNAM_PHONE_REGEX.test(cleaned)) {
-    return 'Invalid phone number (e.g. 0912345678 or +84912345678)';
+    return t('addressForm.phoneInvalid');
   }
   return '';
 };
 
 const EditAddress = ({ address, onCancel, onSaved }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [values, setValues] = useState({
     name: address?.name || '',
     phoneNumber: address?.phoneNumber || '',
@@ -47,13 +49,13 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
           setLoadingWards(true);
           vietnamRegionService.fetchWards(values.provinceCode)
             .then(w => setWards(w))
-            .catch(() => setError('Could not load wards/communes list'))
+            .catch(() => setError(t('addressForm.wardLoadFailed')))
             .finally(() => setLoadingWards(false));
         }
       })
-      .catch(() => setError('Could not load provinces/cities list'))
+      .catch(() => setError(t('addressForm.provinceLoadFailed')))
       .finally(() => setLoadingProvinces(false));
-  }, [values.provinceCode]);
+  }, [values.provinceCode, t]);
 
   const handleProvinceSelect = useCallback((province) => {
     setValues(prev => ({
@@ -69,9 +71,9 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
     setLoadingWards(true);
     vietnamRegionService.fetchWards(province.code)
       .then(data => setWards(data))
-      .catch(() => setError('Could not load wards/communes list'))
+      .catch(() => setError(t('addressForm.wardLoadFailed')))
       .finally(() => setLoadingWards(false));
-  }, []);
+  }, [t]);
 
   const handleWardSelect = useCallback((ward) => {
     setValues(prev => ({
@@ -86,17 +88,17 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
     setValues(prev => ({ ...prev, [name]: value }));
 
     if (name === 'phoneNumber') {
-      setPhoneError(validatePhone(value));
+      setPhoneError(validatePhone(value, t));
     }
-  }, []);
+  }, [t]);
 
   const onSubmit = useCallback((evt) => {
     evt.preventDefault();
     if (!address?.id) {
-      setError('Invalid address');
+      setError(t('addressForm.invalidAddress'));
       return;
     }
-    const phoneErr = validatePhone(values.phoneNumber);
+    const phoneErr = validatePhone(values.phoneNumber, t);
     if (phoneErr) {
       setPhoneError(phoneErr);
       return;
@@ -111,41 +113,41 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
         afterSave && afterSave();
       })
       .catch(() => {
-        setError('Could not update address. Please try again.');
+        setError(t('addressForm.updateFailed'));
       })
       .finally(() => {
         setSaving(false);
       });
-  }, [dispatch, onCancel, onSaved, values, address.id]);
+  }, [dispatch, onCancel, onSaved, values, address.id, t]);
 
   return (
     <div className="address-form-card">
-      <h2 className="address-form-card__title">Edit address</h2>
+      <h2 className="address-form-card__title">{t('addressForm.edit')}</h2>
 
       <form onSubmit={onSubmit}>
         <div className="form-row">
           <div className="form-field">
-            <label className="form-label">Full name</label>
+            <label className="form-label">{t('addressForm.fullName')}</label>
             <input
               type="text"
               name="name"
               value={values.name}
               onChange={handleOnChange}
-              placeholder="Enter your full name"
+              placeholder={t('addressForm.fullNamePlaceholder')}
               className="form-input"
               required
             />
           </div>
 
           <div className="form-field">
-            <label className="form-label">Phone number</label>
+            <label className="form-label">{t('addressForm.phone')}</label>
             <input
               type="tel"
               name="phoneNumber"
               value={values.phoneNumber}
               onChange={handleOnChange}
-              onBlur={() => setPhoneError(validatePhone(values.phoneNumber))}
-              placeholder="0912345678 or +84912345678"
+              onBlur={() => setPhoneError(validatePhone(values.phoneNumber, t))}
+              placeholder={t('addressForm.phonePlaceholder')}
               className="form-input"
               required
             />
@@ -154,13 +156,13 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Province / City</label>
+          <label className="form-label">{t('addressForm.province')}</label>
           <SearchableSelect
             options={provinces}
             value={values.provinceCode}
             displayName={values.provinceName}
             onSelect={handleProvinceSelect}
-            placeholder="Search province/city..."
+            placeholder={t('addressForm.searchProvince')}
             disabled={loadingProvinces}
             loading={loadingProvinces}
             filterFn={vietnamRegionService.searchProvinces}
@@ -168,13 +170,13 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Ward / Commune</label>
+          <label className="form-label">{t('addressForm.ward')}</label>
           <SearchableSelect
             options={wards}
             value={values.wardCode}
             displayName={values.wardName}
             onSelect={handleWardSelect}
-            placeholder="Search ward/commune..."
+            placeholder={t('addressForm.searchWard')}
             disabled={!values.provinceCode || loadingWards}
             loading={loadingWards}
             filterFn={vietnamRegionService.searchWards}
@@ -182,13 +184,13 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Street address</label>
+          <label className="form-label">{t('addressForm.street')}</label>
           <input
             type="text"
             name="street"
             value={values.street}
             onChange={handleOnChange}
-            placeholder="House number, street, building, floor..."
+            placeholder={t('addressForm.streetPlaceholder')}
             className="form-input"
             required
           />
@@ -202,7 +204,7 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
             onClick={onCancel}
             className="btn btn--outline"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -212,9 +214,9 @@ const EditAddress = ({ address, onCancel, onSaved }) => {
             {saving ? (
               <>
                 <span className="spinner spinner--small"></span>
-                Saving...
+                {t('common.saving')}
               </>
-            ) : 'Save changes'}
+            ) : t('addressForm.saveChanges')}
           </button>
         </div>
       </form>

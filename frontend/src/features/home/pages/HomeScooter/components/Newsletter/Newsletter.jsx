@@ -1,16 +1,18 @@
 import React from 'react';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './Newsletter.css';
 
 const Newsletter = () => {
+  const { t } = useTranslation();
   return (
     <section className="horizon-mid-newsletter">
       <div className="horizon-container horizon-mid-newsletter__inner">
-        <h2>Newsletter</h2>
-        <p>Join the Horizon Rider Family &amp; Stay Informed</p>
+        <h2>{t('newsletter.title')}</h2>
+        <p>{t('newsletter.subtitle')}</p>
         <form onSubmit={(e) => e.preventDefault()}>
-          <input type="email" placeholder="Your email" aria-label="Email" />
+          <input type="email" placeholder={t('newsletter.placeholder')} aria-label={t('auth.email')} />
           <button type="submit" className="horizon-btn horizon-btn--red">
-            Subscribe
+            {t('newsletter.subscribe')}
           </button>
         </form>
       </div>

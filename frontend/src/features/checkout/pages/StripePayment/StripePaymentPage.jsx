@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import CheckoutForm from '@features/payment/pages/Payment/CheckoutPayment';
 import { env } from '@core/config/env';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const stripePublicKey = env.stripePublicKey;
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
@@ -22,8 +23,8 @@ const PENDING_KEY = 'stripePendingOrder';
  * new order from this page.
  */
 const StripePaymentPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [pending, setPending] = useState(null);
   const [initError, setInitError] = useState('');
 
@@ -42,7 +43,7 @@ const StripePaymentPage = () => {
   useEffect(() => {
     const data = readPending();
     if (!data) {
-      setInitError('No pending payment found. Please restart checkout.');
+      setInitError(t('checkout.noPendingPayment'));
       return;
     }
     setPending(data);
@@ -51,14 +52,14 @@ const StripePaymentPage = () => {
     if (urlOrderId && urlOrderId !== data.orderId) {
       // stale session — ignore, the data we have is authoritative
     }
-  }, [readPending, searchParams]);
+  }, [readPending, searchParams, t]);
 
   if (!stripePromise) {
     return (
       <div className="kalles-shop__container" style={{ padding: '4rem', textAlign: 'center' }}>
-        <p>Stripe is not configured on this environment.</p>
+        <p>{t('checkout.stripeNotConfigured')}</p>
         <Link to="/cart-items" className="kalles-shop__btn kalles-shop__btn--primary">
-          Back to cart
+          {t('checkout.backToCart')}
         </Link>
       </div>
     );
@@ -67,10 +68,10 @@ const StripePaymentPage = () => {
   if (initError) {
     return (
       <div className="kalles-shop__container" style={{ padding: '4rem', textAlign: 'center' }}>
-        <h2>Payment setup expired</h2>
+        <h2>{t('checkout.paymentSetupExpired')}</h2>
         <p style={{ marginBottom: '1.5rem' }}>{initError}</p>
         <Link to="/cart-items" className="kalles-shop__btn kalles-shop__btn--primary">
-          Back to cart
+          {t('checkout.backToCart')}
         </Link>
       </div>
     );
@@ -82,8 +83,8 @@ const StripePaymentPage = () => {
 
   return (
     <div className="kalles-shop__container" style={{ padding: '2rem 0', maxWidth: 720 }}>
-      <h1 className="kalles-shop__title">Complete payment</h1>
-      <p>Order ID: <strong>{pending.orderId}</strong></p>
+      <h1 className="kalles-shop__title">{t('checkout.completePayment')}</h1>
+      <p>{t('checkout.orderIdLabel')} <strong>{pending.orderId}</strong></p>
       <Elements stripe={stripePromise} options={{ clientSecret: pending.clientSecret, appearance: { theme: 'flat' } }}>
         <CheckoutForm clientSecret={pending.clientSecret} orderId={pending.orderId} />
       </Elements>

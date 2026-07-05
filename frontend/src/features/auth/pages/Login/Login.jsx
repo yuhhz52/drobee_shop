@@ -7,9 +7,11 @@ import { loginAPI } from '@services/auth.service';
 import { cartService } from '@services/cart.service';
 import { Controller, useForm } from 'react-hook-form';
 import PasswordInput from '@shared/components/PasswordInput.jsx';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import '@shared/styles/AuthPages.css';
 
 const Login = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const verifiedSuccess = searchParams.get('verified') === 'success';
@@ -53,12 +55,12 @@ const Login = () => {
           throw new Error('Invalid response');
         }
       } catch {
-        alert('Invalid email or password. Please try again.');
+        alert(t('auth.invalidCredentials'));
       } finally {
         dispatch(setLoading(false));
       }
     },
-    [dispatch, navigate]
+    [dispatch, navigate, t]
   );
 
   return (
@@ -66,31 +68,31 @@ const Login = () => {
       {showToast && (
         <div className="horizon-auth-toast" role="status">
           <div>
-            <strong>Account verified</strong>
-            Your email has been confirmed. You can sign in now.
+            <strong>{t('auth.accountVerified')}</strong>
+            {t('auth.emailConfirmed')}
           </div>
         </div>
       )}
 
       <div className="horizon-auth-card">
         <div className="horizon-auth-card__head">
-          <h1>Login / Signup</h1>
-          <p>Welcome back. Sign in to continue shopping at Horizon.</p>
+          <h1>{t('auth.loginSignupTitle')}</h1>
+          <p>{t('auth.welcomeBack')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="horizon-auth-field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.email')}</label>
             <input
               id="email"
               type="email"
-              placeholder="your@email.com"
+              placeholder={t('auth.emailPlaceholder')}
               className={errors.userName ? 'is-error' : ''}
               {...register('userName', {
-                required: 'Please enter your email',
+                required: t('auth.emailRequired'),
                 pattern: {
                   value: /^\S+@\S+$/i,
-                  message: 'Please enter a valid email',
+                  message: t('auth.invalidEmail'),
                 },
               })}
             />
@@ -103,12 +105,12 @@ const Login = () => {
             <Controller
               name="password"
               control={control}
-              rules={{ required: 'Please enter your password' }}
+              rules={{ required: t('auth.passwordRequired') }}
               render={({ field }) => (
                 <PasswordInput
                   id="password"
-                  label="Password"
-                  placeholder="Password"
+                  label={t('auth.password')}
+                  placeholder={t('auth.password')}
                   error={errors.password}
                   innerRef={field.ref}
                   isInvalid={errors.password}
@@ -121,20 +123,20 @@ const Login = () => {
           </div>
 
           <button type="button" className="horizon-auth-forgot">
-            Forgot password?
+            {t('auth.forgotPassword')}
           </button>
 
           <button type="submit" className="horizon-auth-submit">
-            Sign in
+            {t('auth.signIn')}
           </button>
         </form>
 
-        <div className="horizon-auth-divider">or</div>
+        <div className="horizon-auth-divider">{t('auth.or')}</div>
         <GoogleSignIn />
 
         <p className="horizon-auth-footer">
-          Don&apos;t have an account?{' '}
-          <NavLink to="/v1/register">Create account</NavLink>
+          {t('auth.dontHaveAccount')}{' '}
+          <NavLink to="/v1/register">{t('auth.createAccount')}</NavLink>
         </p>
       </div>
     </>

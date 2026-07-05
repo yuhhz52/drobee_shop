@@ -16,6 +16,7 @@ import {
   BlogSection,
   ChatWidget,
 } from './components';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './HomeScooter.css';
 
 const fallbackExpertReviews = [
@@ -28,6 +29,7 @@ const fallbackExpertReviews = [
 ];
 
 const HomeScooter = () => {
+  const { t } = useTranslation();
   const [collections, setCollections] = useState([]);
   const [categories, setCategories] = useState([]);
   const [bestSellers, setBestSellers] = useState([]);
@@ -94,7 +96,7 @@ const HomeScooter = () => {
 
       <ProductGrid
         products={bestSellers}
-        title="Best Sellers"
+        title={t('home.bestSellers')}
         viewAllLink="/products"
       />
 
@@ -102,7 +104,7 @@ const HomeScooter = () => {
 
       <ProductGrid
         products={powerfulProducts}
-        title="Powerful Electric Scooters"
+        title={t('home.powerfulScooters')}
         viewAllLink="/products"
       />
 

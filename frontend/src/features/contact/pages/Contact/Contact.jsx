@@ -11,6 +11,7 @@ import {
   FaPaperPlane,
 } from 'react-icons/fa';
 import content from '@data/static/content.json';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './Contact.css';
 
 const SOCIAL_ICONS = {
@@ -29,15 +30,16 @@ const initialForm = {
   agree: false,
 };
 
-const SUBJECTS = [
-  { value: 'general', label: 'General Inquiry' },
-  { value: 'sales', label: 'Sales / Pre-order' },
-  { value: 'support', label: 'After-sales Support' },
-  { value: 'warranty', label: 'Warranty / Returns' },
-  { value: 'partnership', label: 'Partnership / B2B' },
+const SUBJECT_KEYS = [
+  { value: 'general', key: 'contact.subjects.general' },
+  { value: 'sales', key: 'contact.subjects.sales' },
+  { value: 'support', key: 'contact.subjects.support' },
+  { value: 'warranty', key: 'contact.subjects.warranty' },
+  { value: 'partnership', key: 'contact.subjects.partnership' },
 ];
 
 const Contact = () => {
+  const { t } = useTranslation();
   const contact = content?.footer?.contact ?? {};
   const socialLinks = content?.footer?.socialLinks ?? [];
   const [form, setForm] = useState(initialForm);
@@ -55,20 +57,20 @@ const Contact = () => {
 
   const validate = () => {
     const next = {};
-    if (!form.name.trim()) next.name = 'Please enter your name.';
+    if (!form.name.trim()) next.name = t('contact.errors.nameRequired');
     if (!form.email.trim()) {
-      next.email = 'Please enter your email.';
+      next.email = t('contact.errors.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      next.email = 'Email format is invalid.';
+      next.email = t('contact.errors.emailInvalid');
     }
     if (form.phone && !/^[0-9+()\-\s]{6,20}$/.test(form.phone.trim())) {
-      next.phone = 'Phone number is invalid.';
+      next.phone = t('contact.errors.phoneInvalid');
     }
     if (!form.message.trim() || form.message.trim().length < 10) {
-      next.message = 'Please write at least 10 characters.';
+      next.message = t('contact.errors.messageTooShort');
     }
     if (!form.agree) {
-      next.agree = 'You must agree before sending.';
+      next.agree = t('contact.errors.agreeRequired');
     }
     return next;
   };
@@ -78,13 +80,12 @@ const Contact = () => {
     const found = validate();
     if (Object.keys(found).length > 0) {
       setErrors(found);
-      setStatus({ type: 'error', text: 'Please fix the highlighted fields.' });
+      setStatus({ type: 'error', text: t('contact.status.fixFields') });
       return;
     }
     setStatus({
       type: 'success',
-      text:
-        'Thank you! Your message has been sent. The Horizon team will reply within 24 hours.',
+      text: t('contact.status.success'),
     });
     setForm(initialForm);
   };
@@ -93,12 +94,9 @@ const Contact = () => {
     <div className="horizon-contact">
       <section className="horizon-contact-hero">
         <div className="horizon-contact-hero__inner">
-          <span className="horizon-contact-eyebrow">Get in touch</span>
-          <h1 className="horizon-contact-title">We&apos;d love to hear from you</h1>
-          <p className="horizon-contact-lead">
-            Questions about a model, an order, or a partnership? Drop us a line and
-            the Horizon team will get back to you within one business day.
-          </p>
+          <span className="horizon-contact-eyebrow">{t('contact.eyebrow')}</span>
+          <h1 className="horizon-contact-title">{t('contact.title')}</h1>
+          <p className="horizon-contact-lead">{t('contact.lead')}</p>
         </div>
       </section>
 
@@ -115,36 +113,36 @@ const Contact = () => {
             <span className="horizon-contact-card__icon">
               <FaMapMarkerAlt />
             </span>
-            <h3>Showroom</h3>
-            <p>{contact.address || 'Innovation Building, District 1, HCMC'}</p>
-            <span className="horizon-contact-card__hint">Open in Google Maps</span>
+            <h3>{t('contact.showroom')}</h3>
+            <p>{contact.address || t('contact.defaultAddress')}</p>
+            <span className="horizon-contact-card__hint">{t('contact.openInMaps')}</span>
           </a>
 
           <a className="horizon-contact-card" href={`tel:${(contact.phone || '').replace(/\s/g, '')}`}>
             <span className="horizon-contact-card__icon">
               <FaPhoneAlt />
             </span>
-            <h3>Phone</h3>
-            <p>{contact.phone || '+84 909 123 456'}</p>
-            <span className="horizon-contact-card__hint">Mon - Sat, 8:30 - 21:00</span>
+            <h3>{t('contact.phone')}</h3>
+            <p>{contact.phone || t('contact.defaultPhone')}</p>
+            <span className="horizon-contact-card__hint">{t('contact.phoneHours')}</span>
           </a>
 
           <a className="horizon-contact-card" href={`mailto:${contact.email || ''}`}>
             <span className="horizon-contact-card__icon">
               <FaEnvelope />
             </span>
-            <h3>Email</h3>
-            <p>{contact.email || 'support@horizonshop.io.vn'}</p>
-            <span className="horizon-contact-card__hint">Reply within 24h</span>
+            <h3>{t('contact.email')}</h3>
+            <p>{contact.email || t('contact.defaultEmail')}</p>
+            <span className="horizon-contact-card__hint">{t('contact.reply24h')}</span>
           </a>
 
           <div className="horizon-contact-card">
             <span className="horizon-contact-card__icon">
               <FaClock />
             </span>
-            <h3>Working hours</h3>
-            <p>{contact.hours || 'Mon - Sat: 8:30 - 21:00'}</p>
-            <span className="horizon-contact-card__hint">Closed on public holidays</span>
+            <h3>{t('contact.workingHours')}</h3>
+            <p>{contact.hours || t('contact.defaultHours')}</p>
+            <span className="horizon-contact-card__hint">{t('contact.closedHolidays')}</span>
           </div>
         </div>
       </section>
@@ -152,14 +150,11 @@ const Contact = () => {
       <section className="horizon-contact-form-section">
         <div className="horizon-contact-form-shell">
           <div className="horizon-contact-form__intro">
-            <h2>Send us a message</h2>
-            <p>
-              Fill in the form and our team will reach out. We typically reply within
-              one business day.
-            </p>
+            <h2>{t('contact.formTitle')}</h2>
+            <p>{t('contact.formLead')}</p>
             {socialLinks.length > 0 && (
               <div className="horizon-contact-social">
-                <span>Follow us</span>
+                <span>{t('contact.followUs')}</span>
                 <ul>
                   {socialLinks.map((item) => {
                     const Icon = SOCIAL_ICONS[item.icon];
@@ -185,13 +180,13 @@ const Contact = () => {
             <div className="horizon-contact-form__row">
               <label className={`horizon-contact-field ${errors.name ? 'has-error' : ''}`}>
                 <span>
-                  Full name <em>*</em>
+                  {t('contact.fullName')} <em>*</em>
                 </span>
                 <input
                   type="text"
                   value={form.name}
                   onChange={update('name')}
-                  placeholder="Nguyen Van A"
+                  placeholder={t('contact.fullNamePlaceholder')}
                   autoComplete="name"
                 />
                 {errors.name && <small className="horizon-contact-error">{errors.name}</small>}
@@ -199,13 +194,13 @@ const Contact = () => {
 
               <label className={`horizon-contact-field ${errors.email ? 'has-error' : ''}`}>
                 <span>
-                  Email <em>*</em>
+                  {t('auth.email')} <em>*</em>
                 </span>
                 <input
                   type="email"
                   value={form.email}
                   onChange={update('email')}
-                  placeholder="you@example.com"
+                  placeholder={t('contact.emailPlaceholder')}
                   autoComplete="email"
                 />
                 {errors.email && (
@@ -216,12 +211,12 @@ const Contact = () => {
 
             <div className="horizon-contact-form__row">
               <label className={`horizon-contact-field ${errors.phone ? 'has-error' : ''}`}>
-                <span>Phone</span>
+                <span>{t('contact.phone')}</span>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={update('phone')}
-                  placeholder="+84 909 000 000"
+                  placeholder={t('contact.phonePlaceholder')}
                   autoComplete="tel"
                 />
                 {errors.phone && (
@@ -230,11 +225,11 @@ const Contact = () => {
               </label>
 
               <label className="horizon-contact-field">
-                <span>Subject</span>
+                <span>{t('contact.subject')}</span>
                 <select value={form.subject} onChange={update('subject')}>
-                  {SUBJECTS.map((opt) => (
+                  {SUBJECT_KEYS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.key)}
                     </option>
                   ))}
                 </select>
@@ -243,13 +238,13 @@ const Contact = () => {
 
             <label className={`horizon-contact-field ${errors.message ? 'has-error' : ''}`}>
               <span>
-                Your message <em>*</em>
+                {t('contact.message')} <em>*</em>
               </span>
               <textarea
                 rows={6}
                 value={form.message}
                 onChange={update('message')}
-                placeholder="Tell us which model you are interested in, or what we can help with..."
+                placeholder={t('contact.messagePlaceholder')}
               />
               {errors.message && (
                 <small className="horizon-contact-error">{errors.message}</small>
@@ -261,7 +256,7 @@ const Contact = () => {
             >
               <input type="checkbox" checked={form.agree} onChange={update('agree')} />
               <span>
-                I agree that Horizon Shop may contact me regarding my request.
+                {t('contact.agreeText')}
               </span>
             </label>
             {errors.agree && (
@@ -279,7 +274,7 @@ const Contact = () => {
               )}
               <button type="submit" className="horizon-contact-submit">
                 <FaPaperPlane />
-                <span>Send message</span>
+                <span>{t('contact.send')}</span>
               </button>
             </div>
           </form>

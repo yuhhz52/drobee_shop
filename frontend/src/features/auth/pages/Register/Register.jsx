@@ -7,9 +7,11 @@ import { registerAPI } from '@services/auth.service';
 import GoogleSignIn from '@shared/components/Button/GoogleSignIn.jsx';
 import PasswordInput from '@shared/components/PasswordInput.jsx';
 import VerifyCode from './VerifyCode.jsx';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import '@shared/styles/AuthPages.css';
 
 const Register = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [enableVerify, setEnableVerify] = useState(false);
   const [apiError, setApiError] = useState('');
@@ -53,12 +55,12 @@ const Register = () => {
           throw new Error(res?.message || 'Registration failed');
         }
       } catch (err) {
-        setApiError(err.message || 'This email is already registered or invalid.');
+        setApiError(err.message || t('auth.register.emailExists'));
       } finally {
         dispatch(setLoading(false));
       }
     },
-    [dispatch]
+    [dispatch, t]
   );
 
   if (enableVerify) return <VerifyCode email={watch('email')} />;
@@ -66,24 +68,24 @@ const Register = () => {
   return (
     <div className="horizon-auth-card">
       <div className="horizon-auth-card__head">
-        <h1>Create account</h1>
-        <p>Join the Horizon Rider Family and shop premium electric scooters.</p>
+        <h1>{t('auth.createAccount')}</h1>
+        <p>{t('auth.joinFamily')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <div className="horizon-auth-row">
           <div className="horizon-auth-field">
-            <label htmlFor="firstName">First Name</label>
+            <label htmlFor="firstName">{t('auth.firstName')}</label>
             <input
               id="firstName"
               type="text"
-              placeholder="John"
+              placeholder={t('auth.firstNamePlaceholder')}
               className={errors.firstName ? 'is-error' : ''}
               {...register('firstName', {
-                required: 'First name is required',
+                required: t('auth.firstNameRequired'),
                 minLength: {
                   value: 2,
-                  message: 'At least 2 characters',
+                  message: t('auth.atLeast2Chars'),
                 },
               })}
             />
@@ -91,17 +93,17 @@ const Register = () => {
           </div>
 
           <div className="horizon-auth-field">
-            <label htmlFor="lastName">Last Name</label>
+            <label htmlFor="lastName">{t('auth.lastName')}</label>
             <input
               id="lastName"
               type="text"
-              placeholder="Doe"
+              placeholder={t('auth.lastNamePlaceholder')}
               className={errors.lastName ? 'is-error' : ''}
               {...register('lastName', {
-                required: 'Last name is required',
+                required: t('auth.lastNameRequired'),
                 minLength: {
                   value: 2,
-                  message: 'At least 2 characters',
+                  message: t('auth.atLeast2Chars'),
                 },
               })}
             />
@@ -110,17 +112,17 @@ const Register = () => {
         </div>
 
         <div className="horizon-auth-field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('auth.email')}</label>
           <input
             id="email"
             type="email"
-            placeholder="your@email.com"
+            placeholder={t('auth.emailPlaceholder')}
             className={errors.email ? 'is-error' : ''}
             {...register('email', {
-              required: 'Please enter your email',
+              required: t('auth.emailRequired'),
               pattern: {
                 value: /^\S+@\S+$/i,
-                message: 'Please enter a valid email',
+                message: t('auth.invalidEmail'),
               },
             })}
           />
@@ -128,17 +130,17 @@ const Register = () => {
         </div>
 
         <div className="horizon-auth-field">
-          <label htmlFor="phone">Phone Number</label>
+          <label htmlFor="phone">{t('auth.phoneNumber')}</label>
           <input
             id="phone"
             type="tel"
-            placeholder="0912 345 678"
+            placeholder={t('auth.phonePlaceholder')}
             className={errors.phone ? 'is-error' : ''}
             {...register('phone', {
-              required: 'Phone number is required',
+              required: t('auth.phoneRequired'),
               pattern: {
                 value: /^[\d\s\-+()]{8,20}$/,
-                message: 'Invalid phone number',
+                message: t('auth.phoneInvalid'),
               },
             })}
           />
@@ -150,17 +152,17 @@ const Register = () => {
             name="password"
             control={control}
             rules={{
-              required: 'Please enter a password',
+              required: t('auth.passwordRequired'),
               minLength: {
                 value: 8,
-                message: 'Password must be at least 8 characters',
+                message: t('auth.passwordTooShort'),
               },
             }}
             render={({ field }) => (
               <PasswordInput
                 id="password"
-                label="Password"
-                placeholder="At least 8 characters"
+                label={t('auth.password')}
+                placeholder={t('auth.passwordPlaceholder')}
                 error={errors.password}
                 innerRef={field.ref}
                 isInvalid={errors.password}
@@ -177,19 +179,19 @@ const Register = () => {
             name="confirmPassword"
             control={control}
             rules={{
-              required: 'Please confirm your password',
+              required: t('auth.confirmPasswordRequired'),
               validate: (value) =>
-                value === password || 'Passwords do not match',
+                value === password || t('auth.passwordsDoNotMatch'),
             }}
             render={({ field }) => (
               <div className="flex flex-col gap-[8px]">
                 <label className="font-bold text-[14px] text-gray-500 w-fit" htmlFor="confirmPassword">
-                  Confirm Password
+                  {t('auth.confirmPassword')}
                 </label>
                 <input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Re-enter your password"
+                  placeholder={t('auth.confirmPasswordPlaceholder')}
                   className={`h-[48px] w-full px-[8px] bg-white border transition-all truncate pr-10 ${
                     errors.confirmPassword ? 'border-red-500' : 'border-gray-400'
                   }`}
@@ -209,15 +211,15 @@ const Register = () => {
         {apiError && <p className="horizon-auth-error">{apiError}</p>}
 
         <button type="submit" className="horizon-auth-submit" style={{ marginTop: '1rem' }}>
-          Create account
+          {t('auth.createAccount')}
         </button>
       </form>
 
-      <div className="horizon-auth-divider">or</div>
+      <div className="horizon-auth-divider">{t('auth.or')}</div>
       <GoogleSignIn />
 
       <p className="horizon-auth-footer">
-        Already have an account? <NavLink to="/v1/login">Sign in</NavLink>
+        {t('auth.alreadyHaveAccount')} <NavLink to="/v1/login">{t('auth.signIn')}</NavLink>
       </p>
     </div>
   );

@@ -6,30 +6,31 @@ import { selectCartItems } from '@app/store/slices/cart.jsx';
 import {
   updateCartItem,
   removeCartItem,
-  clearCart,
 } from '@app/store/actions/cartAction';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { inferBrandFromProduct } from '@shared/utils/product-brand';
 import EmptyCart from '@assets/images/empty-cart.png';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './Cart.css';
 
-const CartQty = ({ quantity, onChange, onRemove }) => (
+const CartQty = ({ quantity, onChange, onRemove, decreaseLabel, increaseLabel }) => (
   <div className="horizon-cart-qty">
     <button
       type="button"
       onClick={() => (quantity <= 1 ? onRemove() : onChange(quantity - 1))}
-      aria-label="Decrease"
+      aria-label={decreaseLabel}
     >
       −
     </button>
     <span>{quantity}</span>
-    <button type="button" onClick={() => onChange(quantity + 1)} aria-label="Increase">
+    <button type="button" onClick={() => onChange(quantity + 1)} aria-label={increaseLabel}>
       +
     </button>
   </div>
 );
 
 const Cart = () => {
+  const { t } = useTranslation();
   const cartItems = useSelector(selectCartItems);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -74,21 +75,21 @@ const Cart = () => {
       <div className="horizon-cart-page">
         <div className="horizon-cart-page__header">
           <div className="horizon-cart-page__container">
-            <nav className="horizon-cart-breadcrumb" aria-label="Breadcrumb">
-              <Link to="/">Home</Link>
+            <nav className="horizon-cart-breadcrumb" aria-label={t('common.breadcrumb')}>
+              <Link to="/">{t('nav.home')}</Link>
               <span>/</span>
-              <span>Cart</span>
+              <span>{t('common.cart')}</span>
             </nav>
-            <h1>Your cart</h1>
+            <h1>{t('cart.title')}</h1>
           </div>
         </div>
         <div className="horizon-cart-page__container">
           <div className="horizon-cart-empty">
             <img src={EmptyCart} alt="" />
-            <h2>Your cart is empty</h2>
-            <p>Shop our electric scooters and add your favourite ride.</p>
+            <h2>{t('cart.emptyTitle')}</h2>
+            <p>{t('cart.emptyDescription')}</p>
             <Link to="/products" className="horizon-cart-btn horizon-cart-btn--primary">
-              Explore Our Scooters
+              {t('cart.exploreScooters')}
             </Link>
           </div>
         </div>
@@ -100,15 +101,15 @@ const Cart = () => {
     <div className="horizon-cart-page">
       <div className="horizon-cart-page__header">
         <div className="horizon-cart-page__container">
-          <nav className="horizon-cart-breadcrumb" aria-label="Breadcrumb">
-            <Link to="/">Home</Link>
+          <nav className="horizon-cart-breadcrumb" aria-label={t('common.breadcrumb')}>
+            <Link to="/">{t('nav.home')}</Link>
             <span>/</span>
-            <span>Cart</span>
+            <span>{t('common.cart')}</span>
           </nav>
           <h1>
-            Your cart
+            {t('cart.title')}
             <span className="horizon-cart-page__count">
-              ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+              ({itemCount} {itemCount === 1 ? t('cart.item') : t('cart.items')})
             </span>
           </h1>
         </div>
@@ -118,9 +119,9 @@ const Cart = () => {
         <div className="horizon-cart-layout">
           <div className="horizon-cart-main">
             <div className="horizon-cart-table-head">
-              <span>Product</span>
-              <span>Quantity</span>
-              <span>Total</span>
+              <span>{t('cart.product')}</span>
+              <span>{t('cart.quantity')}</span>
+              <span>{t('cart.total')}</span>
             </div>
 
             <ul className="horizon-cart-items">
@@ -152,14 +153,14 @@ const Cart = () => {
                       </h3>
                       <p className="horizon-cart-item__meta">
                         {item.variantName && (
-                          <span>Version: {item.variantName}</span>
+                          <span>{t('cart.versionWithName', { name: item.variantName })}</span>
                         )}
                         {item.variantColor && (
                           <span> · {item.variantColor}</span>
                         )}
                       </p>
                       <p className="horizon-cart-item__unit">
-                        {formatPriceVND(item.unitPrice)} each
+                        {formatPriceVND(item.unitPrice)} {t('cart.each')}
                       </p>
                     </div>
                   </div>
@@ -169,15 +170,17 @@ const Cart = () => {
                       quantity={item.quantity}
                       onChange={(v) => onChangeQuantity(v, itemKey)}
                       onRemove={() => onDeleteProduct(itemKey)}
+                      decreaseLabel={t('cart.decrease')}
+                      increaseLabel={t('cart.increase')}
                     />
                     <button
                       type="button"
                       className="horizon-cart-item__remove"
                       onClick={() => onDeleteProduct(itemKey)}
-                      aria-label="Remove"
+                      aria-label={t('common.remove')}
                     >
                       <FiTrash2 size={16} />
-                      Remove
+                      {t('cart.remove')}
                     </button>
                   </div>
 
@@ -190,53 +193,53 @@ const Cart = () => {
             </ul>
 
             <div className="horizon-cart-coupon">
-              <label htmlFor="coupon">Discount code</label>
+              <label htmlFor="coupon">{t('cart.discountCode')}</label>
               <div className="horizon-cart-coupon__row">
                 <input
                   id="coupon"
                   type="text"
-                  placeholder="e.g. HORIZON"
+                  placeholder={t('cart.discountPlaceholder')}
                   className="horizon-cart-input"
                 />
                 <button type="button" className="horizon-cart-btn horizon-cart-btn--outline">
-                  Apply
+                  {t('cart.apply')}
                 </button>
               </div>
             </div>
 
             <Link to="/products" className="horizon-cart-continue">
               <FiArrowLeft size={16} />
-              Continue shopping
+              {t('cart.continueShopping')}
             </Link>
           </div>
 
           <aside className="horizon-cart-summary">
-            <h2>Order summary</h2>
+            <h2>{t('cart.summary')}</h2>
             <div className="horizon-cart-summary__row">
-              <span>Subtotal</span>
+              <span>{t('cart.subtotal')}</span>
               <strong>{formatPriceVND(subTotal)}</strong>
             </div>
             <div className="horizon-cart-summary__row">
-              <span>Shipping</span>
-              <strong className="is-free">Free (EU)</strong>
+              <span>{t('cart.shipping')}</span>
+              <strong className="is-free">{t('cart.shippingFree')}</strong>
             </div>
             <div className="horizon-cart-summary__total">
-              <span>Total</span>
+              <span>{t('cart.total')}</span>
               <span>{formatPriceVND(subTotal)}</span>
             </div>
             <p className="horizon-cart-summary__note">
-              Taxes included. Free helmet offer applied at checkout when eligible.
+              {t('cart.taxesIncluded')}
             </p>
             <button
               type="button"
               className="horizon-cart-btn horizon-cart-btn--primary"
               onClick={() => navigate('/cart/checkout')}
             >
-              Proceed to checkout
+              {t('cart.checkout')}
             </button>
             <p className="horizon-cart-summary__secure">
               <FiLock size={14} aria-hidden />
-              Secure checkout · 100% protected
+              {t('cart.secureCheckout')}
             </p>
           </aside>
         </div>
@@ -247,26 +250,26 @@ const Cart = () => {
           <button
             type="button"
             className="horizon-cart-modal-backdrop"
-            aria-label="Close"
+            aria-label={t('common.close')}
             onClick={() => setModalOpen(false)}
           />
           <div className="horizon-cart-modal" role="dialog" aria-modal="true">
-            <h3>Remove item?</h3>
-            <p>This product will be removed from your cart.</p>
+            <h3>{t('cart.removeItemTitle')}</h3>
+            <p>{t('cart.removeItemDescription')}</p>
             <div className="horizon-cart-modal__actions">
               <button
                 type="button"
                 className="horizon-cart-btn horizon-cart-btn--outline"
                 onClick={() => setModalOpen(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
                 className="horizon-cart-btn horizon-cart-btn--danger"
                 onClick={onDeleteItem}
               >
-                Remove
+                {t('common.remove')}
               </button>
             </div>
           </div>

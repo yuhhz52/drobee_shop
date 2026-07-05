@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { saveTokens, isTokenValid } from '@shared/utils/jwt-helper';
 import { httpClient } from '@core/api/httpClient';
 import { cartService } from '@services/cart.service';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const OAuth2LoginCallback = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Read tokens from HTTP-Only cookies via backend API
@@ -37,7 +39,7 @@ const OAuth2LoginCallback = () => {
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Signing you in...</p>
+        <p className="text-gray-600">{t('auth.oauth.signingIn')}</p>
       </div>
     </div>
   );

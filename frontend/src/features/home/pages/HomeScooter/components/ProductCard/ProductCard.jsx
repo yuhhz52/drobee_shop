@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatPriceVND } from '@shared/utils/price-format';
 import { getPrimaryResourceUrl } from '@shared/utils/product-media';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './ProductCard.css';
 
 const SpecBadge = ({ value, unit, label }) => {
@@ -28,6 +29,7 @@ const ProductCard = ({
   motorPowerW,
   weightKg,
 }) => {
+  const { t } = useTranslation();
   const basePrice = Number(price) || 0;
   const sale = Number(salePrice) || 0;
   const hasSale = sale > 0 && sale < basePrice;
@@ -61,10 +63,10 @@ const ProductCard = ({
         </Link>
         {hasSpecs && (
           <div className="horizon-product-card__specs">
-            <SpecBadge value={maxSpeedKmh} unit="km/h" label="Top speed" />
-            <SpecBadge value={rangeKm} unit="km" label="Range" />
-            <SpecBadge value={motorPowerW} unit="W" label="Motor power" />
-            <SpecBadge value={weightKg ? Math.round(Number(weightKg)) : null} unit="kg" label="Weight" />
+            <SpecBadge value={maxSpeedKmh} unit="km/h" label={t('product.specBadges.topSpeed')} />
+            <SpecBadge value={rangeKm} unit="km" label={t('product.specBadges.range')} />
+            <SpecBadge value={motorPowerW} unit="W" label={t('product.specBadges.motorPower')} />
+            <SpecBadge value={weightKg ? Math.round(Number(weightKg)) : null} unit="kg" label={t('product.specBadges.weight')} />
           </div>
         )}
         <div className="horizon-product-card__price">

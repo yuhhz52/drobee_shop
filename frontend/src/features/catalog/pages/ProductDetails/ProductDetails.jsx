@@ -11,59 +11,52 @@ import { getPrimaryResourceUrl, getProductImages } from '@shared/utils/product-m
 import { writeDirectCheckoutItem } from '@shared/utils/direct-checkout';
 import { colorSelector } from '@shared/components/Filters/ColorFilter';
 import { ProductCard } from '@features/home/pages/HomeScooter/components';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './ProductDetails.css';
 
-const SPEC_TABS = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'battery', label: 'Battery & Charging' },
-  { key: 'chassis', label: 'Frame & Brakes' },
-  { key: 'dimensions', label: 'Dimensions' },
-  { key: 'extra', label: 'Extras' },
-];
+const SPEC_TAB_KEYS = ['overview', 'battery', 'chassis', 'dimensions', 'extra'];
 
-const SPEC_GROUPS = {
-  overview: [
-    { key: 'maxSpeedKmh', label: 'Top speed', unit: 'km/h' },
-    { key: 'rangeKm', label: 'Range', unit: 'km' },
-    { key: 'motorPowerW', label: 'Motor power', unit: 'W' },
-    { key: 'peakPowerW', label: 'Peak power', unit: 'W' },
-    { key: 'weightKg', label: 'Weight', unit: 'kg' },
-    { key: 'maxLoadKg', label: 'Max load', unit: 'kg' },
-    { key: 'maxInclinePercent', label: 'Max incline', unit: '%' },
-  ],
-  battery: [
-    { key: 'batteryCapacityAh', label: 'Battery capacity', unit: 'Ah' },
-    { key: 'batteryVoltageV', label: 'Battery voltage', unit: 'V' },
-    { key: 'batteryType', label: 'Battery type', unit: '' },
-    { key: 'chargingTimeHours', label: 'Charging time', unit: 'h' },
-    { key: 'removableBattery', label: 'Removable battery', unit: '' },
-  ],
-  chassis: [
-    { key: 'frameMaterial', label: 'Frame material', unit: '' },
-    { key: 'wheelSizeInch', label: 'Wheel size', unit: 'inch' },
-    { key: 'tireType', label: 'Tire type', unit: '' },
-    { key: 'brakeFront', label: 'Front brake', unit: '' },
-    { key: 'brakeRear', label: 'Rear brake', unit: '' },
-    { key: 'suspensionFront', label: 'Front suspension', unit: '' },
-    { key: 'suspensionRear', label: 'Rear suspension', unit: '' },
-  ],
-  dimensions: [
-    { key: 'lengthCm', label: 'Length', unit: 'cm' },
-    { key: 'widthCm', label: 'Width', unit: 'cm' },
-    { key: 'heightCm', label: 'Height', unit: 'cm' },
-    { key: 'foldedLengthCm', label: 'Length (folded)', unit: 'cm' },
-    { key: 'foldedWidthCm', label: 'Width (folded)', unit: 'cm' },
-    { key: 'foldedHeightCm', label: 'Height (folded)', unit: 'cm' },
-  ],
-  extra: [
-    { key: 'maxSpeedUnlockedKmh', label: 'Unlocked top speed', unit: 'km/h' },
-    { key: 'lights', label: 'Lights', unit: '' },
-    { key: 'displayType', label: 'Display', unit: '' },
-    { key: 'connectivity', label: 'Connectivity', unit: '' },
-    { key: 'waterResistanceRating', label: 'Water resistance', unit: '' },
-    { key: 'warrantyMonths', label: 'Warranty', unit: 'months' },
-    { key: 'certifications', label: 'Certifications', unit: '' },
-  ],
+const SPEC_GROUP_KEYS = {
+  overview: ['maxSpeedKmh', 'rangeKm', 'motorPowerW', 'peakPowerW', 'weightKg', 'maxLoadKg', 'maxInclinePercent'],
+  battery: ['batteryCapacityAh', 'batteryVoltageV', 'batteryType', 'chargingTimeHours', 'removableBattery'],
+  chassis: ['frameMaterial', 'wheelSizeInch', 'tireType', 'brakeFront', 'brakeRear', 'suspensionFront', 'suspensionRear'],
+  dimensions: ['lengthCm', 'widthCm', 'heightCm', 'foldedLengthCm', 'foldedWidthCm', 'foldedHeightCm'],
+  extra: ['maxSpeedUnlockedKmh', 'lights', 'displayType', 'connectivity', 'waterResistanceRating', 'warrantyMonths', 'certifications'],
+};
+
+const FIELD_UNITS = {
+  maxSpeedKmh: 'km/h',
+  rangeKm: 'km',
+  motorPowerW: 'W',
+  peakPowerW: 'W',
+  weightKg: 'kg',
+  maxLoadKg: 'kg',
+  maxInclinePercent: '%',
+  batteryCapacityAh: 'Ah',
+  batteryVoltageV: 'V',
+  batteryType: '',
+  chargingTimeHours: 'h',
+  removableBattery: '',
+  frameMaterial: '',
+  wheelSizeInch: 'inch',
+  tireType: '',
+  brakeFront: '',
+  brakeRear: '',
+  suspensionFront: '',
+  suspensionRear: '',
+  lengthCm: 'cm',
+  widthCm: 'cm',
+  heightCm: 'cm',
+  foldedLengthCm: 'cm',
+  foldedWidthCm: 'cm',
+  foldedHeightCm: 'cm',
+  maxSpeedUnlockedKmh: 'km/h',
+  lights: '',
+  displayType: '',
+  connectivity: '',
+  waterResistanceRating: '',
+  warrantyMonths: 'months',
+  certifications: '',
 };
 
 const fmt = (val, unit) => {
@@ -78,58 +71,61 @@ const fmt = (val, unit) => {
   return val;
 };
 
-const boolLabel = (v) => {
-  if (v === true) return 'Yes';
-  if (v === false) return 'No';
+const boolLabel = (v, t) => {
+  if (v === true) return t('product.boolYes');
+  if (v === false) return t('product.boolNo');
   return null;
 };
 
 const SpecsSection = ({ product }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
 
-  const hasSpecs = SPEC_TABS.some((t) =>
-    SPEC_GROUPS[t.key].some((s) => product[s.key] != null)
+  const tabs = SPEC_TAB_KEYS.filter((tabKey) =>
+    SPEC_GROUP_KEYS[tabKey].some((fieldKey) => product[fieldKey] != null)
   );
+  const hasSpecs = tabs.length > 0;
 
   if (!hasSpecs) return null;
 
-  const fields = SPEC_GROUPS[activeTab] || [];
+  const fields = SPEC_GROUP_KEYS[activeTab] || [];
 
   return (
     <section className="horizon-pdp__specs horizon-pdp__container">
-      <h2>Specifications</h2>
+      <h2>{t('product.specsTitle')}</h2>
       <div className="horizon-pdp__specs-tabs">
-        {SPEC_TABS.map((tab) => {
-          const hasData = SPEC_GROUPS[tab.key].some(
-            (s) => product[s.key] != null
+        {tabs.map((tabKey) => {
+          const hasData = SPEC_GROUP_KEYS[tabKey].some(
+            (fieldKey) => product[fieldKey] != null
           );
           if (!hasData) return null;
           return (
             <button
-              key={tab.key}
+              key={tabKey}
               type="button"
-              className={`horizon-pdp__specs-tab ${activeTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
+              className={`horizon-pdp__specs-tab ${activeTab === tabKey ? 'is-active' : ''}`}
+              onClick={() => setActiveTab(tabKey)}
             >
-              {tab.label}
+              {t(`product.tabs.${tabKey}`)}
             </button>
           );
         })}
       </div>
       <div className="horizon-pdp__specs-table">
         <div className="horizon-pdp__specs-table-inner">
-          {fields.map((field) => {
-            let raw = product[field.key];
-            if (field.unit === '' && field.key === 'removableBattery') {
-              raw = boolLabel(raw);
+          {fields.map((fieldKey) => {
+            const unit = FIELD_UNITS[fieldKey] || '';
+            let raw = product[fieldKey];
+            if (unit === '' && fieldKey === 'removableBattery') {
+              raw = boolLabel(raw, t);
             }
-            const val = fmt(raw, field.unit);
+            const val = fmt(raw, unit);
             if (val == null) return null;
             return (
-              <div key={field.key} className="horizon-pdp__specs-row">
-                <span className="horizon-pdp__specs-label">{field.label}</span>
+              <div key={fieldKey} className="horizon-pdp__specs-row">
+                <span className="horizon-pdp__specs-label">{t(`product.specLabels.${fieldKey}`)}</span>
                 <span className="horizon-pdp__specs-value">
-                  {val}{field.unit && val != null ? ` ${field.unit}` : ''}
+                  {val}{unit && val != null ? ` ${unit}` : ''}
                 </span>
               </div>
             );
@@ -172,6 +168,7 @@ const ProductDetails = () => {
   const { product } = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Cart state
   const cartError = useSelector(selectCartError);
@@ -271,7 +268,7 @@ const ProductDetails = () => {
     ? (selectedVariant.stockQuantity ?? 1) > 0
     : allVariants.some((v) => (v.stockQuantity ?? 1) > 0);
 
-  const variantLabel = 'Version';
+  const variantLabel = t('product.version');
 
   const activeImage = images[activeImageIndex] || primaryImage;
 
@@ -321,20 +318,20 @@ const ProductDetails = () => {
   const handleAddToCart = useCallback(() => {
     // Require version selection if product has versions
     if (hasVersions && !selectedVariantName) {
-      setError('Please select a version');
+      setError(t('product.errors.selectVersion'));
       return;
     }
     // Require color selection if available colors exist
     if (availableColors.length > 0 && !selectedColor) {
-      setError('Please select an option');
+      setError(t('product.errors.selectOption'));
       return;
     }
     if (!selectedVariant && allVariants.length) {
-      setError('Please select product options');
+      setError(t('product.errors.selectProductOptions'));
       return;
     }
     if (selectedVariant && (selectedVariant.stockQuantity ?? 0) <= 0) {
-      setError('Out of stock');
+      setError(t('product.outOfStock'));
       return;
     }
 
@@ -371,19 +368,19 @@ const ProductDetails = () => {
   const handleBuyNow = useCallback(() => {
     // Validate selections
     if (hasVersions && !selectedVariantName) {
-      setError('Please select a version');
+      setError(t('product.errors.selectVersion'));
       return;
     }
     if (availableColors.length > 0 && !selectedColor) {
-      setError('Please select an option');
+      setError(t('product.errors.selectOption'));
       return;
     }
     if (!selectedVariant && allVariants.length) {
-      setError('Please select product options');
+      setError(t('product.errors.selectProductOptions'));
       return;
     }
     if (selectedVariant && (selectedVariant.stockQuantity ?? 0) <= 0) {
-      setError('Out of stock');
+      setError(t('product.outOfStock'));
       return;
     }
 
@@ -424,17 +421,17 @@ const ProductDetails = () => {
   ]);
 
   if (!product) {
-    return <div className="horizon-pdp__empty">Product not found.</div>;
+    return <div className="horizon-pdp__empty">{t('product.notFound')}</div>;
   }
 
   return (
     <div className="horizon-pdp">
       <div className="horizon-pdp__breadcrumb-wrap">
         <div className="horizon-pdp__container">
-          <nav className="horizon-pdp__breadcrumb" aria-label="Breadcrumb">
-            <Link to="/">Home</Link>
+          <nav className="horizon-pdp__breadcrumb" aria-label={t('common.breadcrumb')}>
+            <Link to="/">{t('nav.home')}</Link>
             <span>/</span>
-            <Link to="/products">Electric Scooters</Link>
+            <Link to="/products">{t('product.collectionBreadcrumb')}</Link>
             <span>/</span>
             <span className="is-current">{product.name}</span>
           </nav>
@@ -459,7 +456,7 @@ const ProductDetails = () => {
           )}
           <div className="horizon-pdp__main-image">
             {activeImage && <img src={activeImage} alt={product.name} />}
-            <p className="horizon-pdp__zoom-hint">Roll over image to zoom in</p>
+            <p className="horizon-pdp__zoom-hint">{t('product.zoomHint')}</p>
           </div>
         </div>
 
@@ -469,7 +466,7 @@ const ProductDetails = () => {
           <div className="horizon-pdp__badges">
             {product.newArrival && <span className="badge badge--blue">NEW</span>}
             {product.featured && (
-              <span className="badge badge--blue">Featured</span>
+              <span className="badge badge--blue">{t('product.featuredBadge')}</span>
             )}
             {hasSale && (
               <span className="badge badge--red">
@@ -483,7 +480,7 @@ const ProductDetails = () => {
 
           {brand && <p className="horizon-pdp__brand">{brand}</p>}
 
-          <div className="horizon-pdp__rating">★★★★★ 24 reviews</div>
+          <div className="horizon-pdp__rating">{t('product.reviewsLabel', { count: 24 })}</div>
 
           {hasVersions && (
             <div className="horizon-pdp__variant">
@@ -520,7 +517,7 @@ const ProductDetails = () => {
           {availableColors.length > 0 && (
             <div className="horizon-pdp__variant">
               <p className="horizon-pdp__variant-label">
-                Color{selectedColor ? `: ${selectedColor}` : ''}
+                {t('product.color')}{selectedColor ? `: ${selectedColor}` : ''}
               </p>
               <div className="horizon-pdp__colors">
                 {availableColors.map((color) => (
@@ -539,7 +536,7 @@ const ProductDetails = () => {
           )}
 
           <div className="horizon-pdp__price">
-            <span className="label">Price:</span>
+            <span className="label">{t('product.price')}:</span>
             <span className="sale">{formatPriceVND(displayPrice)}</span>
             {hasSale && (
               <span className="regular">{formatPriceVND(basePrice)}</span>
@@ -549,7 +546,7 @@ const ProductDetails = () => {
           {error && <p className="horizon-pdp__error">{error}</p>}
 
           <div className="horizon-pdp__qty-row">
-            <span>Quantity:</span>
+            <span>{t('product.quantity')}</span>
             <div className="horizon-pdp__qty">
               <button
                 type="button"
@@ -575,7 +572,7 @@ const ProductDetails = () => {
             onClick={handleAddToCart}
             disabled={!inStock}
           >
-            {inStock ? 'Add to cart' : 'Sold out'}
+            {inStock ? t('product.addToCart') : t('product.soldOut')}
           </button>
 
           <button
@@ -584,7 +581,7 @@ const ProductDetails = () => {
             onClick={handleBuyNow}
             disabled={!inStock}
           >
-            Buy now
+            {t('product.buyNow')}
           </button>
 
           <button
@@ -592,19 +589,19 @@ const ProductDetails = () => {
             className="horizon-pdp__more-pay"
             onClick={() => setDeliveryOpen(true)}
           >
-            More payment options
+            {t('product.morePaymentOptions')}
           </button>
 
           <div className="horizon-pdp__meta">
             <p>
-              Availability:{' '}
+              {t('product.availability')}:{' '}
               <span className={inStock ? 'in-stock' : 'out-stock'}>
-                {inStock ? 'In stock' : 'Out of stock'}
+                {inStock ? t('product.inStock') : t('product.outOfStock')}
               </span>
             </p>
             {product.categoryTypeName && (
               <p>
-                Type: <span>{product.categoryTypeName}</span>
+                {t('product.type')}: <span>{product.categoryTypeName}</span>
               </p>
             )}
           </div>
@@ -614,14 +611,14 @@ const ProductDetails = () => {
             className="horizon-pdp__shipping-link"
             onClick={() => setDeliveryOpen(true)}
           >
-            Delivery &amp; Return
+            {t('product.deliveryReturn')}
           </button>
         </div>
       </div>
 
       {product.description && (
         <section className="horizon-pdp__description horizon-pdp__container">
-          <h2>Description</h2>
+          <h2>{t('product.description')}</h2>
           <div className="horizon-pdp__description-body">{product.description}</div>
         </section>
       )}
@@ -631,20 +628,20 @@ const ProductDetails = () => {
       <section className="horizon-pdp__trust">
         <div className="horizon-pdp__container horizon-pdp__trust-grid">
           <div>
-            <strong>EU shipping</strong>
-            <p>All Europe 3 - 7 working days</p>
+            <strong>{t('product.trust.shippingTitle')}</strong>
+            <p>{t('product.trust.shippingDesc')}</p>
           </div>
           <div>
-            <strong>Free helmet</strong>
-            <p>VEPACE protects his Riders</p>
+            <strong>{t('product.trust.helmetTitle')}</strong>
+            <p>{t('product.trust.helmetDesc')}</p>
           </div>
           <div>
-            <strong>7/7 Support</strong>
-            <p>Any Question contact us !</p>
+            <strong>{t('product.trust.supportTitle')}</strong>
+            <p>{t('product.trust.supportDesc')}</p>
           </div>
           <div>
-            <strong>Secure payments</strong>
-            <p>100% secure checkout</p>
+            <strong>{t('product.trust.paymentsTitle')}</strong>
+            <p>{t('product.trust.paymentsDesc')}</p>
           </div>
         </div>
       </section>
@@ -653,9 +650,9 @@ const ProductDetails = () => {
         <section className="horizon-pdp__related">
           <div className="horizon-pdp__container">
             <div className="horizon-pdp__related-head">
-              <h2>You may also like</h2>
+              <h2>{t('product.youMayAlsoLike')}</h2>
               <Link to="/products" className="horizon-pdp__view-all">
-                View all
+                {t('common.viewAll')}
               </Link>
             </div>
             <div className="horizon-pdp__related-grid">
@@ -672,19 +669,19 @@ const ProductDetails = () => {
       )}
 
       <ProductModal
-        title="Delivery & Return"
+        title={t('product.deliveryReturn')}
         open={deliveryOpen}
         onClose={() => setDeliveryOpen(false)}
       >
-        <h4>Delivery</h4>
+        <h4>{t('product.deliveryTitle')}</h4>
         <ul>
-          <li>Delivery to all EU countries, 3-7 working days.</li>
-          <li>Tracking number provided for every order.</li>
+          <li>{t('product.deliveryItem1')}</li>
+          <li>{t('product.deliveryItem2')}</li>
         </ul>
-        <h4>Returns</h4>
+        <h4>{t('product.returnTitle')}</h4>
         <ul>
-          <li>Returns accepted within 14 days in original condition.</li>
-          <li>Contact support for RMA before sending items back.</li>
+          <li>{t('product.returnItem1')}</li>
+          <li>{t('product.returnItem2')}</li>
         </ul>
       </ProductModal>
     </div>

@@ -6,11 +6,13 @@ import { cancelOrderAPI, fetchOrderAPI } from '@services/user.service';
 import { loadOrders, selectAllOrders, cancelOrder as cancelOrderAction } from '@app/store/slices/user.jsx';
 import moment from 'moment';
 import { formatDisplayPrice } from '@shared/utils/price-format';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const Orders = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const allOrders = useSelector(selectAllOrders);
   const [selectedFilter, setSelectedFilter] = useState('ACTIVE');
   const [orders, setOrders] = useState([]);
@@ -65,7 +67,7 @@ const Orders = () => {
   }, []);
 
   const onCancelOrder = useCallback((id) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    if (!window.confirm(t('account.cancelConfirm'))) return;
     dispatch(setLoading(true));
     cancelOrderAPI(id)
       .then(() => {
@@ -76,18 +78,18 @@ const Orders = () => {
           )
         );
         dispatch(cancelOrderAction(id));
-        alert('Order cancelled successfully.');
+        alert(t('account.cancelSuccess'));
       })
       .catch((err) => {
         console.error('Cancel order failed', err);
         // Show specific error message from backend
-        const errorMsg = err?.response?.data?.message || err?.message || 'Could not cancel the order. Please try again.';
+        const errorMsg = err?.response?.data?.message || err?.message || t('account.cancelFailed');
         alert(errorMsg);
       })
       .finally(() => {
         dispatch(setLoading(false));
       });
-  }, [dispatch])
+  }, [dispatch, t])
 
 
   return (
@@ -95,15 +97,15 @@ const Orders = () => {
       {orders.length > 0 && (
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">My orders</h1>
+            <h1 className="text-2xl font-bold">{t('account.myOrders')}</h1>
             <select
               className="border border-gray-300 rounded px-4 py-2"
               value={selectedFilter}
               onChange={handleOnChange}
             >
-              <option value="ACTIVE">Processing</option>
-              <option value="CANCELLED">Cancelled</option>
-              <option value="COMPLETED">Completed</option>
+              <option value="ACTIVE">{t('account.filter.processing')}</option>
+              <option value="CANCELLED">{t('account.filter.cancelled')}</option>
+              <option value="COMPLETED">{t('account.filter.completed')}</option>
             </select>
           </div>
 
@@ -116,10 +118,10 @@ const Orders = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-lg font-semibold text-gray-800">
-                      Order: <span className="text-blue-700 font-bold">#{order.orderDisplayCode || order.id}</span>
+                      {t('account.order')}: <span className="text-blue-700 font-bold">#{order.orderDisplayCode || order.id}</span>
                     </p>
                     <p className="text-sm text-gray-500">
-                      Order date: {moment(order?.orderDate).format('DD/MM/YYYY')}
+                      {t('account.orderDate')}: {moment(order?.orderDate).format('DD/MM/YYYY')}
                     </p>
                   </div>
                   <div className="text-right">
@@ -138,7 +140,7 @@ const Orders = () => {
                       onClick={() => navigate(`/account-details/orders/${order.id}`)}
                       className="text-blue-600 text-sm mt-1 hover:underline"
                     >
-                      View details
+                      {t('account.viewDetails')}
                     </button>
                   </div>
                 </div>
@@ -154,7 +156,7 @@ const Orders = () => {
                     />
                   ))}
                   {order.items?.length > 3 && (
-                    <span className="text-gray-500 text-sm">+{order.items.length - 3} more items</span>
+                    <span className="text-gray-500 text-sm">{t('account.orderItem.moreItems', { count: order.items.length - 3 })}</span>
                   )}
                   <div className="ml-auto">
                     <p className="font-bold text-lg">{formatDisplayPrice(order?.totalAmount)}</p>

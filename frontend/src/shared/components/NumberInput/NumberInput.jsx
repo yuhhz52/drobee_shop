@@ -1,12 +1,15 @@
 import React, { useCallback, useState } from 'react'
+import { useTranslation } from '@shared/i18n/useTranslation.js';
+
 export const NumberInput = ({ quantity, max = 10, min = 1, onChangeQuantity, onRemoveItem }) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState(quantity ?? 1);
   const [message, setMessage] = useState('');
 
   const displayMaxStock = useCallback(() => {
-    setMessage("Sorry, we have limited quantity available for this product");
+    setMessage(t('numberInput.limitedQuantity'));
     setTimeout(() => setMessage(''), 2000);
-  }, []);
+  }, [t]);
 
   const onIncreaseQuantity = useCallback(() => {
     if (value < max) {

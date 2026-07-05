@@ -1,18 +1,19 @@
 import React from 'react';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './ValueStrip.css';
 
-const valueProps = [
-  { title: 'EU shipping', text: 'All Europe 3 - 7 working days' },
-  { title: 'Free helmet', text: 'Horizon protects its riders' },
-  { title: '7/7 Support', text: 'Any Question contact us !' },
-  { title: 'Secure payments', text: '100% secure checkout' },
-];
-
-const ValueStrip = ({ items = valueProps }) => {
+const ValueStrip = ({ items }) => {
+  const { t } = useTranslation();
+  const valueProps = items ?? [
+    { title: t('value.euShipping.title'), text: t('value.euShipping.text') },
+    { title: t('value.freeHelmet.title'), text: t('value.freeHelmet.text') },
+    { title: t('value.support.title'), text: t('value.support.text') },
+    { title: t('value.payments.title'), text: t('value.payments.text') },
+  ];
   return (
     <section className="horizon-value-strip">
       <div className="horizon-container horizon-value-strip__grid">
-        {items.map((prop) => (
+        {valueProps.map((prop) => (
           <div key={prop.title}>
             <h4>{prop.title}</h4>
             <p>{prop.text}</p>

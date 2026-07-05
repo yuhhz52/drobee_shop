@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { setLoading } from '@app/store/slices/common.jsx';
 import { fetchOrderByIdAPI, cancelOrderAPI } from '@services/user.service';
 import moment from 'moment';
 import { getStepCount } from '@shared/utils/order-util';
 import Timeline from '@shared/components/TimeLine/Timelines.jsx';
 import { formatDisplayPrice } from '@shared/utils/price-format';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const OrderDetail = () => {
+  const { t } = useTranslation();
   const { orderId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -36,34 +38,34 @@ const OrderDetail = () => {
   }, [fetchOrder]);
 
   const onCancelOrder = useCallback((id) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    if (!window.confirm(t('account.cancelConfirm'))) return;
     dispatch(setLoading(true));
     cancelOrderAPI(id)
       .then(() => {
-        alert('Order cancelled successfully.');
+        alert(t('account.cancelSuccess'));
         fetchOrder(); // Refresh order data
       })
       .catch((err) => {
         console.error('Cancel order failed', err);
-        const errorMsg = err?.response?.data?.message || err?.message || 'Could not cancel the order. Please try again.';
+        const errorMsg = err?.response?.data?.message || err?.message || t('account.cancelFailed');
         alert(errorMsg);
       })
       .finally(() => {
         dispatch(setLoading(false));
       });
-  }, [dispatch, fetchOrder]);
+  }, [dispatch, fetchOrder, t]);
 
   if (error) {
     return (
       <div className="p-8 max-w-2xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-semibold text-red-700 mb-2">Unable to load order</h2>
+          <h2 className="text-xl font-semibold text-red-700 mb-2">{t('account.loadFailed')}</h2>
           <p className="text-red-600 mb-4">{error}</p>
           <Link
             to="/account-details/orders"
             className="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
           >
-            Back to order list
+            {t('account.backToOrders')}
           </Link>
         </div>
       </div>
@@ -73,7 +75,7 @@ const OrderDetail = () => {
   if (!order) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-gray-500">{t('common.loading')}</p>
       </div>
     );
   }
@@ -115,9 +117,9 @@ const OrderDetail = () => {
           </svg>
         </button>
         <div>
-          <h1 className="text-2xl font-bold">Order details</h1>
+          <h1 className="text-2xl font-bold">{t('account.orderDetails')}</h1>
           <p className="text-gray-500">
-            Order ID: <span className="font-semibold text-blue-700">#{displayOrder.orderDisplayCode || displayOrder.id}</span>
+            {t('account.orderId')}: <span className="font-semibold text-blue-700">#{displayOrder.orderDisplayCode || displayOrder.id}</span>
           </p>
         </div>
       </div>
@@ -127,10 +129,10 @@ const OrderDetail = () => {
         <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-sm text-gray-500">
-              Order date: {moment(displayOrder?.orderDate).format('DD/MM/YYYY HH:mm')}
+              {t('account.orderDate')}: {moment(displayOrder?.orderDate).format('DD/MM/YYYY HH:mm')}
             </p>
             <p className="text-sm text-gray-500">
-              Payment method: <span className="font-medium">{displayOrder.paymentMethod}</span>
+              {t('account.paymentMethod')}: <span className="font-medium">{displayOrder.paymentMethod}</span>
             </p>
           </div>
           <div className="text-right">
@@ -141,12 +143,7 @@ const OrderDetail = () => {
                   ? 'text-green-600'
                   : 'text-yellow-600'
             }`}>
-              {displayOrder.orderStatus === 'PENDING' ? 'Pending confirmation' :
-               displayOrder.orderStatus === 'IN_PROGRESS' ? 'Processing' :
-               displayOrder.orderStatus === 'SHIPPED' ? 'Shipping' :
-               displayOrder.orderStatus === 'DELIVERED' ? 'Delivered' :
-               displayOrder.orderStatus === 'CANCELLED' ? 'Cancelled' :
-               displayOrder.orderStatus}
+              {t(`account.status.${displayOrder.orderStatus}`, displayOrder.orderStatus)}
             </p>
           </div>
         </div>
@@ -161,7 +158,7 @@ const OrderDetail = () => {
 
       {/* Products */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Products</h2>
+        <h2 className="text-lg font-semibold mb-4">{t('account.products')}</h2>
         <div className="space-y-4">
           {displayOrder.items?.map((item, idx) => (
             <div key={idx} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
@@ -177,7 +174,7 @@ const OrderDetail = () => {
                 >
                   {item.name}
                 </Link>
-                <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                <p className="text-sm text-gray-500">{t('account.orderItem.quantity')} {item.quantity}</p>
               </div>
               <p className="font-semibold">{formatDisplayPrice(item.price)}</p>
             </div>
@@ -187,17 +184,17 @@ const OrderDetail = () => {
         {/* Totals */}
         <div className="border-t border-gray-200 mt-4 pt-4">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-600">Subtotal</span>
+            <span className="text-gray-600">{t('account.subtotal')}</span>
             <span>{formatDisplayPrice(displayOrder.totalAmount + (displayOrder.discount || 0))}</span>
           </div>
           {displayOrder.discount > 0 && (
             <div className="flex justify-between text-sm mb-2 text-green-600">
-              <span>Discount</span>
+              <span>{t('account.discount')}</span>
               <span>-{formatDisplayPrice(displayOrder.discount)}</span>
             </div>
           )}
           <div className="flex justify-between text-lg font-bold">
-            <span>Total</span>
+            <span>{t('account.total')}</span>
             <span>{formatDisplayPrice(displayOrder.totalAmount)}</span>
           </div>
         </div>
@@ -205,7 +202,7 @@ const OrderDetail = () => {
 
       {/* Shipping Address */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Shipping address</h2>
+        <h2 className="text-lg font-semibold mb-4">{t('account.shippingAddress')}</h2>
         <div className="text-gray-700">
           <p className="font-medium">{displayOrder.address?.name}</p>
           <p>{displayOrder.address?.phoneNumber}</p>
@@ -221,7 +218,7 @@ const OrderDetail = () => {
           onClick={() => navigate('/account-details/orders')}
           className="text-blue-600 hover:text-blue-700"
         >
-          Back to order list
+          {t('account.backToOrders')}
         </button>
 
         {canCancel && (
@@ -229,7 +226,7 @@ const OrderDetail = () => {
             onClick={() => onCancelOrder(displayOrder.id)}
             className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700"
           >
-            Cancel order
+            {t('account.cancelOrder')}
           </button>
         )}
       </div>

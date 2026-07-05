@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { logoutAPI } from '@services/auth.service';
 import { clearTokens } from '@shared/utils/jwt-helper';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import '@shared/styles/AuthPages.css';
 
 const Logouts = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -22,8 +24,8 @@ const Logouts = () => {
     <div className="horizon-logout-page">
       <div className="horizon-auth-card" style={{ maxWidth: 480, margin: '0 auto' }}>
         <div className="horizon-auth-card__head">
-          <h1>Sign out</h1>
-          <p>Are you sure you want to log out of your Horizon account?</p>
+          <h1>{t('account.signOutTitle')}</h1>
+          <p>{t('account.signOutDescription')}</p>
         </div>
 
         <div className="horizon-auth-actions">
@@ -33,7 +35,7 @@ const Logouts = () => {
             onClick={handleLogout}
             disabled={loading}
           >
-            {loading ? 'Signing out…' : 'Yes, sign out'}
+            {loading ? t('account.signingOut') : t('account.confirmSignOut')}
           </button>
           <button
             type="button"
@@ -41,12 +43,12 @@ const Logouts = () => {
             onClick={() => navigate('/account-details/profile')}
             disabled={loading}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
 
         <p className="horizon-auth-footer" style={{ marginTop: '1.25rem' }}>
-          <Link to="/">Return to homepage</Link>
+          <Link to="/">{t('account.returnHome')}</Link>
         </p>
       </div>
     </div>

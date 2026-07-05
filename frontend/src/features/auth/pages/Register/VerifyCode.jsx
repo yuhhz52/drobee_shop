@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { setLoading } from '@app/store/slices/common.jsx';
 import { verifyAPI } from '@services/auth.service';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const VerifyCode = ({ email }) => {
   const inputRefs = useRef([]);
@@ -10,6 +11,7 @@ const VerifyCode = ({ email }) => {
   const [error, setError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const focusNext = (index) => {
     if (index < 5) inputRefs.current[index + 1]?.focus();
@@ -47,7 +49,7 @@ const VerifyCode = ({ email }) => {
     setError('');
     const finalCode = code.join('');
     if (finalCode.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError(t('auth.verify.incompleteCode'));
       return;
     }
 
@@ -59,19 +61,19 @@ const VerifyCode = ({ email }) => {
       })
       .catch(() => {
         // Show error and keep user on the page
-        setError('Verification code is incorrect or has expired.');
+        setError(t('auth.verify.incorrect'));
       })
       .finally(() => {
         dispatch(setLoading(false));
       });
-  }, [dispatch, code, email, navigate]);
+  }, [dispatch, code, email, navigate, t]);
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-cover bg-center">
       <div className="bg-white shadow-xl rounded-lg p-8 w-[400px] z-10 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Verification Required</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('auth.verify.title')}</h2>
         <p className="text-gray-600 mb-2">
-          Enter the 6-digit code we sent to <span className="font-semibold">{email.replace(/(?<=.).(?=.*@)/g, '*')}</span>
+          {t('auth.verify.subtitle')} <span className="font-semibold">{email.replace(/(?<=.).(?=.*@)/g, '*')}</span>
         </p>
 
         <form onSubmit={onSubmit} className="flex flex-col items-center gap-4 mt-4">
@@ -93,15 +95,15 @@ const VerifyCode = ({ email }) => {
           </div>
           <br />
           <button type="submit" className="bg-black text-white h-12 w-full rounded hover:bg-gray-800 transition">
-            Verify
+            {t('auth.verify.submit')}
           </button>
 
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </form>
 
         <div className="mt-6">
-          <button className="text-blue-600 hover:underline text-sm">Resend code</button>
-          <p className="text-xs text-gray-500 mt-1">Can't access that email address?</p>
+          <button className="text-blue-600 hover:underline text-sm">{t('auth.verify.resend')}</button>
+          <p className="text-xs text-gray-500 mt-1">{t('auth.verify.cantAccess')}</p>
         </div>
       </div>
     </div>

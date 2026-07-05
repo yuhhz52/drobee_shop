@@ -11,17 +11,18 @@ import { setLoading } from '@app/store/slices/common.jsx'
 import { loadCategories } from '@app/store/slices/category.jsx'
 import Pagination from '@mui/material/Pagination'
 import Stack from '@mui/material/Stack'
+import { useTranslation } from '@shared/i18n/useTranslation.js'
 import './ProductListPage.css'
 
-const SORT_OPTIONS = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'best-selling', label: 'Best selling' },
-  { value: 'title-asc', label: 'Alphabetically, A-Z' },
-  { value: 'title-desc', label: 'Alphabetically, Z-A' },
-  { value: 'price-asc', label: 'Price, low to high' },
-  { value: 'price-desc', label: 'Price, high to low' },
-  { value: 'date-desc', label: 'Date, new to old' },
-  { value: 'date-asc', label: 'Date, old to new' },
+const SORT_OPTION_KEYS = [
+  { value: 'featured', key: 'plp.sort.featured' },
+  { value: 'best-selling', key: 'plp.sort.bestSelling' },
+  { value: 'title-asc', key: 'plp.sort.titleAsc' },
+  { value: 'title-desc', key: 'plp.sort.titleDesc' },
+  { value: 'price-asc', key: 'plp.sort.priceAsc' },
+  { value: 'price-desc', key: 'plp.sort.priceDesc' },
+  { value: 'date-desc', key: 'plp.sort.dateDesc' },
+  { value: 'date-asc', key: 'plp.sort.dateAsc' },
 ]
 
 const PRICE_FILTER_MAX = 100000000
@@ -46,12 +47,12 @@ const isProductInStock = (product) => {
   return product.variants.some((v) => (v.stockQuantity ?? 1) > 0)
 }
 
-const GridIcon = ({ cols, active, onClick }) => (
+const GridIcon = ({ cols, active, onClick, label }) => (
   <button
     type="button"
     className={`horizon-grid-btn ${active ? 'is-active' : ''}`}
     onClick={onClick}
-    aria-label={`${cols} column grid`}
+    aria-label={label}
   >
     <span className={`horizon-grid-icon horizon-grid-icon--${cols}`}>
       {Array.from({ length: cols }).map((_, i) => (
@@ -68,6 +69,7 @@ const ProductListPage = ({
   showAllProducts,
   title,
 }) => {
+  const { t } = useTranslation();
   const { collectionSlug } = useParams()
   const dispatch = useDispatch()
   const categoryData = useSelector((state) => state.categoryState.categories)
@@ -158,12 +160,12 @@ const ProductListPage = ({
     title ||
     collectionConfig?.title ||
     (resolvedShowSale
-      ? 'Sale'
+      ? t('plp.sale')
       : resolvedShowNewArrivals
-        ? 'New arrivals'
+        ? t('plp.newArrivals')
         : resolvedShowAllProducts
-          ? 'All'
-          : category?.name || 'Products')
+          ? t('plp.all')
+          : category?.name || t('plp.products'))
 
   const shouldRequestAllProducts =
     resolvedShowAllProducts ||
@@ -453,20 +455,24 @@ const ProductListPage = ({
     Boolean(specFilters?.minMaxIncline)
   const displayedProductCount = hasClientFilters ? filteredProducts.length : totalElements
   const totalPages = Math.ceil(totalElements / size)
-  const sortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Sort'
+  const sortLabel =
+    SORT_OPTION_KEYS.find((o) => o.value === sortBy)
+      ? t(SORT_OPTION_KEYS.find((o) => o.value === sortBy).key)
+      : t('common.sort')
 
   return (
     <div className="horizon-plp">
       <div className="horizon-plp__header">
         <div className="horizon-plp__container">
-          <nav className="horizon-plp__breadcrumb" aria-label="Breadcrumb">
-            <Link to="/">Home</Link>
+          <nav className="horizon-plp__breadcrumb" aria-label={t('common.breadcrumb')}>
+            <Link to="/">{t('nav.home')}</Link>
             <span className="horizon-plp__breadcrumb-sep">/</span>
             <span>{pageTitle}</span>
           </nav>
           <h1>{pageTitle}</h1>
           <p className="horizon-plp__count">
-            {displayedProductCount} product{displayedProductCount !== 1 ? 's' : ''}
+            {displayedProductCount}{' '}
+            {displayedProductCount !== 1 ? t('plp.products') : t('plp.product')}
           </p>
         </div>
       </div>
@@ -480,13 +486,13 @@ const ProductListPage = ({
                 d="M324.4 64C339.6 64 352 76.37 352 91.63C352 98.32 349.6 104.8 345.2 109.8L240 230V423.6C240 437.1 229.1 448 215.6 448C210.3 448 205.2 446.3 200.9 443.1L124.7 385.6C116.7 379.5 112 370.1 112 360V230L6.836 109.8C2.429 104.8 0 98.32 0 91.63C0 76.37 12.37 64 27.63 64H324.4zM144 224V360L208 408.3V223.1C208 220.1 209.4 216.4 211.1 213.5L314.7 95.1H37.26L140 213.5C142.6 216.4 143.1 220.1 143.1 223.1L144 224zM496 400C504.8 400 512 407.2 512 416C512 424.8 504.8 432 496 432H336C327.2 432 320 424.8 320 416C320 407.2 327.2 400 336 400H496zM320 256C320 247.2 327.2 240 336 240H496C504.8 240 512 247.2 512 256C512 264.8 504.8 272 496 272H336C327.2 272 320 264.8 320 256zM496 80C504.8 80 512 87.16 512 96C512 104.8 504.8 112 496 112H400C391.2 112 384 104.8 384 96C384 87.16 391.2 80 400 80H496z"
               />
             </svg>
-            <span>Filter</span>
+            <span>{t('common.filter')}</span>
           </button>
 
           <div className="horizon-plp__layout">
-            <GridIcon cols={3} active={gridColumns === 3} onClick={() => setGridColumns(3)} />
-            <GridIcon cols={4} active={gridColumns === 4} onClick={() => setGridColumns(4)} />
-            <GridIcon cols={5} active={gridColumns === 5} onClick={() => setGridColumns(5)} />
+            <GridIcon cols={3} active={gridColumns === 3} onClick={() => setGridColumns(3)} label={t('plp.grid3', { n: 3 })} />
+            <GridIcon cols={4} active={gridColumns === 4} onClick={() => setGridColumns(4)} label={t('plp.grid4', { n: 4 })} />
+            <GridIcon cols={5} active={gridColumns === 5} onClick={() => setGridColumns(5)} label={t('plp.grid5', { n: 5 })} />
           </div>
 
           <div className="horizon-plp__sort" ref={sortRef}>
@@ -499,7 +505,7 @@ const ProductListPage = ({
               }}
             >
               <span className="horizon-plp__sort-label">{sortLabel}</span>
-              <span className="horizon-plp__sort-label-mobile">Sort</span>
+              <span className="horizon-plp__sort-label-mobile">{t('common.sort')}</span>
               <svg width="10" height="10" viewBox="0 0 19 12" aria-hidden="true">
                 <polyline
                   fill="none"
@@ -511,7 +517,7 @@ const ProductListPage = ({
             </button>
             {sortOpen && (
               <ul className="horizon-plp__sort-menu" role="listbox">
-                {SORT_OPTIONS.map((opt) => (
+                {SORT_OPTION_KEYS.map((opt) => (
                   <li key={opt.value}>
                     <button
                       type="button"
@@ -523,7 +529,7 @@ const ProductListPage = ({
                         setSortOpen(false)
                       }}
                     >
-                      {opt.label}
+                      {t(opt.key)}
                     </button>
                   </li>
                 ))}
@@ -546,8 +552,8 @@ const ProductListPage = ({
           <div className="horizon-plp__empty">
             <p>
               {products.length === 0
-                ? 'No products found in this collection.'
-                : 'No products match your filters.'}
+                ? t('plp.emptyCollection')
+                : t('plp.emptyFilters')}
             </p>
           </div>
         )}

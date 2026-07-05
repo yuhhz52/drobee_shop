@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './CollectionsBand.css';
 
 const CDN = 'https://horizon.com/cdn/shop/files';
@@ -22,6 +23,7 @@ const defaultBrands = [
 ];
 
 const CollectionsBand = ({ collections = [], categories = [] }) => {
+  const { t } = useTranslation();
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -128,9 +130,9 @@ const CollectionsBand = ({ collections = [], categories = [] }) => {
     <section className="horizon-collections-band">
       <div className="horizon-container">
         <div className="horizon-section-head">
-          <h2>Our collections</h2>
+          <h2>{t('home.ourCollections')}</h2>
           <Link to="/products" className="horizon-link-red">
-            View all
+            {t('common.viewAll')}
           </Link>
         </div>
         <div className="horizon-collections-wrapper">
@@ -138,7 +140,7 @@ const CollectionsBand = ({ collections = [], categories = [] }) => {
             className="horizon-collections__nav horizon-collections__nav--left"
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            aria-label="Scroll left"
+            aria-label={t('common.scrollLeft')}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
@@ -155,7 +157,7 @@ const CollectionsBand = ({ collections = [], categories = [] }) => {
             className="horizon-collections__nav horizon-collections__nav--right"
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            aria-label="Scroll right"
+            aria-label={t('common.scrollRight')}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>

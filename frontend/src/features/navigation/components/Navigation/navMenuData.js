@@ -15,6 +15,9 @@ const FALLBACK_LAYOUTS = {
   kuickwheel: '2col',
 }
 
+// Menus here are now keyed (labelKey / linkKey) so the consumer can resolve
+// them through i18n. Brand-specific category names still flow through `c.name`
+// unchanged, since they are server-provided brand labels.
 export const buildNavMenus = (categories = []) => {
   const categoryMenus = (Array.isArray(categories) ? categories : []).map((c) => {
     const hasLayout = c?.dropdownLayout ?? FALLBACK_LAYOUTS[c?.code]
@@ -23,7 +26,7 @@ export const buildNavMenus = (categories = []) => {
     const types = (c?.categoryTypes || c?.types || []).filter((t) => t?.code !== 'all')
     const categoryPath = buildCollectionUrl(c)
     const typeLinks = (Array.isArray(types) ? types : []).map((t, tIdx) => ({
-      label: t?.name ?? 'Type',
+      label: t?.name ?? '',
       to: buildCollectionUrl(t, c?.code),
       key: `${c.id}-type-${tIdx}`,
     }))
@@ -38,7 +41,8 @@ export const buildNavMenus = (categories = []) => {
       : []
 
     return {
-      label: c?.name ?? 'Category',
+      label: c?.name ?? '',
+      labelKey: c?.code ? `nav.collection.${c.code}` : null,
       to: categoryPath,
       layout: c?.dropdownLayout ?? FALLBACK_LAYOUTS[c?.code] ?? '1col',
       columns,
@@ -49,14 +53,14 @@ export const buildNavMenus = (categories = []) => {
   return [
     ...categoryMenus,
     {
-      label: 'Contact',
+      labelKey: 'nav.contact',
       to: '/contact',
       layout: 'align-right',
       columns: [
         {
           links: [
-            { label: 'Contact us', to: '/contact', key: 'contact-us' },
-            { label: 'Track Order', to: '/account-details/orders', key: 'track-order' },
+            { labelKey: 'nav.contactUs', to: '/contact', key: 'contact-us' },
+            { labelKey: 'nav.trackOrder', to: '/account-details/orders', key: 'track-order' },
           ],
           key: 'contact-col',
         },
@@ -67,6 +71,6 @@ export const buildNavMenus = (categories = []) => {
 };
 
 export const languages = [
-  'English',
-  'Tiếng Việt',
+  { code: 'en', label: 'English' },
+  { code: 'vi', label: 'Tiếng Việt' },
 ];

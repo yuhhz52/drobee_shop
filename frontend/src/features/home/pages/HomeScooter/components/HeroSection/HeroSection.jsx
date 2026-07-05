@@ -6,8 +6,10 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './HeroSection.css';
 import { fetchActiveBanners } from '@services/banner.service';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const HeroSection = () => {
+  const { t } = useTranslation();
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const sliderRef = useRef(null);
@@ -20,7 +22,7 @@ const HeroSection = () => {
       const mapped = (Array.isArray(data) ? data : []).map((b) => ({
         image: b.imageUrl,
         link: b.linkUrl || '/products',
-        alt: b.altText || b.title || 'Banner',
+        alt: b.altText || b.title || t('common.banner'),
       }));
       setSlides(mapped);
       setLoading(false);
@@ -28,7 +30,7 @@ const HeroSection = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const settings = {
     dots: true,
@@ -58,7 +60,7 @@ const HeroSection = () => {
         <button
           type="button"
           className="horizon-hero__nav horizon-hero__nav--prev"
-          aria-label="Previous slide"
+          aria-label={t('common.previous')}
           onClick={handlePrev}
         >
           <FiChevronLeft />
@@ -81,7 +83,7 @@ const HeroSection = () => {
         <button
           type="button"
           className="horizon-hero__nav horizon-hero__nav--next"
-          aria-label="Next slide"
+          aria-label={t('common.next')}
           onClick={handleNext}
         >
           <FiChevronRight />

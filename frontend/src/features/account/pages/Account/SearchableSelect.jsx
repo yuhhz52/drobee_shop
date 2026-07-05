@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './SearchableSelect.css';
 
 const SearchableSelect = ({
@@ -7,18 +8,20 @@ const SearchableSelect = ({
   displayName = '',
   onChange,
   onSelect,
-  placeholder = 'Search...',
+  placeholder,
   disabled = false,
   required = false,
   name = '',
   filterFn,
   loading = false
 }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState(displayName);
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
+  const resolvedPlaceholder = placeholder ?? t('common.search');
 
   useEffect(() => {
     if (displayName !== inputValue && !isOpen) {
@@ -96,7 +99,7 @@ const SearchableSelect = ({
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         disabled={disabled}
         required={required}
         className="searchable-select__input"
@@ -113,7 +116,7 @@ const SearchableSelect = ({
         <div className="searchable-select__dropdown">
           {filteredOptions.length === 0 ? (
             <div className="searchable-select__empty">
-              {loading ? 'Loading...' : 'No results found'}
+              {loading ? t('common.loading') : t('common.noResults')}
             </div>
           ) : (
             filteredOptions.map((option) => (

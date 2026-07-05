@@ -3,8 +3,10 @@ import React, { useCallback, useState } from 'react';
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useDispatch } from 'react-redux';
 import { setLoading } from '@app/store/slices/common.jsx';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const CheckoutForm = ({ clientSecret, orderId }) => {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const dispatch = useDispatch();
@@ -34,11 +36,11 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
         console.error("Stripe confirm error:", error);
       }
     } catch (err) {
-      setError("An error occurred while confirming payment.");
+      setError(t('payment.errorConfirm'));
     } finally {
       dispatch(setLoading(false));
     }
-  }, [stripe, elements, clientSecret, dispatch]);
+  }, [stripe, elements, clientSecret, dispatch, t]);
 
 
   return (
@@ -49,10 +51,10 @@ const CheckoutForm = ({ clientSecret, orderId }) => {
         disabled={!stripe}
         className="w-full mt-4 bg-black text-white h-12 rounded hover:bg-gray-800"
       >
-        Pay now
+        {t('payment.payNow')}
       </button>
       {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-      {success && <p className="text-green-600 text-sm mt-2">Payment successful!</p>}
+      {success && <p className="text-green-600 text-sm mt-2">{t('payment.success')}</p>}
     </form>
   );
 };

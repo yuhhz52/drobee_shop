@@ -9,6 +9,7 @@ import {
 } from '@shared/utils/direct-checkout';
 import AddAddress from '@features/account/pages/Account/AddAddress';
 import '@shared/styles/kalles-shop.css';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './BuyNowCheckout.css';
 
 const Chevron = () => (
@@ -22,10 +23,10 @@ const Chevron = () => (
   </span>
 );
 
-const PAYMENT_OPTIONS = [
-  { id: 'COD', label: 'Cash on delivery (COD)' },
-  { id: 'VNPAY', label: 'VNPay' },
-  { id: 'CARD', label: 'Credit card (Stripe)' },
+const PAYMENT_OPTIONS = (t) => [
+  { id: 'COD', label: t('checkout.payment.COD') },
+  { id: 'VNPAY', label: t('checkout.payment.VNPAY') },
+  { id: 'CARD', label: t('checkout.payment.CARD') },
 ];
 
 const MESSAGES = {
@@ -48,6 +49,7 @@ const MESSAGES = {
  * (there is no cart fallback — that is the cart checkout page's job).
  */
 const BuyNowCheckout = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const directItem = useMemo(() => readDirectCheckoutItem(), []);
 
@@ -57,6 +59,14 @@ const BuyNowCheckout = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [submittingMethod, setSubmittingMethod] = useState('');
+
+  const MESSAGES = useMemo(() => ({
+    ADDRESS_REQUIRED: t('checkout.messages.addressRequired'),
+    ORDER_FAILED: t('checkout.messages.orderFailed'),
+    VNPAY_FAILED: t('checkout.messages.vnpayFailed'),
+    VNPAY_URL_MISSING: t('checkout.messages.vnpayUrlMissing'),
+  }), [t]);
+  const paymentOptions = useMemo(() => PAYMENT_OPTIONS(t), [t]);
 
   const subTotal = useMemo(() => {
     if (!directItem) return 0;
@@ -76,10 +86,10 @@ const BuyNowCheckout = () => {
       })
       .catch((err) => {
         console.error('Failed to fetch user info:', err);
-        setProfileError('Could not load your profile. Please refresh or sign in again.');
+        setProfileError(t('checkout.messages.profileLoadFailed'));
       })
       .finally(() => setAddressLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     refetchUser();
@@ -158,7 +168,7 @@ const BuyNowCheckout = () => {
     } finally {
       setSubmittingMethod('');
     }
-  }, [selectedAddressId, buildOrderItems, navigate]);
+  }, [selectedAddressId, buildOrderItems, navigate, t]);
 
   const isBusy = addressLoading || submittingMethod !== '';
 
@@ -170,21 +180,21 @@ const BuyNowCheckout = () => {
   return (
     <div className="kalles-shop">
       <header className="kalles-shop__head">
-        <nav className="kalles-shop__breadcrumb" aria-label="Breadcrumb">
-          <Link to="/">Home</Link>
+        <nav className="kalles-shop__breadcrumb" aria-label={t('common.breadcrumb')}>
+          <Link to="/">{t('nav.home')}</Link>
           <Chevron />
           <Link to={`/product/${directItem.slug || ''}`}>{directItem.name}</Link>
           <Chevron />
-          <span className="is-current">Buy Now Checkout</span>
+          <span className="is-current">{t('checkout.buyNowTitle')}</span>
         </nav>
-        <h1 className="kalles-shop__title">Buy Now Checkout</h1>
+        <h1 className="kalles-shop__title">{t('checkout.buyNowTitle')}</h1>
       </header>
 
       <div className="kalles-shop__container">
         <div className="kalles-checkout__layout">
           <div>
             <section className="kalles-checkout__section">
-              <h2 className="kalles-checkout__section-title">Delivery address</h2>
+              <h2 className="kalles-checkout__section-title">{t('checkout.deliveryAddress')}</h2>
               {addressLoading ? (
                 <div className="kalles-checkout__loading">
                   <div className="kalles-checkout__loading-skeleton"></div>
@@ -204,7 +214,7 @@ const BuyNowCheckout = () => {
                       cursor: 'pointer',
                     }}
                   >
-                    Retry
+                    {t('common.retry')}
                   </button>
                 </div>
               ) : userInfo?.addressList?.length > 0 ? (
@@ -237,7 +247,7 @@ const BuyNowCheckout = () => {
               ) : (
                 <div className="kalles-checkout__empty-hint">
                   <p style={{ margin: '0 0 0.75rem' }}>
-                    You have no saved address. Add one to continue checkout.
+                    {t('checkout.emptyAddress')}
                   </p>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <AddAddress onSaved={refetchUser} />
@@ -252,7 +262,7 @@ const BuyNowCheckout = () => {
                         cursor: 'pointer',
                       }}
                     >
-                      Refresh
+                      {t('common.refresh')}
                     </button>
                   </div>
                 </div>
@@ -260,9 +270,9 @@ const BuyNowCheckout = () => {
             </section>
 
             <section className="kalles-checkout__section">
-              <h2 className="kalles-checkout__section-title">Payment method</h2>
+              <h2 className="kalles-checkout__section-title">{t('checkout.paymentMethod')}</h2>
               <div className="kalles-checkout__payment-list">
-                {PAYMENT_OPTIONS.map((opt) => (
+                {paymentOptions.map((opt) => (
                   <label
                     key={opt.id}
                     className={`kalles-checkout__payment-option ${
@@ -291,7 +301,7 @@ const BuyNowCheckout = () => {
                     onClick={() => handlePlaceOrder('COD')}
                     disabled={!selectedAddressId || isBusy}
                   >
-                    {submittingMethod === 'COD' ? 'Placing order...' : 'Place order'}
+                    {submittingMethod === 'COD' ? t('checkout.actions.placingOrder') : t('checkout.actions.placeOrder')}
                   </button>
                 )}
                 {paymentMethod === 'VNPAY' && (
@@ -302,7 +312,7 @@ const BuyNowCheckout = () => {
                     onClick={() => handlePlaceOrder('VNPAY')}
                     disabled={!selectedAddressId || isBusy}
                   >
-                    {submittingMethod === 'VNPAY' ? 'Redirecting...' : 'Pay with VNPay'}
+                    {submittingMethod === 'VNPAY' ? t('checkout.actions.redirecting') : t('checkout.actions.payWithVNPay')}
                   </button>
                 )}
                 {paymentMethod === 'CARD' && (
@@ -313,7 +323,7 @@ const BuyNowCheckout = () => {
                     onClick={() => handlePlaceOrder('CARD')}
                     disabled={!selectedAddressId || isBusy}
                   >
-                    {submittingMethod === 'CARD' ? 'Preparing payment...' : 'Pay with card'}
+                    {submittingMethod === 'CARD' ? t('checkout.actions.preparingPayment') : t('checkout.actions.payWithCard')}
                   </button>
                 )}
               </div>
@@ -321,7 +331,7 @@ const BuyNowCheckout = () => {
           </div>
 
           <aside className="kalles-checkout__summary kalles-shop__summary">
-            <h2>Buy Now order</h2>
+            <h2>{t('checkout.buyNowOrderSummary')}</h2>
             <div style={{ marginBottom: '1rem' }}>
               <div className="kalles-checkout__order-item">
                 {directItem.thumbnail && (
@@ -336,25 +346,25 @@ const BuyNowCheckout = () => {
                       {directItem.variant.variantName}
                     </p>
                   )}
-                  <p className="qty">Quantity: {directItem.quantity}</p>
+                  <p className="qty">{t('checkout.quantity')} {directItem.quantity}</p>
                 </div>
                 <span className="price">{formatDisplayPrice(subTotal)}</span>
               </div>
             </div>
             <div className="kalles-shop__summary-row">
-              <span>Subtotal</span>
+              <span>{t('checkout.subtotal')}</span>
               <strong>{formatDisplayPrice(subTotal)}</strong>
             </div>
             <div className="kalles-shop__summary-row">
-              <span>Shipping</span>
-              <strong style={{ color: '#2e7d32' }}>Free</strong>
+              <span>{t('checkout.shipping')}</span>
+              <strong style={{ color: '#2e7d32' }}>{t('checkout.free')}</strong>
             </div>
             <div className="kalles-shop__summary-total">
-              <span>Total</span>
+              <span>{t('checkout.total')}</span>
               <span className="amount">{formatDisplayPrice(subTotal)}</span>
             </div>
             <p className="kalles-checkout__buy-now-note">
-              Buy Now doesn't touch your cart. Other items will remain in your cart.
+              {t('checkout.buyNowNote')}
             </p>
             <button
               type="button"
@@ -365,7 +375,7 @@ const BuyNowCheckout = () => {
                 navigate('/');
               }}
             >
-              ← Cancel Buy Now
+              {t('checkout.cancelBuyNow')}
             </button>
           </aside>
         </div>

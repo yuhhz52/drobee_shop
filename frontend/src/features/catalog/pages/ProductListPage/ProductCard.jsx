@@ -6,6 +6,7 @@ import { formatDisplayPrice } from '@shared/utils/price-format'
 import { colorSelector } from '@shared/components/Filters/ColorFilter'
 import { addToCart } from '@app/store/slices/cart.jsx'
 import { getPrimaryResourceUrl } from '@shared/utils/product-media'
+import { useTranslation } from '@shared/i18n/useTranslation.js'
 import './ProductCard.css'
 
 const ProductCard = ({
@@ -19,6 +20,7 @@ const ProductCard = ({
   slug,
   variants = [],
 }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch()
   const [selectedColor, setSelectedColor] = useState('')
   const [selectedVariantName, setSelectedVariantName] = useState('')
@@ -95,7 +97,7 @@ const ProductCard = ({
             )}
             {newArrival && (
               <span className="kalles-card__badge kalles-card__badge--preorder">
-                Pre-Order
+                {t('product.preOrder')}
               </span>
             )}
             {imageUrl && <img src={imageUrl} alt={name} />}
@@ -109,7 +111,7 @@ const ProductCard = ({
           >
             {colors.length > 0 && (
               <div className="kalles-card__variant-row">
-                <span className="kalles-card__variant-label">Color</span>
+                <span className="kalles-card__variant-label">{t('product.color')}</span>
                 <div className="kalles-card__swatches">
                   {colors.map((color) => (
                     <button
@@ -130,7 +132,7 @@ const ProductCard = ({
 
             {variantNames.length > 0 && (
               <div className="kalles-card__variant-row">
-                <span className="kalles-card__variant-label">Version</span>
+                <span className="kalles-card__variant-label">{t('product.version')}</span>
                 <div className="kalles-card__sizes">
                   {variantNames.map((variantName) => (
                     <button
@@ -153,10 +155,10 @@ const ProductCard = ({
               className={`kalles-card__atc ${canAddToCart ? '' : 'is-disabled'}`}
               disabled={!canAddToCart}
               onClick={handleAddToCart}
-              aria-label="Add to cart"
+              aria-label={t('product.addToCart')}
             >
               <FiShoppingCart size={16} />
-              <span>Add to cart</span>
+              <span>{t('product.addToCart')}</span>
             </button>
           </div>
         )}

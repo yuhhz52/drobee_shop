@@ -5,8 +5,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { confirmPaymentAPI } from '@services/order.service';
 import { setLoading } from '@app/store/slices/common.jsx';
 import { clearDirectCheckoutItem } from '@shared/utils/direct-checkout';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const StripeReturnHandler = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -21,12 +23,12 @@ const StripeReturnHandler = () => {
     const paymentIntentId = params.get('payment_intent');
 
     if (!paymentIntentId || !redirectStatus) {
-      setErrorMessage('Missing payment information from Stripe.');
+      setErrorMessage(t('payment.missingInfo'));
       return;
     }
 
     if (redirectStatus !== 'succeeded') {
-      setErrorMessage(`Payment failed - ${redirectStatus}`);
+      setErrorMessage(t('payment.failedStatus', { status: redirectStatus }));
       return;
     }
 
@@ -34,7 +36,7 @@ const StripeReturnHandler = () => {
     hasProcessedRef.current = true;
 
     dispatch(setLoading(true));
-    setStatusMessage('Confirming payment...');
+    setStatusMessage(t('payment.confirming'));
 
     const maxAttempts = 3;
     const attemptConfirm = async (attempt = 1) => {
@@ -56,22 +58,22 @@ const StripeReturnHandler = () => {
       } catch (err) {
         console.error(`confirmPayment attempt ${attempt} failed`, err);
         if (attempt < maxAttempts) {
-          setStatusMessage(`Confirmation failed. Retrying ${attempt + 1}/${maxAttempts}...`);
+          setStatusMessage(t('payment.confirmationRetrying', { next: attempt + 1, total: maxAttempts }));
           const delay = 500 * Math.pow(2, attempt - 1);
           setTimeout(() => attemptConfirm(attempt + 1), delay);
         } else {
           dispatch(setLoading(false));
-          setErrorMessage('An error occurred while confirming payment. Please contact support.');
+          setErrorMessage(t('payment.confirmationFailed'));
         }
       }
     };
 
     attemptConfirm();
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, t]);
 
   return (
     <div className="p-8 text-center">
-      <h1 className="text-lg font-medium mb-2">Processing payment...</h1>
+      <h1 className="text-lg font-medium mb-2">{t('payment.processing')}</h1>
       {statusMessage && <p className="text-gray-600">{statusMessage}</p>}
       {errorMessage && <p className="text-red-600">{errorMessage}</p>}
       {isLoading && <Spinner />}
@@ -82,14 +84,14 @@ const StripeReturnHandler = () => {
             onClick={() => navigate('/account-details/orders')}
             className="px-4 py-2 rounded border border-gray-300"
           >
-            View orders
+            {t('payment.viewOrders')}
           </button>
           <button
             type="button"
             onClick={() => navigate('/cart-items')}
             className="px-4 py-2 rounded bg-black text-white"
           >
-            Back to cart
+            {t('payment.backToCart')}
           </button>
         </div>
       )}

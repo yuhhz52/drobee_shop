@@ -152,14 +152,15 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 140px;
+  min-width: 160px;
   background: #fff;
   border: 1px solid var(--kalles-border);
   box-shadow: var(--kalles-shadow);
   list-style: none;
   margin: 0;
   padding: 0.35rem 0;
-  z-index: 50;
+  z-index: 200;
+  pointer-events: auto;
 }
 
 .horizon-lang-dropdown button {
@@ -175,6 +176,12 @@
 
 .horizon-lang-dropdown button:hover {
   background: var(--kalles-soft);
+}
+
+.horizon-lang-dropdown button.is-active {
+  background: var(--kalles-soft);
+  color: var(--horizon-red);
+  font-weight: 600;
 }
 
 .horizon-account {

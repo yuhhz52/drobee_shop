@@ -2,14 +2,16 @@ import React from 'react';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 
 const NextArrow = (props) => {
   const { onClick } = props;
+  const { t } = useTranslation();
   return (
     <div
       className="absolute top-1/2 right-2 md:right-4 transform -translate-y-1/2 z-20 cursor-pointer text-gray-400 text-xl md:text-3xl hover:text-gray-600"
       onClick={onClick}
-      aria-label="Next Slide"
+      aria-label={t('common.next')}
     >
       ❯
     </div>
@@ -18,11 +20,12 @@ const NextArrow = (props) => {
 
 const PrevArrow = (props) => {
   const { onClick } = props;
+  const { t } = useTranslation();
   return (
     <div
       className="absolute top-1/2 left-2 md:left-4 transform -translate-y-1/2 z-20 cursor-pointer text-gray-400 text-xl md:text-3xl  hover:text-gray-600"
       onClick={onClick}
-      aria-label="Previous Slide"
+      aria-label={t('common.previous')}
     >
       ❮
     </div>
@@ -34,7 +37,7 @@ const Carousel = ({ children, settings = {} }) => {
     dots: false,
     infinite: true,
     speed: 500,
-    slidesToShow: 5, 
+    slidesToShow: 5,
     slidesToScroll: 1,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,

@@ -4,6 +4,7 @@ import Categories from '@shared/components/Filters/Categories.jsx'
 import PriceFilter from '@shared/components/Filters/PriceFilter.jsx'
 import ColorFilter from '@shared/components/Filters/ColorFilter.jsx'
 import ScooterSpecFilter from '@shared/components/Filters/ScooterSpecFilter.jsx'
+import { useTranslation } from '@shared/i18n/useTranslation.js'
 import './CollectionFilterDrawer.css'
 
 const PRODUCT_COLLECTION_CODES = new Set([
@@ -49,13 +50,14 @@ const CollectionFilterDrawer = ({
   specFilters,
   onSpecFilterChange,
 }) => {
+  const { t } = useTranslation();
   const location = useLocation()
   const currentPath = `${location.pathname}${location.search || ''}`
 
   const collectionLinks = [
-    { label: 'All', path: '/products' },
-    { label: 'New Arrivals', path: '/new-arrivals' },
-    { label: 'Hot Products', path: '/sale' },
+    { label: t('plp.all'), path: '/products' },
+    { label: t('plp.newArrivals'), path: '/new-arrivals' },
+    { label: t('plp.hotProducts'), path: '/sale' },
     ...categories
       .filter((c) => PRODUCT_COLLECTION_CODES.has(c?.code) && c?.code !== 'electric')
       .map((c) => ({
@@ -69,13 +71,13 @@ const CollectionFilterDrawer = ({
       <button
         type="button"
         className={`kalles-drawer__backdrop ${open ? 'is-open' : ''}`}
-        aria-label="Close filter"
+        aria-label={t('common.closeFilter')}
         onClick={onClose}
       />
       <aside className={`kalles-drawer ${open ? 'is-open' : ''}`} aria-hidden={!open}>
         <div className="kalles-drawer__header">
-          <h6>Filter</h6>
-          <button type="button" className="kalles-drawer__close" onClick={onClose} aria-label="Close">
+          <h6>{t('common.filter')}</h6>
+          <button type="button" className="kalles-drawer__close" onClick={onClose} aria-label={t('common.close')}>
             <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true">
               <path d="M15 0L1 14m14 0L1 0" stroke="currentColor" fill="none" />
             </svg>
@@ -83,7 +85,7 @@ const CollectionFilterDrawer = ({
         </div>
 
         <div className="kalles-drawer__inner">
-          <FilterAccordion title="Product categories">
+          <FilterAccordion title={t('filter.productCategories')}>
             <ul className="kalles-cate-list">
               {collectionLinks.map((item) => (
                 <li
@@ -99,7 +101,7 @@ const CollectionFilterDrawer = ({
           </FilterAccordion>
 
           {categoryTypes?.length > 0 && (
-            <FilterAccordion title="Product type">
+            <FilterAccordion title={t('filter.productType')}>
               <Categories
                 types={categoryTypes}
                 selectedTypes={selectedTypes}
@@ -108,7 +110,7 @@ const CollectionFilterDrawer = ({
             </FilterAccordion>
           )}
 
-          <FilterAccordion title="Specs xe tay ga">
+          <FilterAccordion title={t('filter.scooterSpecs')}>
             <ScooterSpecFilter
               specFilters={specFilters}
               onSpecFilterChange={onSpecFilterChange}
@@ -117,7 +119,7 @@ const CollectionFilterDrawer = ({
             />
           </FilterAccordion>
 
-          <FilterAccordion title="Availability">
+          <FilterAccordion title={t('filter.availability')}>
             <ul className="kalles-check-list">
               <li>
                 <label>
@@ -128,7 +130,7 @@ const CollectionFilterDrawer = ({
                   />
                   <span className="kalles-check-box" />
                   <span>
-                    In stock
+                    {t('filter.inStock')}
                     {productCounts.inStock != null && (
                       <span className="kalles-count"> ({productCounts.inStock})</span>
                     )}
@@ -144,7 +146,7 @@ const CollectionFilterDrawer = ({
                   />
                   <span className="kalles-check-box" />
                   <span>
-                    Out of stock
+                    {t('filter.outOfStock')}
                     {productCounts.outStock != null && (
                       <span className="kalles-count"> ({productCounts.outStock})</span>
                     )}
@@ -155,12 +157,12 @@ const CollectionFilterDrawer = ({
           </FilterAccordion>
 
           {colors.length > 0 && (
-            <FilterAccordion title="Color">
+            <FilterAccordion title={t('filter.color')}>
               <ColorFilter colors={colors} onChange={onColorChange} selectedColor={selectedColor} />
             </FilterAccordion>
           )}
 
-          <FilterAccordion title="Price">
+          <FilterAccordion title={t('filter.price')}>
             <PriceFilter
               onChange={onPriceChange}
               initialRange={priceRange}

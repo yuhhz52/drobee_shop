@@ -7,11 +7,13 @@ import { setLoading } from '@app/store/slices/common.jsx';
 import { deleteAddressAPI, setDefaultAddressAPI, uploadAvatar } from '@services/user.service';
 import { buildUserInitial, resolveAvatarUrl } from '@shared/utils/avatar';
 import { preprocessAvatarImage } from '@shared/utils/image';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import './Profile.css';
 
 const MAX_AVATAR_UPLOAD_SIZE = 5 * 1024 * 1024;
 
 const Profile = () => {
+  const { t } = useTranslation();
   const userInfo = useSelector(selectUserInfo);
   const [addAddress, setAddAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -56,12 +58,12 @@ const Profile = () => {
     setAvatarError('');
 
     if (!file.type?.startsWith('image/')) {
-      setAvatarError('Please select a valid image file.');
+      setAvatarError(t('account.avatar.invalidFile'));
       event.target.value = '';
       return;
     }
     if (file.size > MAX_AVATAR_UPLOAD_SIZE) {
-      setAvatarError('Image is too large. Please select an image smaller than 5MB.');
+      setAvatarError(t('account.avatar.tooLarge'));
       event.target.value = '';
       return;
     }
@@ -76,7 +78,7 @@ const Profile = () => {
         const message =
           error?.response?.data?.message ||
           error?.response?.data?.error ||
-          'Could not update avatar. Please try again.';
+          t('account.avatar.updateFailed');
         setAvatarError(message);
       })
       .finally(() => {
@@ -87,11 +89,11 @@ const Profile = () => {
 
   const avatarUrl = resolveAvatarUrl(userInfo?.avatarUrl);
 
-  const fullName = [userInfo?.firstName, userInfo?.lastName].filter(Boolean).join(' ') || 'Not updated yet';
+  const fullName = [userInfo?.firstName, userInfo?.lastName].filter(Boolean).join(' ') || t('account.profile.notUpdated');
 
   return (
     <div className="profile-page">
-      <h1 className="page-title">My account</h1>
+      <h1 className="page-title">{t('account.title')}</h1>
 
       {!addAddress && !editingAddress && (
         <div className="profile-content">
@@ -100,7 +102,7 @@ const Profile = () => {
             <div className="profile-card__avatar-section">
               <div className="profile-avatar-wrapper">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="profile-avatar" />
+                  <img src={avatarUrl} alt={t('common.avatar')} className="profile-avatar" />
                 ) : (
                   <div className="profile-avatar profile-avatar--placeholder">
                     {buildUserInitial(userInfo)}
@@ -130,9 +132,9 @@ const Profile = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/>
                     </svg>
-                    Phone number
+                    {t('account.profile.phone')}
                   </span>
-                  <span className="profile-info-value">{userInfo?.phoneNumber || 'Not updated yet'}</span>
+                  <span className="profile-info-value">{userInfo?.phoneNumber || t('account.profile.notUpdated')}</span>
                 </div>
                 <div className="profile-info-item">
                   <span className="profile-info-label">
@@ -140,9 +142,9 @@ const Profile = () => {
                       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                       <polyline points="22,6 12,13 2,6"/>
                     </svg>
-                    Email
+                    {t('account.profile.email')}
                   </span>
-                  <span className="profile-info-value">{userInfo?.email || 'Not updated yet'}</span>
+                  <span className="profile-info-value">{userInfo?.email || t('account.profile.notUpdated')}</span>
                 </div>
               </div>
             </div>
@@ -151,7 +153,7 @@ const Profile = () => {
           {/* Addresses Section */}
           <div className="addresses-section">
             <div className="addresses-header">
-              <h3 className="addresses-title">Shipping addresses</h3>
+              <h3 className="addresses-title">{t('account.shippingAddresses')}</h3>
               <button
                 type="button"
                 className="btn btn--primary"
@@ -161,7 +163,7 @@ const Profile = () => {
                   <line x1="12" y1="5" x2="12" y2="19"/>
                   <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                Add new address
+                {t('account.addNewAddress')}
               </button>
             </div>
 
@@ -173,7 +175,7 @@ const Profile = () => {
                     className={`address-card ${address.isDefault ? 'address-card--default' : ''}`}
                   >
                     {address.isDefault && (
-                      <div className="address-card__badge">Default</div>
+                      <div className="address-card__badge">{t('account.address.default')}</div>
                     )}
                     <div className="address-card__body">
                       <div className="address-card__contact">
@@ -196,14 +198,14 @@ const Profile = () => {
                           {settingDefault === address?.id ? (
                             <>
                               <span className="spinner spinner--small"></span>
-                              Processing...
+                              {t('common.processing')}
                             </>
                           ) : (
                             <>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polyline points="20 6 9 17 4 12"/>
                               </svg>
-                              Set as default
+                              {t('account.address.setAsDefault')}
                             </>
                           )}
                         </button>
@@ -218,7 +220,7 @@ const Profile = () => {
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                           </svg>
-                          Edit
+                          {t('account.address.edit')}
                         </button>
                         <button
                           type="button"
@@ -229,7 +231,7 @@ const Profile = () => {
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                           </svg>
-                          Remove
+                          {t('account.address.delete')}
                         </button>
                       </div>
                     </div>
@@ -244,8 +246,8 @@ const Profile = () => {
                     <circle cx="12" cy="10" r="3"/>
                   </svg>
                 </div>
-                <p className="addresses-empty__text">You don't have any shipping address yet</p>
-                <p className="addresses-empty__hint">Add an address to make checkout faster</p>
+                <p className="addresses-empty__text">{t('account.address.empty')}</p>
+                <p className="addresses-empty__hint">{t('account.address.emptyHint')}</p>
                 <button
                   type="button"
                   className="btn btn--primary btn--large"
@@ -255,7 +257,7 @@ const Profile = () => {
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
                   </svg>
-                  Add new address
+                  {t('account.addNewAddress')}
                 </button>
               </div>
             )}
@@ -289,9 +291,9 @@ const Profile = () => {
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
             </div>
-            <h3 className="modal__title">Delete address</h3>
+            <h3 className="modal__title">{t('account.address.deleteTitle')}</h3>
             <p className="modal__message">
-              Are you sure you want to delete this address? This action cannot be undone.
+              {t('account.address.deleteConfirm')}
             </p>
             <div className="modal__actions">
               <button
@@ -299,7 +301,7 @@ const Profile = () => {
                 className="btn btn--outline"
                 onClick={() => setShowDeleteConfirm(null)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -310,9 +312,9 @@ const Profile = () => {
                 {deletingId === showDeleteConfirm.id ? (
                   <>
                     <span className="spinner spinner--small"></span>
-                    Deleting...
+                    {t('common.deleting')}
                   </>
-                ) : 'Delete'}
+                ) : t('common.remove')}
               </button>
             </div>
           </div>

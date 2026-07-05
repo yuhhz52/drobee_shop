@@ -6,6 +6,7 @@ import Spinner from '@shared/components/Spinner/Spinner.jsx';
 import { formatDisplayPrice } from '@shared/utils/price-format';
 import { getPrimaryResourceUrl } from '@shared/utils/product-media';
 import { clearDirectCheckoutItem } from '@shared/utils/direct-checkout';
+import { useTranslation } from '@shared/i18n/useTranslation.js';
 import '@shared/styles/kalles-shop.css';
 import './OrderConfirmed.css';
 
@@ -37,6 +38,7 @@ const Chevron = () => (
  * <p>Refreshing the page is safe — it just re-fetches the order by id.
  */
 const OrderConfirmed = () => {
+  const { t } = useTranslation();
   const { orderId: pathOrderId } = useParams();
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status');
@@ -52,7 +54,7 @@ const OrderConfirmed = () => {
 
   useEffect(() => {
     if (!orderId) {
-      setError('Missing order id.');
+      setError(t('orderConfirmed.missingOrderId'));
       return;
     }
 
@@ -70,15 +72,15 @@ const OrderConfirmed = () => {
           clearDirectCheckoutItem();
           sessionStorage.removeItem('stripePendingOrder');
         } else {
-          setError('Order not found.');
+          setError(t('orderConfirmed.orderNotFound'));
         }
       })
       .catch(() => {
-        if (!cancelled) setError('Failed to load order details.');
+        if (!cancelled) setError(t('orderConfirmed.loadFailed'));
       });
 
     return () => { cancelled = true; };
-  }, [orderId]);
+  }, [orderId, t]);
 
   if (isLoading) {
     return (
@@ -100,7 +102,7 @@ const OrderConfirmed = () => {
             className="kalles-shop__btn kalles-shop__btn--primary"
             style={{ width: 'auto', display: 'inline-flex' }}
           >
-            Continue shopping
+            {t('orderConfirmed.continueShopping')}
           </Link>
         </div>
       </div>
@@ -113,12 +115,12 @@ const OrderConfirmed = () => {
   return (
     <div className="kalles-shop">
       <header className="kalles-shop__head">
-        <nav className="kalles-shop__breadcrumb" aria-label="Breadcrumb">
-          <Link to="/">Home</Link>
+        <nav className="kalles-shop__breadcrumb" aria-label={t('common.breadcrumb')}>
+          <Link to="/">{t('nav.home')}</Link>
           <Chevron />
-          <span className="is-current">Order confirmed</span>
+          <span className="is-current">{t('orderConfirmed.breadcrumb')}</span>
         </nav>
-        <h1 className="kalles-shop__title">Order confirmed</h1>
+        <h1 className="kalles-shop__title">{t('orderConfirmed.title')}</h1>
       </header>
 
       <div className="kalles-shop__container" style={{ maxWidth: '800px' }}>
@@ -142,45 +144,45 @@ const OrderConfirmed = () => {
             )}
           </svg>
           <div>
-            <h2>{isPaymentFail ? 'Payment issue' : 'Thank you for your order!'}</h2>
+            <h2>{isPaymentFail ? t('orderConfirmed.paymentIssue') : t('orderConfirmed.thankYou')}</h2>
             <p>
-              Order ID: <strong>{order?.orderDisplayCode || order?.id}</strong>
+              {t('orderConfirmed.orderCode')} <strong>{order?.orderDisplayCode || order?.id}</strong>
             </p>
           </div>
         </div>
 
         <div className="kalles-order__meta">
           {order?.orderDate && (
-            <p>Order date: {new Date(order.orderDate).toLocaleString()}</p>
+            <p>{t('orderConfirmed.orderDate')}: {new Date(order.orderDate).toLocaleString()}</p>
           )}
           {paymentError && (
-            <p style={{ color: '#c62828' }}>Payment error: {paymentError}</p>
+            <p style={{ color: '#c62828' }}>{t('orderConfirmed.paymentError')}: {paymentError}</p>
           )}
           {isPaymentSuccess && order?.paymentMethod === 'VNPAY' && (
-            <p style={{ color: '#2e7d32' }}>VNPay payment successful. Thank you!</p>
+            <p style={{ color: '#2e7d32' }}>{t('orderConfirmed.vnpaySuccess')}</p>
           )}
           {isPaymentFail && order?.paymentMethod === 'VNPAY' && (
-            <p style={{ color: '#e81e1e' }}>VNPay payment failed. Please try again.</p>
+            <p style={{ color: '#e81e1e' }}>{t('orderConfirmed.vnpayFailed')}</p>
           )}
           {order?.paymentMethod === 'COD' && (
             <p>
-              Pay on delivery: <strong>{formatDisplayPrice(order?.totalAmount)}</strong>
+              {t('orderConfirmed.payOnDelivery')} <strong>{formatDisplayPrice(order?.totalAmount)}</strong>
             </p>
           )}
           {order?.paymentMethod?.startsWith('pm_') && isPaymentSuccess && (
             <p>
-              Paid: <strong>{formatDisplayPrice(order?.totalAmount)}</strong>
+              {t('orderConfirmed.paid')} <strong>{formatDisplayPrice(order?.totalAmount)}</strong>
             </p>
           )}
         </div>
 
         <div className="kalles-order__panel">
-          <h3>Order details</h3>
+          <h3>{t('account.orderDetails')}</h3>
           <div className="kalles-order__details">
-            <p>Order ID: <strong>{order?.orderDisplayCode || order?.id}</strong></p>
-            <p>Total: <strong>{formatDisplayPrice(order?.totalAmount)}</strong></p>
-            <p>Shipping: <strong>Free</strong></p>
-            <p>Status: <strong>{order?.orderStatus}</strong></p>
+            <p>{t('orderConfirmed.orderCode')} <strong>{order?.orderDisplayCode || order?.id}</strong></p>
+            <p>{t('orderConfirmed.totalAmount')} <strong>{formatDisplayPrice(order?.totalAmount)}</strong></p>
+            <p>{t('orderConfirmed.shipping')} <strong>{t('orderConfirmed.free')}</strong></p>
+            <p>{t('orderConfirmed.status')} <strong>{order?.orderStatus}</strong></p>
           </div>
 
           <div className="kalles-order__items">
@@ -194,10 +196,10 @@ const OrderConfirmed = () => {
                   {image && <img src={image} alt={item?.product?.name} />}
                   <div>
                     <h4>{item?.product?.name}</h4>
-                    <p>Quantity: {item?.quantity}</p>
-                    <p>Price: {formatDisplayPrice(item?.product?.price)}</p>
-                    {variant?.color && <p>Color: {variant.color}</p>}
-                    {variant?.variantName && <p>Version: {variant.variantName}</p>}
+                    <p>{t('orderConfirmed.quantity')} {item?.quantity}</p>
+                    <p>{t('orderConfirmed.price')}: {formatDisplayPrice(item?.product?.price)}</p>
+                    {variant?.color && <p>{t('orderConfirmed.color')}: {variant.color}</p>}
+                    {variant?.variantName && <p>{t('orderConfirmed.version')}: {variant.variantName}</p>}
                   </div>
                 </article>
               );
@@ -207,7 +209,7 @@ const OrderConfirmed = () => {
 
         {order?.address && (
           <div className="kalles-order__address">
-            <h3>Delivery address</h3>
+            <h3>{t('orderConfirmed.deliveryAddress')}</h3>
             <p>{order.address.name}</p>
             <p>{order.address.phoneNumber}</p>
             <p>{order.address.street}</p>
@@ -221,14 +223,14 @@ const OrderConfirmed = () => {
             className="kalles-shop__btn kalles-shop__btn--primary"
             style={{ width: 'auto' }}
           >
-            Continue shopping
+            {t('orderConfirmed.continueShopping')}
           </Link>
           <Link
             to="/account-details/orders"
             className="kalles-shop__btn kalles-shop__btn--outline"
             style={{ width: 'auto' }}
           >
-            View my orders
+            {t('orderConfirmed.viewMyOrders')}
           </Link>
         </div>
       </div>
