@@ -488,7 +488,6 @@ scooter/
 - [x] Swagger UI / OpenAPI 3 documentation
 - [x] Railway + Vercel deployment, zero CI/CD
 - [x] Supabase + Upstash managed services
-- [ ] Email order receipt shipping notifications
 - [ ] Product reviews + ratings
 - [ ] Wishlist persistence across devices
 - [ ] Background image optimisation / responsive srcset
