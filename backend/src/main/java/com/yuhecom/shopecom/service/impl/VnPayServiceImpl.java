@@ -2,6 +2,8 @@ package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.entity.Order;
 import com.yuhecom.shopecom.entity.Payment;
+import com.yuhecom.shopecom.exception.AppException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.repository.PaymentRepository;
 import com.yuhecom.shopecom.service.VnPayService;
 import lombok.RequiredArgsConstructor;
@@ -184,7 +186,7 @@ public class VnPayServiceImpl implements VnPayService {
             }
             return hash.toString();
         } catch (Exception ex) {
-            throw new RuntimeException("Không thể tạo hash HmacSHA512", ex);
+            throw new AppException(ErrorCode.INTERNAL_CRYPTO_ERROR, "Internal payment signing error", ex);
         }
     }
 }

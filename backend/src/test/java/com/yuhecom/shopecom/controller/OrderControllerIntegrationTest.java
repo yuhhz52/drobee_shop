@@ -1,15 +1,17 @@
 package com.yuhecom.shopecom.controller;
 
+import com.yuhecom.shopecom.auth.config.CustomAccessDeniedHandler;
 import com.yuhecom.shopecom.auth.config.CustomAuthenticationEntryPoint;
 import com.yuhecom.shopecom.auth.config.JWTTokenHelper;
 import com.yuhecom.shopecom.auth.config.WebSecurityConfig;
 import com.yuhecom.shopecom.auth.handler.OAuth2LoginSuccessHandler;
 import com.yuhecom.shopecom.auth.service.TokenBlacklistService;
-import com.yuhecom.shopecom.config.AppProperties;
+import com.yuhecom.shopecom.config.RateLimitService;
 import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.exception.BusinessException;
 import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.exception.GlobalExceptionHandler;
+import com.yuhecom.shopecom.service.IdempotencyService;
 import com.yuhecom.shopecom.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +57,16 @@ class OrderControllerIntegrationTest {
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @MockBean
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @MockBean
     private TokenBlacklistService tokenBlacklistService;
+
+    @MockBean
+    private RateLimitService rateLimitService;
+
+    @MockBean
+    private IdempotencyService idempotencyService;
 
     @Test
     @WithMockUser(username = "user@example.com")
@@ -69,8 +80,12 @@ class OrderControllerIntegrationTest {
                         .contentType("application/json")
                         .content("{\"status\":\"CANCELLED\"}"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(ErrorCode.FORBIDDEN.getCode()))
-                .andExpect(jsonPath("$.errorCode").value(ErrorCode.FORBIDDEN.name()));
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.title").exists())
+                .andExpect(jsonPath("$.detail").value("Order does not belong to user"))
+                .andExpect(jsonPath("$.errorCode").value(ErrorCode.FORBIDDEN.name()))
+                .andExpect(jsonPath("$.appCode").value(ErrorCode.FORBIDDEN.getAppCode()))
+                .andExpect(jsonPath("$.type").exists());
     }
 
     @Test
@@ -85,8 +100,22 @@ class OrderControllerIntegrationTest {
                         .contentType("application/json")
                         .content("{\"status\":\"CANCELLED\"}"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ErrorCode.ORDER_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.errorCode").value(ErrorCode.ORDER_NOT_FOUND.name()));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Order not found with id " + id))
+                .andExpect(jsonPath("$.errorCode").value(ErrorCode.ORDER_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.appCode").value(ErrorCode.ORDER_NOT_FOUND.getAppCode()));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void cancelOrder_unsupportedStatus_returns400() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/orders/" + id)
+                        .contentType("application/json")
+                        .content("{\"status\":\"REFUND\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errorCode").value(ErrorCode.BAD_REQUEST.name()));
     }
 }
-

@@ -53,6 +53,9 @@ public class WebSecurityConfig {
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @Autowired
     private TokenBlacklistService tokenBlacklistService;
 
     @Autowired
@@ -64,9 +67,6 @@ public class WebSecurityConfig {
     private static final String[] PUBLIC_APIS = {
             "/api/auth/**",
             "/api/cart/**",
-            "/v1/api-docs/**", "/v1/api-docs",
-            "/v1/docs", "/v1/docs/swagger-ui/**", "/v1/docs/**",
-            "/v1/swagger-ui/**",
             "/oauth2/**",
             "/login/oauth2/code/**",
             "/uploads/**",
@@ -82,6 +82,7 @@ public class WebSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
 
                 .oauth2Login(oauth2 -> oauth2
@@ -97,6 +98,17 @@ public class WebSecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_APIS).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/collections/**", "/api/banners/**").permitAll()
+                    // Swagger UI page is public so anyone with the URL
+                    // can open it and test endpoints that require a Bearer
+                    // JWT via the "Authorize" button. No secret api_key
+                    // or static HTML is required.
+                    .requestMatchers("/v1/swagger-ui", "/v1/swagger-ui/**").permitAll()
+                    .requestMatchers("/v1/openapi", "/v1/openapi/**").permitAll()
+                    // The OpenAPI JSON served by springdoc at /v1/api-docs
+                    // is also public so Swagger UI can fetch it. Springdoc
+                    // is still enabled below via springdoc.swagger-ui.enabled
+                    // but we redirect the UI to load from /v1/openapi.
+                    .requestMatchers("/v1/api-docs", "/v1/api-docs/**").permitAll()
                     .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JWTAuthentication(jwtTokenHelper, userDetailsService, tokenBlacklistService),

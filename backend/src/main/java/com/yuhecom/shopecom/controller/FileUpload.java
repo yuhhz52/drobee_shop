@@ -2,6 +2,8 @@ package com.yuhecom.shopecom.controller;
 
 import com.yuhecom.shopecom.dto.ApiResponse;
 import com.yuhecom.shopecom.dto.UploadResult;
+import com.yuhecom.shopecom.exception.AppException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,12 +26,10 @@ public class FileUpload {
             @RequestParam("fileName") String fileName) {
 
         UploadResult result = fileUploadService.uploadFileResult(file, fileName);
-
-        if (result.success()) {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<String>builder().result(result.url()).build());
+        if (!result.success()) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED, result.message());
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.<String>builder().message(result.message()).result(null).build());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<String>builder().result(result.url()).build());
     }
 }

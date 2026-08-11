@@ -119,18 +119,34 @@ server:
     enabled: true
   forward-headers-strategy: framework
 
-# ── OpenAPI / Swagger ─────────────────────────────────────────────
+# ── OpenAPI / Swagger (publicly viewable UI, JWT-protected APIs) ──
+# The UI page and the OpenAPI spec are public so anyone can open the
+# page, see the schema, and use the "Authorize" button to paste a JWT
+# admin token and exercise protected endpoints. No api_key cookie,
+# signed cookie, or custom HTML is required.
+#
+# - /v1/swagger-ui    → bundled Swagger UI (this path serves the page)
+# - /v1/api-docs      → OpenAPI spec JSON (also public)
+#
+# The actual business endpoints remain protected by the JWT filter
+# chain — only callers presenting a valid JWT (or admin cookie)
+# get ROLE_ADMIN, others get 401/403 as usual.
 springdoc:
   api-docs:
     path: /v1/api-docs
     enabled: true
   swagger-ui:
-    path: /v1/docs
     enabled: true
+    path: /v1/swagger-ui
     operations-sorter: method
     tags-sorter: alpha
     display-request-duration: true
     try-it-out-enabled: true
+    persist-authorizations: true
+    doc-expansion: list
+  show-actuator: false
+  packages-to-scan: com.yuhecom.shopecom
+  default-produces-media-type: application/json
 
 # ── Actuator ───────────────────────────────────────────────────────
 management:

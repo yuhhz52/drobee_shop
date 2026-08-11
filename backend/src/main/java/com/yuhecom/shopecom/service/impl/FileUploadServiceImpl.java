@@ -1,6 +1,7 @@
 package com.yuhecom.shopecom.service.impl;
 
 import com.yuhecom.shopecom.dto.UploadResult;
+import com.yuhecom.shopecom.exception.AppException;
 import com.yuhecom.shopecom.service.FileUploadService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +41,8 @@ public class FileUploadServiceImpl implements FileUploadService {
             Path target = dir.resolve(storedFileName).normalize();
 
             if (!target.startsWith(dir)) {
-                throw new SecurityException("Directory traversal attempt detected");
+                throw new AppException(com.yuhecom.shopecom.exception.ErrorCode.DIRECTORY_TRAVERSAL_BLOCKED,
+                        "Invalid file path");
             }
 
             try (InputStream inputStream = file.getInputStream()) {

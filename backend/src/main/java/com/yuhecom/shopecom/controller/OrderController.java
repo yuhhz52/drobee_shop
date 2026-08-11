@@ -7,6 +7,8 @@ import com.yuhecom.shopecom.dto.DirectCheckoutRequest;
 import com.yuhecom.shopecom.dto.OrderDetails;
 import com.yuhecom.shopecom.dto.OrderRequest;
 import com.yuhecom.shopecom.dto.PagingResult;
+import com.yuhecom.shopecom.exception.AppException;
+import com.yuhecom.shopecom.exception.ErrorCode;
 import com.yuhecom.shopecom.service.IdempotencyService;
 import com.yuhecom.shopecom.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,13 +45,8 @@ public class OrderController {
         for (String key : parameterMap.keySet()) {
             params.put(key, parameterMap.get(key)[0]);
         }
-        try {
-            String redirectUrl = orderService.buildVnPayRedirectUrl(params);
-            response.sendRedirect(redirectUrl);
-        } catch (SecurityException e) {
-            log.warn("VNPay return rejected: {}", e.getMessage());
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        }
+        String redirectUrl = orderService.buildVnPayRedirectUrl(params);
+        response.sendRedirect(redirectUrl);
     }
 
     @PostMapping
@@ -213,12 +210,12 @@ public class OrderController {
             @RequestBody Map<String, String> body,
             Principal principal) {
         String status = body.get("status");
-        if ("CANCELLED".equalsIgnoreCase(status)) {
-            boolean result = orderService.cancelOrder(id, principal);
-            return ResponseEntity.ok(ApiResponse.<Boolean>builder().result(result).build());
+        if (!"CANCELLED".equalsIgnoreCase(status)) {
+            throw new AppException(ErrorCode.BAD_REQUEST,
+                    "Unsupported status transition: " + status);
         }
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.<Boolean>builder().message("Unsupported status transition").result(false).build());
+        boolean result = orderService.cancelOrder(id, principal);
+        return ResponseEntity.ok(ApiResponse.<Boolean>builder().result(result).build());
     }
 
     @PatchMapping("/payments")
